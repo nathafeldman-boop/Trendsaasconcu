@@ -6,12 +6,14 @@ import { ExplainerSection } from "@/components/landing/explainer-section";
 import { FaqSection } from "@/components/landing/faq-section";
 import { FinalCta } from "@/components/landing/final-cta";
 import { Footer } from "@/components/landing/footer";
+import { FloatingParticles } from "@/components/landing/floating-particles";
 
 export default function Home() {
   return (
     <>
       <Nav />
-      <main>
+      <main className="relative">
+        <FloatingParticles />
         <Hero />
         <ToolsMarquee />
         <StatsSection />
