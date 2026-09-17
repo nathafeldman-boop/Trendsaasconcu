@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import { Wallet } from "lucide-react";
 import { Eyebrow } from "@/components/ui/eyebrow";
+import { CountUp } from "@/components/ui/count-up";
 
 const PREVIOUS_PERIOD = [8, 10, 9, 13, 15, 14, 17];
 const CURRENT_PERIOD = [10, 14, 19, 24, 27, 30, 34];
@@ -54,15 +55,21 @@ export function DashboardPreview() {
         </p>
         <div className="mt-2 grid grid-cols-3 gap-3">
           <div>
-            <p className="font-display text-xl font-semibold text-ink sm:text-2xl">1 000 €</p>
+            <p className="font-display text-xl font-semibold text-ink sm:text-2xl">
+              <CountUp value={1000} format={(n) => `${n.toLocaleString("fr-FR")} €`} />
+            </p>
             <p className="mt-0.5 font-body text-[12px] text-ink-muted">Revenu</p>
           </div>
           <div>
-            <p className="font-display text-xl font-semibold text-ink sm:text-2xl">22</p>
+            <p className="font-display text-xl font-semibold text-ink sm:text-2xl">
+              <CountUp value={22} />
+            </p>
             <p className="mt-0.5 font-body text-[12px] text-ink-muted">Paiements</p>
           </div>
           <div>
-            <p className="font-display text-xl font-semibold text-ink sm:text-2xl">18</p>
+            <p className="font-display text-xl font-semibold text-ink sm:text-2xl">
+              <CountUp value={18} />
+            </p>
             <p className="mt-0.5 font-body text-[12px] text-ink-muted">Clients</p>
           </div>
         </div>

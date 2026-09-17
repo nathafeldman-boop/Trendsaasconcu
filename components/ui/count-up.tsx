@@ -7,10 +7,12 @@ export function CountUp({
   value,
   prefix = "",
   suffix = "",
+  format,
 }: {
   value: number;
   prefix?: string;
   suffix?: string;
+  format?: (n: number) => string;
 }) {
   const ref = useRef<HTMLSpanElement>(null);
   const isInView = useInView(ref, { once: true, margin: "-10% 0px" });
@@ -31,9 +33,7 @@ export function CountUp({
 
   return (
     <span ref={ref} className="tabular-nums">
-      {prefix}
-      {shown}
-      {suffix}
+      {format ? format(shown) : `${prefix}${shown}${suffix}`}
     </span>
   );
 }

@@ -213,12 +213,14 @@ function MiniDashboard({
   volume,
   payments,
   clients,
+  chart,
 }: {
   eyebrow: string;
   tone: "muted" | "accent";
-  volume: string;
+  volume: number;
   payments: number;
   clients: number;
+  chart?: boolean;
 }) {
   return (
     <div
@@ -236,23 +238,38 @@ function MiniDashboard({
       <div className="mt-3 grid grid-cols-3 gap-3">
         <div>
           <p className={`font-display text-lg font-semibold ${tone === "accent" ? "text-ink" : "text-ink-muted"}`}>
-            {volume}
+            <CountUp value={volume} format={(n) => `${n.toLocaleString("fr-FR")} €`} />
           </p>
           <p className="mt-0.5 font-body text-[11px] text-ink-faint">Volume brut</p>
         </div>
         <div>
           <p className={`font-display text-lg font-semibold ${tone === "accent" ? "text-ink" : "text-ink-muted"}`}>
-            {payments}
+            <CountUp value={payments} />
           </p>
           <p className="mt-0.5 font-body text-[11px] text-ink-faint">Paiements</p>
         </div>
         <div>
           <p className={`font-display text-lg font-semibold ${tone === "accent" ? "text-ink" : "text-ink-muted"}`}>
-            {clients}
+            <CountUp value={clients} />
           </p>
           <p className="mt-0.5 font-body text-[11px] text-ink-faint">Clients</p>
         </div>
       </div>
+      {chart && (
+        <svg viewBox="0 0 200 46" className="mt-4 h-11 w-full text-accent" preserveAspectRatio="none">
+          <motion.path
+            d="M4,42 L30,38 L58,34 L88,26 L120,18 L152,10 L196,4"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            initial={{ pathLength: 0 }}
+            animate={{ pathLength: 1 }}
+            transition={{ duration: 1.3, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
+          />
+        </svg>
+      )}
     </div>
   );
 }
@@ -876,16 +893,17 @@ export function OnboardingWizard() {
           }
         >
           <div className="flex flex-col gap-3">
-            <MiniDashboard eyebrow="Sans méthode" tone="muted" volume="0 €" payments={0} clients={0} />
+            <MiniDashboard eyebrow="Sans méthode" tone="muted" volume={0} payments={0} clients={0} />
             <div className="flex justify-center text-ink-faint">
               <ArrowDown className="size-4" />
             </div>
             <MiniDashboard
               eyebrow="Avec un plan clair · 4 semaines"
               tone="accent"
-              volume="1 240 €"
+              volume={1240}
               payments={27}
               clients={19}
+              chart
             />
           </div>
           <p className="mt-4 font-body text-[12px] leading-relaxed text-ink-faint">
