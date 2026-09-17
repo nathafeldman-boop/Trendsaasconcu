@@ -71,6 +71,27 @@ const PERSISTENCE_OPTIONS = [
 ];
 const HOURS_OPTIONS = ["Moins de 5 h", "5 à 15 h", "Plus de 15 h"];
 
+const COMPARISON_DATA = [
+  {
+    label: "Seul",
+    value: 15,
+    description: "Pas d'idée fournie, pas de plan : tu pars de zéro.",
+    highlight: false,
+  },
+  {
+    label: "Accompagnement classique",
+    value: 45,
+    description: "Un cadre général, souvent cher, pas pensé pour construire avec l'IA.",
+    highlight: false,
+  },
+  {
+    label: "Avec SaaSFounder",
+    value: 95,
+    description: "Idée, prompt et plan jour par jour déjà prêts pour toi.",
+    highlight: true,
+  },
+];
+
 function toggle(list: string[], value: string) {
   return list.includes(value) ? list.filter((v) => v !== value) : [...list, value];
 }
@@ -393,34 +414,50 @@ export function OnboardingWizard() {
           onBack={back}
           eyebrow="La différence"
           title="Se lancer seul, accompagné, ou avec la bonne méthode."
+          subtitle="Ce que chaque approche te donne déjà, avant même que tu commences."
+          footer={
+            <Button showArrow={false} onClick={goNext} className="w-full">
+              Continuer
+            </Button>
+          }
         >
-          <div className="flex flex-col gap-3">
-            <div className="rounded-lg border border-white/12 bg-white/[0.02] p-5">
-              <p className="font-display text-[15px] font-semibold text-ink">Seul</p>
-              <p className="mt-1.5 font-body text-[14px] leading-relaxed text-ink-muted">
-                Tu tâtonnes, tu doutes, et beaucoup abandonnent avant le premier client.
-              </p>
-            </div>
-            <div className="rounded-lg border border-white/12 bg-white/[0.02] p-5">
-              <p className="font-display text-[15px] font-semibold text-ink">
-                Avec un accompagnement classique
-              </p>
-              <p className="mt-1.5 font-body text-[14px] leading-relaxed text-ink-muted">
-                Un cadre générique, souvent cher, pas pensé pour construire avec l&apos;IA.
-              </p>
-            </div>
-            <div className="rounded-lg border border-accent/60 bg-accent/[0.08] p-5 shadow-[0_0_32px_-12px_var(--color-accent)]">
-              <div className="flex items-center gap-2">
-                <Sparkles className="size-4 text-accent" strokeWidth={2} />
-                <p className="font-display text-[15px] font-semibold text-ink">
-                  Avec SaaSFounder
+          <div className="flex flex-col gap-5">
+            {COMPARISON_DATA.map((row, index) => (
+              <div key={row.label}>
+                <div className="mb-2 flex items-center justify-between gap-3">
+                  <span
+                    className={`flex items-center gap-1.5 font-display text-[14px] font-semibold ${
+                      row.highlight ? "text-ink" : "text-ink-muted"
+                    }`}
+                  >
+                    {row.highlight && <Sparkles className="size-3.5 text-accent" strokeWidth={2} />}
+                    {row.label}
+                  </span>
+                  <span
+                    className={`font-mono text-[13px] font-medium ${
+                      row.highlight ? "text-accent" : "text-ink-faint"
+                    }`}
+                  >
+                    {row.value}%
+                  </span>
+                </div>
+                <div className="h-2.5 w-full overflow-hidden rounded-full bg-white/8">
+                  <motion.div
+                    initial={{ width: 0 }}
+                    animate={{ width: `${row.value}%` }}
+                    transition={{ duration: 0.8, delay: 0.15 + index * 0.15, ease: [0.16, 1, 0.3, 1] }}
+                    className={`h-full rounded-full ${
+                      row.highlight
+                        ? "bg-accent shadow-[0_0_16px_0_var(--color-accent)]"
+                        : "bg-white/25"
+                    }`}
+                  />
+                </div>
+                <p className="mt-2 font-body text-[13px] leading-relaxed text-ink-faint">
+                  {row.description}
                 </p>
               </div>
-              <p className="mt-1.5 font-body text-[14px] leading-relaxed text-ink-muted">
-                Une idée choisie pour toi, un prompt prêt à l&apos;emploi, un
-                plan jour par jour.
-              </p>
-            </div>
+            ))}
           </div>
         </StepShell>
       );
