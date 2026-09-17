@@ -9,6 +9,7 @@ import { ScaleQuestion } from "@/components/onboarding/scale-question";
 import { Button } from "@/components/ui/button";
 import { CountUp } from "@/components/ui/count-up";
 import { SignupForm } from "@/components/auth/signup-form";
+import { IntroCarousel } from "@/components/onboarding/intro-carousel";
 import { createClient } from "@/lib/supabase/client";
 
 type Answers = {
@@ -63,6 +64,7 @@ const HAS_SAAS_EXISTING = "J'ai déjà un SaaS en ligne";
 const HAS_SAAS_SCRATCH = "Je pars de zéro";
 
 const BASE_SEQUENCE = [
+  "intro-carousel",
   "age",
   "chapter1-intro",
   "situation",
@@ -90,6 +92,7 @@ const BASE_SEQUENCE = [
   "signup",
   "budget",
   "tip",
+  "analyzing",
   "confidence",
   "hassaas",
 ];
@@ -201,6 +204,56 @@ const COMPARISON_DATA = [
   },
 ];
 
+function MiniDashboard({
+  eyebrow,
+  tone,
+  volume,
+  payments,
+  clients,
+}: {
+  eyebrow: string;
+  tone: "muted" | "accent";
+  volume: string;
+  payments: number;
+  clients: number;
+}) {
+  return (
+    <div
+      className={`rounded-lg border p-4 ${
+        tone === "accent" ? "border-accent/40 bg-accent/[0.06]" : "border-white/12 bg-white/[0.02]"
+      }`}
+    >
+      <p
+        className={`font-mono text-[10px] uppercase tracking-wider ${
+          tone === "accent" ? "text-accent" : "text-ink-faint"
+        }`}
+      >
+        {eyebrow}
+      </p>
+      <div className="mt-3 grid grid-cols-3 gap-3">
+        <div>
+          <p className={`font-display text-lg font-semibold ${tone === "accent" ? "text-ink" : "text-ink-muted"}`}>
+            {volume}
+          </p>
+          <p className="mt-0.5 font-body text-[11px] text-ink-faint">Volume brut</p>
+        </div>
+        <div>
+          <p className={`font-display text-lg font-semibold ${tone === "accent" ? "text-ink" : "text-ink-muted"}`}>
+            {payments}
+          </p>
+          <p className="mt-0.5 font-body text-[11px] text-ink-faint">Paiements</p>
+        </div>
+        <div>
+          <p className={`font-display text-lg font-semibold ${tone === "accent" ? "text-ink" : "text-ink-muted"}`}>
+            {clients}
+          </p>
+          <p className="mt-0.5 font-body text-[11px] text-ink-faint">Clients</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function toggle(list: string[], value: string) {
   return list.includes(value) ? list.filter((v) => v !== value) : [...list, value];
 }
@@ -258,6 +311,13 @@ export function OnboardingWizard() {
   const goBack = () => setStep((s) => Math.max(0, s - 1));
   const back = step > 0 ? goBack : undefined;
 
+  useEffect(() => {
+    if (currentId !== "analyzing") return;
+    const timer = setTimeout(goNext, 2400);
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentId]);
+
   const selectAndAdvance = (
     key:
       | "age"
@@ -280,6 +340,10 @@ export function OnboardingWizard() {
   };
 
   function renderStep() {
+    if (currentId === "intro-carousel") {
+      return <IntroCarousel onDone={goNext} />;
+    }
+
     if (currentId === "age") {
       return (
         <StepShell step={step} total={sequence.length} onBack={back} eyebrow="Pour commencer" title="Tu as quel âge ?">
@@ -809,22 +873,22 @@ export function OnboardingWizard() {
           }
         >
           <div className="flex flex-col gap-3">
-            <div className="rounded-lg border border-white/12 bg-white/[0.02] p-5">
-              <p className="font-mono text-[10px] uppercase tracking-wider text-ink-faint">Sans méthode</p>
-              <p className="mt-2 font-body text-[14px] leading-relaxed text-ink-muted">
-                0 site en ligne, 0 client, des mois passés à hésiter entre plusieurs idées.
-              </p>
-            </div>
+            <MiniDashboard eyebrow="Sans méthode" tone="muted" volume="0 €" payments={0} clients={0} />
             <div className="flex justify-center text-ink-faint">
               <ArrowDown className="size-4" />
             </div>
-            <div className="rounded-lg border border-accent/40 bg-accent/[0.06] p-5">
-              <p className="font-mono text-[10px] uppercase tracking-wider text-accent">Avec un plan clair</p>
-              <p className="mt-2 font-body text-[14px] leading-relaxed text-ink">
-                Un site en ligne, un prompt testé, et les 5 premiers retours clients pris dès la première semaine.
-              </p>
-            </div>
+            <MiniDashboard
+              eyebrow="Avec un plan clair · 4 semaines"
+              tone="accent"
+              volume="1 240 €"
+              payments={27}
+              clients={19}
+            />
           </div>
+          <p className="mt-4 font-body text-[12px] leading-relaxed text-ink-faint">
+            Ces chiffres illustrent un scénario, pas un résultat garanti — ils dépendent de ce que tu
+            construis et du temps que tu y mets.
+          </p>
         </StepShell>
       );
     }
@@ -1067,6 +1131,44 @@ export function OnboardingWizard() {
             imparfaite. Le but du premier mois, ce n&apos;est pas d&apos;avoir
             fini — c&apos;est d&apos;avoir quelqu&apos;un qui paie.
           </p>
+        </StepShell>
+      );
+    }
+
+    if (currentId === "analyzing") {
+      return (
+        <StepShell
+          step={step}
+          total={sequence.length}
+          onBack={back}
+          eyebrow="Calcul en cours"
+          title="On assemble ton plan."
+          subtitle="Encore deux questions pendant que ça tourne."
+        >
+          <div className="flex flex-col items-center gap-4 py-6">
+            <p className="font-display text-5xl font-semibold text-ink">
+              <CountUp value={100} suffix="%" />
+            </p>
+            <div className="h-1.5 w-full max-w-xs overflow-hidden rounded-full bg-white/8">
+              <motion.div
+                initial={{ width: 0 }}
+                animate={{ width: "100%" }}
+                transition={{ duration: 1.1, ease: [0.16, 1, 0.3, 1] }}
+                className="h-full rounded-full bg-accent shadow-[0_0_16px_0_var(--color-accent)]"
+              />
+            </div>
+            <p className="font-mono text-[11px] uppercase tracking-wider text-ink-faint">
+              Analyse de tes réponses...
+            </p>
+          </div>
+          <div className="rounded-lg border border-white/12 bg-white/[0.02] p-4">
+            <p className="font-mono text-[10px] uppercase tracking-wider text-ink-faint">
+              Pendant ce temps, on prépare
+            </p>
+            <p className="mt-2 font-body text-[14px] leading-relaxed text-ink-muted">
+              Ton idée de SaaS, ton premier prompt et ton plan des 30 prochains jours.
+            </p>
+          </div>
         </StepShell>
       );
     }
