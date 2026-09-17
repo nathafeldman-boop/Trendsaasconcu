@@ -18,7 +18,7 @@ export function FinalCta() {
           tu prends le relais.
         </p>
         <div className="mt-9 flex justify-center">
-          <Button href="/inscription" size="default">
+          <Button href="/commencer" size="default">
             Trouver mon idée
           </Button>
         </div>

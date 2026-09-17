@@ -10,7 +10,7 @@ export function Nav() {
           <Button href="/connexion" variant="secondary" size="sm" showArrow={false} className="hidden sm:inline-flex">
             Se connecter
           </Button>
-          <Button href="/inscription" size="sm" showArrow={false}>
+          <Button href="/commencer" size="sm" showArrow={false}>
             Prendre mon élan
           </Button>
         </div>

@@ -54,7 +54,7 @@ export function Hero() {
           </motion.p>
 
           <motion.div variants={item} className="mt-9 flex flex-col gap-3 sm:flex-row sm:items-center">
-            <Button href="/inscription" size="default">
+            <Button href="/commencer" size="default">
               Trouver mon idée
             </Button>
             <p className="font-mono text-[11px] uppercase tracking-wider text-ink-faint">
