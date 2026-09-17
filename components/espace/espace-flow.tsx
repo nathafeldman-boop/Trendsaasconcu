@@ -2,13 +2,14 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Sparkles, Copy, Check } from "lucide-react";
+import { Sparkles, Copy, Check, Lightbulb, Compass, Wrench, ListChecks, Rocket } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Eyebrow } from "@/components/ui/eyebrow";
 import { ChoiceOption } from "@/components/onboarding/choice-option";
 import { createClient } from "@/lib/supabase/client";
 import { StripeDashboard } from "@/components/espace/stripe-dashboard";
 import { MarketingPanel } from "@/components/espace/marketing-panel";
+import { FloatingIcon } from "@/components/ui/floating-icon";
 
 const TOOLS = [
   {
@@ -126,7 +127,10 @@ export function EspaceFlow({
   if (phase === "hub") {
     return (
       <div className="mx-auto max-w-3xl px-5 py-12 sm:px-8">
-        <h1 className="font-display text-3xl font-semibold text-ink">
+        <FloatingIcon>
+          <Rocket className="size-5" strokeWidth={1.75} />
+        </FloatingIcon>
+        <h1 className="mt-4 font-display text-3xl font-semibold text-ink">
           {firstName ? `Salut ${firstName}.` : "Ton espace."}
         </h1>
         <p className="mt-2 font-body text-ink-muted">
@@ -154,7 +158,12 @@ export function EspaceFlow({
         >
           {phase === "idea-choice" && (
             <div>
-              <Eyebrow>Ton idée</Eyebrow>
+              <FloatingIcon>
+                <Lightbulb className="size-5" strokeWidth={1.75} />
+              </FloatingIcon>
+              <div className="mt-4">
+                <Eyebrow>Ton idée</Eyebrow>
+              </div>
               <h1 className="mt-4 font-display text-[28px] font-semibold text-ink">
                 As-tu déjà une idée de SaaS ?
               </h1>
@@ -181,7 +190,10 @@ export function EspaceFlow({
 
           {phase === "idea-text" && (
             <div>
-              <h1 className="font-display text-[28px] font-semibold text-ink">
+              <FloatingIcon>
+                <Lightbulb className="size-5" strokeWidth={1.75} />
+              </FloatingIcon>
+              <h1 className="mt-4 font-display text-[28px] font-semibold text-ink">
                 Décris ton idée en quelques phrases.
               </h1>
               <textarea
@@ -207,7 +219,10 @@ export function EspaceFlow({
 
           {phase === "idea-suggestions" && (
             <div>
-              <h1 className="font-display text-[28px] font-semibold text-ink">
+              <FloatingIcon>
+                <Compass className="size-5" strokeWidth={1.75} />
+              </FloatingIcon>
+              <h1 className="mt-4 font-display text-[28px] font-semibold text-ink">
                 Quelques pistes pour démarrer.
               </h1>
               <p className="mt-2 font-body text-[14px] text-ink-muted">
@@ -233,7 +248,10 @@ export function EspaceFlow({
 
           {phase === "tool" && (
             <div>
-              <h1 className="font-display text-[28px] font-semibold text-ink">
+              <FloatingIcon>
+                <Wrench className="size-5" strokeWidth={1.75} />
+              </FloatingIcon>
+              <h1 className="mt-4 font-display text-[28px] font-semibold text-ink">
                 Avec quel outil veux-tu coder ?
               </h1>
               <p className="mt-2 font-body text-[14px] text-ink-faint">
@@ -261,7 +279,10 @@ export function EspaceFlow({
 
           {phase === "prompt" && (
             <div>
-              <h1 className="font-display text-[28px] font-semibold text-ink">Ton prompt de démarrage.</h1>
+              <FloatingIcon>
+                <Sparkles className="size-5" strokeWidth={1.75} />
+              </FloatingIcon>
+              <h1 className="mt-4 font-display text-[28px] font-semibold text-ink">Ton prompt de démarrage.</h1>
               <p className="mt-2 font-body text-[14px] text-ink-muted">
                 Colle-le dans l&apos;outil que tu as choisi pour lancer ta première version.
               </p>
@@ -300,7 +321,10 @@ export function EspaceFlow({
 
           {phase === "checklist" && (
             <div>
-              <h1 className="font-display text-[28px] font-semibold text-ink">Ta checklist de lancement.</h1>
+              <FloatingIcon>
+                <ListChecks className="size-5" strokeWidth={1.75} />
+              </FloatingIcon>
+              <h1 className="mt-4 font-display text-[28px] font-semibold text-ink">Ta checklist de lancement.</h1>
               <div className="mt-6 flex flex-col gap-3">
                 {CHECKLIST_ITEMS.map((item) => {
                   const checked = !!builder.checklist[item.id];

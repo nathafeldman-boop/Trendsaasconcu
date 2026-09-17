@@ -1,8 +1,11 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
+import { motion } from "framer-motion";
+import { UserPlus, Users, Radio, Ticket } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { FloatingIcon } from "@/components/ui/floating-icon";
 import { createClient } from "@/lib/supabase/client";
 
 type AccessCode = {
@@ -80,14 +83,17 @@ export function AdminPanel({
 
   return (
     <div className="mx-auto max-w-5xl px-5 py-12 sm:px-8">
-      <h1 className="font-display text-3xl font-semibold text-ink">Admin</h1>
+      <FloatingIcon>
+        <Users className="size-5" strokeWidth={1.75} />
+      </FloatingIcon>
+      <h1 className="mt-4 font-display text-3xl font-semibold text-ink">Admin</h1>
       <p className="mt-2 font-body text-ink-muted">Vue d&apos;ensemble et gestion des accès.</p>
 
       <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-4">
-        <StatCard label="Inscrits aujourd'hui" value={stats.today} />
-        <StatCard label="Inscrits hier" value={stats.yesterday} />
-        <StatCard label="Avant-hier" value={stats.dayBefore} />
-        <StatCard label="En ligne maintenant" value={online.length} />
+        <StatCard icon={UserPlus} label="Inscrits aujourd'hui" value={stats.today} />
+        <StatCard icon={UserPlus} label="Inscrits hier" value={stats.yesterday} />
+        <StatCard icon={UserPlus} label="Avant-hier" value={stats.dayBefore} />
+        <StatCard icon={Radio} label="En ligne maintenant" value={online.length} />
       </div>
 
       {online.length > 0 && (
@@ -107,7 +113,10 @@ export function AdminPanel({
       )}
 
       <div className="mt-10">
-        <h2 className="font-display text-xl font-semibold text-ink">Codes d&apos;accès</h2>
+        <h2 className="flex items-center gap-2 font-display text-xl font-semibold text-ink">
+          <Ticket className="size-4 text-accent" strokeWidth={1.75} />
+          Codes d&apos;accès
+        </h2>
         <div className="mt-4 flex flex-wrap items-end gap-3">
           <Input
             label="Label (optionnel)"
@@ -183,11 +192,25 @@ export function AdminPanel({
   );
 }
 
-function StatCard({ label, value }: { label: string; value: number }) {
+function StatCard({
+  icon: Icon,
+  label,
+  value,
+}: {
+  icon: typeof Users;
+  label: string;
+  value: number;
+}) {
   return (
-    <div className="rounded-lg border border-white/12 bg-white/[0.02] p-5">
-      <p className="font-mono text-[11px] uppercase tracking-wider text-ink-faint">{label}</p>
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
+      className="rounded-lg border border-white/12 bg-white/[0.02] p-5"
+    >
+      <Icon className="size-4 text-accent" strokeWidth={1.75} />
+      <p className="mt-3 font-mono text-[11px] uppercase tracking-wider text-ink-faint">{label}</p>
       <p className="mt-2 font-display text-3xl font-semibold text-ink">{value}</p>
-    </div>
+    </motion.div>
   );
 }

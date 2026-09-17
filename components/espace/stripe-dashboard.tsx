@@ -1,8 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { Wallet } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { FloatingIcon } from "@/components/ui/floating-icon";
 import { createClient } from "@/lib/supabase/client";
 
 type MrrResponse =
@@ -55,7 +57,10 @@ export function StripeDashboard() {
 
   return (
     <div className="rounded-xl border border-white/12 bg-white/[0.02] p-6">
-      <h2 className="font-display text-xl font-semibold text-ink">Dashboard revenus</h2>
+      <FloatingIcon className="size-10">
+        <Wallet className="size-4" strokeWidth={1.75} />
+      </FloatingIcon>
+      <h2 className="mt-3 font-display text-xl font-semibold text-ink">Dashboard revenus</h2>
       <p className="mt-1 font-body text-[14px] text-ink-muted">
         Connecte ta clé Stripe (idéalement restreinte en lecture seule) pour suivre ton MRR ici.
       </p>

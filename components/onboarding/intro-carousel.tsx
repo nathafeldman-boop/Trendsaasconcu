@@ -5,6 +5,7 @@ import { motion, AnimatePresence, type PanInfo } from "framer-motion";
 import { Lightbulb, Sparkles, Rocket, Users } from "lucide-react";
 import { Logo } from "@/components/ui/logo";
 import { Button } from "@/components/ui/button";
+import { FloatingIcon } from "@/components/ui/floating-icon";
 
 const SLIDES = [
   {
@@ -75,9 +76,9 @@ export function IntroCarousel({ onDone }: { onDone: () => void }) {
             transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
             className="cursor-grab active:cursor-grabbing"
           >
-            <div className="flex size-14 items-center justify-center rounded-full bg-accent/10 text-accent">
+            <FloatingIcon className="size-14">
               <Icon className="size-6" strokeWidth={1.75} />
-            </div>
+            </FloatingIcon>
             <h1 className="mt-6 font-display text-[28px] font-semibold leading-tight tracking-tight text-ink sm:text-[32px]">
               {current.title}
             </h1>

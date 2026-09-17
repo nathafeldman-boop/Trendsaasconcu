@@ -2,9 +2,11 @@
 
 import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
+import { KeyRound } from "lucide-react";
 import { AuthShell } from "@/components/auth/auth-shell";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { FloatingIcon } from "@/components/ui/floating-icon";
 import { createClient } from "@/lib/supabase/client";
 
 export function AccessGate() {
@@ -66,6 +68,9 @@ export function AccessGate() {
         </p>
       }
     >
+      <FloatingIcon className="mb-6">
+        <KeyRound className="size-5" strokeWidth={1.75} />
+      </FloatingIcon>
       <form onSubmit={handleSubmit} className="flex flex-col gap-5">
         <Input
           label="Code d'accès"

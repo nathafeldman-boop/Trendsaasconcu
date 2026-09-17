@@ -10,6 +10,8 @@ import { Button } from "@/components/ui/button";
 import { CountUp } from "@/components/ui/count-up";
 import { SignupForm } from "@/components/auth/signup-form";
 import { IntroCarousel } from "@/components/onboarding/intro-carousel";
+import { CommitmentHold } from "@/components/onboarding/commitment-hold";
+import { FloatingIcon } from "@/components/ui/floating-icon";
 import { createClient } from "@/lib/supabase/client";
 
 type Answers = {
@@ -89,6 +91,7 @@ const BASE_SEQUENCE = [
   "persistence",
   "revenue",
   "recap",
+  "commitment",
   "signup",
   "budget",
   "tip",
@@ -382,9 +385,9 @@ export function OnboardingWizard() {
             </Button>
           }
         >
-          <div className="flex size-12 items-center justify-center rounded-full bg-accent/10 text-accent">
+          <FloatingIcon>
             <Users className="size-5" strokeWidth={1.75} />
-          </div>
+          </FloatingIcon>
           <p className="mt-5 max-w-md font-body text-[15px] leading-relaxed text-ink-muted">
             Chaque semaine, des gens avec les mêmes doutes que toi commencent un
             premier SaaS. Ce qui fait la différence, ce n&apos;est pas le point
@@ -513,9 +516,9 @@ export function OnboardingWizard() {
             </Button>
           }
         >
-          <div className="flex size-12 items-center justify-center rounded-full bg-accent/10 text-accent">
+          <FloatingIcon>
             <ArrowDown className="size-5" strokeWidth={1.75} />
-          </div>
+          </FloatingIcon>
         </StepShell>
       );
     }
@@ -639,9 +642,9 @@ export function OnboardingWizard() {
             </Button>
           }
         >
-          <div className="flex size-12 items-center justify-center rounded-full bg-accent/10 text-accent">
+          <FloatingIcon>
             <Sparkles className="size-5" strokeWidth={1.75} />
-          </div>
+          </FloatingIcon>
         </StepShell>
       );
     }
@@ -775,9 +778,9 @@ export function OnboardingWizard() {
             </Button>
           }
         >
-          <div className="flex size-12 items-center justify-center rounded-full bg-accent/10 text-accent">
+          <FloatingIcon>
             <Repeat className="size-5" strokeWidth={1.75} />
-          </div>
+          </FloatingIcon>
           <p className="mt-5 max-w-md font-body text-[15px] leading-relaxed text-ink-muted">
             Vendre une fois ne rapporte qu&apos;une fois. Un abonnement, lui,
             continue de rapporter chaque mois — c&apos;est ce qui change tout
@@ -1069,6 +1072,20 @@ export function OnboardingWizard() {
                 {formatEuros(answers.revenueGoal)}
               </span>
             </div>
+          </div>
+        </StepShell>
+      );
+    }
+
+    if (currentId === "commitment") {
+      return (
+        <StepShell step={step} total={sequence.length} onBack={back} eyebrow="Ton engagement" title="Avant d'aller plus loin, prends un engagement.">
+          <p className="max-w-md font-body text-[15px] italic leading-relaxed text-ink-muted">
+            « Je choisis de ne pas lâcher au premier obstacle. D&apos;avancer sur ce projet même
+            les jours où j&apos;ai moins envie. Et de me donner une vraie chance d&apos;y arriver. »
+          </p>
+          <div className="mt-8 flex justify-center">
+            <CommitmentHold onCommit={goNext} />
           </div>
         </StepShell>
       );
