@@ -1,0 +1,29 @@
+import Link from "next/link";
+import type { Metadata } from "next";
+import { AuthShell } from "@/components/auth/auth-shell";
+import { SignupForm } from "@/components/auth/signup-form";
+
+export const metadata: Metadata = {
+  title: "Créer mon compte — Élan",
+  description: "Crée ton compte Élan pour recevoir ton idée, ton prompt et ton plan des 30 jours.",
+};
+
+export default function InscriptionPage() {
+  return (
+    <AuthShell
+      eyebrow="Ton espace"
+      title="On garde ton idée au chaud."
+      subtitle="Crée ton compte pour sauvegarder ton idée, ton prompt et ton plan — et les retrouver quand tu en as besoin."
+      footer={
+        <p className="font-body text-[14px] text-ink-muted">
+          Déjà un compte ?{" "}
+          <Link href="/connexion" className="font-medium text-ink underline underline-offset-2">
+            Se connecter
+          </Link>
+        </p>
+      }
+    >
+      <SignupForm />
+    </AuthShell>
+  );
+}

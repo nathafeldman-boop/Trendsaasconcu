@@ -1,0 +1,30 @@
+import { CountUp } from "@/components/ui/count-up";
+
+const STATS = [
+  { value: 20, suffix: "", label: "idées de SaaS validées, détaillées et prêtes à builder" },
+  { value: 18, suffix: "", label: "questions pour cerner ta situation réelle" },
+  { value: 650, prefix: "~", label: "mots de prompt, prêts à coller dans ton IA" },
+  { value: 30, suffix: "", label: "jours de plan, action concrète par action" },
+];
+
+export function StatsSection() {
+  return (
+    <section className="mx-auto max-w-6xl px-5 py-20 sm:px-8 sm:py-28">
+      <div className="grid grid-cols-2 border-t border-l border-white/10">
+        {STATS.map((stat) => (
+          <div
+            key={stat.label}
+            className="border-r border-b border-white/10 px-6 py-8 sm:px-10 sm:py-10"
+          >
+            <p className="font-display text-4xl font-semibold text-ink sm:text-5xl">
+              <CountUp value={stat.value} prefix={stat.prefix} suffix={stat.suffix} />
+            </p>
+            <p className="mt-3 max-w-[22ch] font-body text-[14px] leading-snug text-ink-muted">
+              {stat.label}
+            </p>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}

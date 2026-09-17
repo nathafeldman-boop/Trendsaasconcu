@@ -1,0 +1,80 @@
+@import "tailwindcss";
+
+@theme {
+  /* Canvas & surfaces */
+  --color-canvas: #07080a;
+  --color-canvas-raised: #0e1012;
+  --color-canvas-overlay: #16181b;
+
+  /* Typography colors */
+  --color-ink: #f5f4f0;
+  --color-ink-muted: #9a9a94;
+  --color-ink-faint: #5c5d58;
+
+  /* Accent — warm amber, used sparingly */
+  --color-accent: #e8973f;
+  --color-accent-soft: #fbc98a;
+  --color-accent-dim: #7a5324;
+  --color-accent-deep: #3a2712;
+
+  /* Radius scale */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 18px;
+  --radius-xl: 26px;
+  --radius-pill: 999px;
+
+  --animate-marquee: marquee 26s linear infinite;
+}
+
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@theme inline {
+  --font-display: var(--font-display);
+  --font-body: var(--font-body);
+  --font-mono: var(--font-mono);
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    color-scheme: dark;
+  }
+}
+
+html {
+  color-scheme: dark;
+}
+
+body {
+  background: var(--color-canvas);
+  color: var(--color-ink);
+  font-family: var(--font-body), system-ui, sans-serif;
+}
+
+::selection {
+  background: var(--color-accent);
+  color: #14100a;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
+}
