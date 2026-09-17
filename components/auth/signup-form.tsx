@@ -11,9 +11,6 @@ export function SignupForm() {
       onSubmit={(event) => event.preventDefault()}
       className="flex flex-col gap-5"
     >
-      <GoogleButton />
-      <OrDivider />
-
       <Input label="Ton prénom" name="firstName" placeholder="Camille" autoComplete="given-name" required />
       <Input label="Ton email" name="email" type="email" placeholder="camille@exemple.fr" autoComplete="email" required />
       <Input label="Un mot de passe" name="password" type="password" placeholder="8 caractères minimum" autoComplete="new-password" required />
@@ -26,6 +23,9 @@ export function SignupForm() {
       <Button type="submit" showArrow={false} className="mt-1 w-full">
         Créer mon compte Élan
       </Button>
+
+      <OrDivider />
+      <GoogleButton />
 
       <p className="text-center font-body text-[12px] leading-relaxed text-ink-faint">
         En créant ton compte, tu acceptes nos{" "}

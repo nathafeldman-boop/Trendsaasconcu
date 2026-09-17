@@ -12,9 +12,6 @@ export function LoginForm() {
       onSubmit={(event) => event.preventDefault()}
       className="flex flex-col gap-5"
     >
-      <GoogleButton />
-      <OrDivider />
-
       <Input label="Ton email" name="email" type="email" placeholder="camille@exemple.fr" autoComplete="email" required />
       <div className="flex flex-col gap-2">
         <div className="flex items-center justify-between">
@@ -44,6 +41,9 @@ export function LoginForm() {
       <Button type="submit" showArrow={false} className="mt-1 w-full">
         Me connecter
       </Button>
+
+      <OrDivider />
+      <GoogleButton />
     </form>
   );
 }
