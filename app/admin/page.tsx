@@ -25,7 +25,7 @@ export default async function AdminPage() {
   const onlineSince = new Date();
   onlineSince.setMinutes(onlineSince.getMinutes() - 5);
 
-  const [todayCount, yesterdayCount, dayBeforeCount, online, codes] = await Promise.all([
+  const [todayCount, yesterdayCount, dayBeforeCount, online, codes, users] = await Promise.all([
     supabase
       .from("profiles")
       .select("id", { count: "exact", head: true })
@@ -50,6 +50,11 @@ export default async function AdminPage() {
       .from("access_codes")
       .select("id, code, label, max_uses, uses_count, revoked, created_at")
       .order("created_at", { ascending: false }),
+    supabase
+      .from("profiles")
+      .select("id, email, first_name, is_admin, has_access, plan, created_at")
+      .order("created_at", { ascending: false })
+      .limit(200),
   ]);
 
   return (
@@ -61,6 +66,7 @@ export default async function AdminPage() {
       }}
       online={online.data ?? []}
       codes={codes.data ?? []}
+      users={users.data ?? []}
     />
   );
 }

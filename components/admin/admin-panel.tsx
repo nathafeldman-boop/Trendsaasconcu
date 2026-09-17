@@ -24,6 +24,16 @@ type OnlineUser = {
   last_seen_at: string | null;
 };
 
+type UserRow = {
+  id: string;
+  email: string | null;
+  first_name: string | null;
+  is_admin: boolean;
+  has_access: boolean;
+  plan: string | null;
+  created_at: string;
+};
+
 function randomCode() {
   const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
   let code = "SAASFOUNDER-";
@@ -35,10 +45,12 @@ export function AdminPanel({
   stats,
   online,
   codes,
+  users,
 }: {
   stats: { today: number; yesterday: number; dayBefore: number };
   online: OnlineUser[];
   codes: AccessCode[];
+  users: UserRow[];
 }) {
   const [codeList, setCodeList] = useState(codes);
   const [label, setLabel] = useState("");
@@ -111,6 +123,63 @@ export function AdminPanel({
           </div>
         </div>
       )}
+
+      <div className="mt-10">
+        <h2 className="flex items-center gap-2 font-display text-xl font-semibold text-ink">
+          <Users className="size-4 text-accent" strokeWidth={1.75} />
+          Utilisateurs
+        </h2>
+        <div className="mt-4 overflow-x-auto rounded-lg border border-white/12">
+          <table className="w-full text-left font-body text-[14px]">
+            <thead>
+              <tr className="border-b border-white/10 text-ink-faint">
+                <th className="px-4 py-3 font-normal">Nom</th>
+                <th className="px-4 py-3 font-normal">Email</th>
+                <th className="px-4 py-3 font-normal">Accès</th>
+                <th className="px-4 py-3 font-normal">Plan</th>
+                <th className="px-4 py-3 font-normal">Inscrit le</th>
+              </tr>
+            </thead>
+            <tbody>
+              {users.map((u) => (
+                <tr key={u.id} className="border-b border-white/5 last:border-0">
+                  <td className="px-4 py-3 text-ink">
+                    {u.first_name ?? "—"}
+                    {u.is_admin && (
+                      <span className="ml-2 rounded-full border border-accent/40 px-2 py-0.5 font-mono text-[10px] uppercase text-accent">
+                        Admin
+                      </span>
+                    )}
+                  </td>
+                  <td className="px-4 py-3 text-ink-muted">{u.email ?? "—"}</td>
+                  <td className="px-4 py-3">
+                    <span
+                      className={`rounded-full px-2 py-0.5 font-mono text-[10px] uppercase ${
+                        u.has_access
+                          ? "bg-emerald-500/15 text-emerald-400"
+                          : "bg-white/8 text-ink-faint"
+                      }`}
+                    >
+                      {u.has_access ? "Actif" : "Sans accès"}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3 text-ink-muted">{u.plan ?? "—"}</td>
+                  <td className="px-4 py-3 text-ink-faint">
+                    {new Date(u.created_at).toLocaleDateString("fr-FR")}
+                  </td>
+                </tr>
+              ))}
+              {users.length === 0 && (
+                <tr>
+                  <td colSpan={5} className="px-4 py-6 text-center text-ink-faint">
+                    Aucun utilisateur pour l&apos;instant.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
 
       <div className="mt-10">
         <h2 className="flex items-center gap-2 font-display text-xl font-semibold text-ink">

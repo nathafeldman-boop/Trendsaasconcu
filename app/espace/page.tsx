@@ -38,7 +38,7 @@ export default async function EspacePage({
       .maybeSingle(),
   ]);
 
-  const answers = (onboardingRes.data?.answers ?? {}) as { hasSaas?: string };
+  const answers = (onboardingRes.data?.answers ?? {}) as { hasSaas?: string; existingUrl?: string };
   const hasExistingSaas = answers.hasSaas === HAS_SAAS_EXISTING;
 
   return (
@@ -46,6 +46,7 @@ export default async function EspacePage({
       userId={user.id}
       firstName={profileRes.data?.first_name ?? null}
       hasExistingSaas={hasExistingSaas}
+      existingUrl={hasExistingSaas ? (answers.existingUrl ?? null) : null}
       hasStripeSubscription={!!profileRes.data?.stripe_customer_id}
       checkoutSuccess={checkout === "success"}
       initialBuilder={{

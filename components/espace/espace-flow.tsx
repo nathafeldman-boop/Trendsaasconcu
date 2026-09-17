@@ -9,6 +9,7 @@ import { ChoiceOption } from "@/components/onboarding/choice-option";
 import { createClient } from "@/lib/supabase/client";
 import { StripeDashboard } from "@/components/espace/stripe-dashboard";
 import { MarketingPanel } from "@/components/espace/marketing-panel";
+import { SiteAnalysis } from "@/components/espace/site-analysis";
 import { FloatingIcon } from "@/components/ui/floating-icon";
 
 const TOOLS = [
@@ -83,6 +84,7 @@ export function EspaceFlow({
   userId,
   firstName,
   hasExistingSaas,
+  existingUrl,
   hasStripeSubscription,
   checkoutSuccess,
   initialBuilder,
@@ -91,6 +93,7 @@ export function EspaceFlow({
   userId: string;
   firstName: string | null;
   hasExistingSaas: boolean;
+  existingUrl: string | null;
   hasStripeSubscription: boolean;
   checkoutSuccess: boolean;
   initialBuilder: BuilderState;
@@ -150,6 +153,11 @@ export function EspaceFlow({
             <p className="font-body text-[14px] text-emerald-300">
               Paiement confirmé, merci ! Ton accès est actif.
             </p>
+          </div>
+        )}
+        {hasExistingSaas && existingUrl && (
+          <div className="mt-8">
+            <SiteAnalysis url={existingUrl} />
           </div>
         )}
         <div className="mt-8">
