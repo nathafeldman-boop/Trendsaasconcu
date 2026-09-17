@@ -1,17 +1,58 @@
 "use client";
 
+import { useState, type FormEvent } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { GoogleButton } from "@/components/auth/google-button";
 import { OrDivider } from "@/components/auth/or-divider";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { supabase } from "@/lib/supabase/client";
 
-export function LoginForm() {
+export function LoginForm({ onSuccess }: { onSuccess?: () => void }) {
+  const router = useRouter();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const complete = () => (onSuccess ? onSuccess() : router.push("/"));
+
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setError(null);
+
+    if (!supabase) {
+      complete();
+      return;
+    }
+
+    const form = new FormData(event.currentTarget);
+    const email = String(form.get("email") ?? "");
+    const password = String(form.get("password") ?? "");
+
+    setLoading(true);
+    const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
+    setLoading(false);
+
+    if (signInError) {
+      setError(signInError.message);
+      return;
+    }
+    complete();
+  }
+
+  async function handleGoogle() {
+    if (!supabase) {
+      complete();
+      return;
+    }
+    await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: { redirectTo: `${window.location.origin}/commencer` },
+    });
+  }
+
   return (
-    <form
-      onSubmit={(event) => event.preventDefault()}
-      className="flex flex-col gap-5"
-    >
+    <form onSubmit={handleSubmit} className="flex flex-col gap-5">
       <Input label="Ton email" name="email" type="email" placeholder="camille@exemple.fr" autoComplete="email" required />
       <div className="flex flex-col gap-2">
         <div className="flex items-center justify-between">
@@ -38,12 +79,16 @@ export function LoginForm() {
         />
       </div>
 
-      <Button type="submit" showArrow={false} className="mt-1 w-full">
-        Me connecter
+      {error && (
+        <p className="font-body text-[13px] leading-relaxed text-red-400">{error}</p>
+      )}
+
+      <Button type="submit" showArrow={false} disabled={loading} className="mt-1 w-full">
+        {loading ? "Connexion en cours..." : "Me connecter"}
       </Button>
 
       <OrDivider />
-      <GoogleButton />
+      <GoogleButton onClick={handleGoogle} />
     </form>
   );
 }
