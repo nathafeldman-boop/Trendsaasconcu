@@ -5,7 +5,7 @@ import { CountUp } from "@/components/ui/count-up";
 
 const STATS = [
   { value: 20, suffix: "", label: "idées de SaaS validées, détaillées et prêtes à builder" },
-  { value: 9, suffix: "", label: "questions pour cerner ta situation réelle" },
+  { value: 18, suffix: "", label: "questions pour cerner ta situation réelle" },
   { value: 650, prefix: "~", label: "mots de prompt, prêts à coller dans ton IA" },
   { value: 30, suffix: "", label: "jours de plan, action concrète par action" },
 ];

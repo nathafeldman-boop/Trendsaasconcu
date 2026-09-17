@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Logo } from "@/components/ui/logo";
 
 export function Footer() {
@@ -8,6 +9,12 @@ export function Footer() {
         <p className="font-mono text-[11px] uppercase tracking-wider text-ink-faint">
           © {new Date().getFullYear()} SaaSFounder · Tous droits réservés
         </p>
+        <Link
+          href="/acces"
+          className="font-mono text-[11px] uppercase tracking-wider text-ink-faint transition-colors hover:text-ink-muted"
+        >
+          Code d&apos;accès
+        </Link>
       </div>
     </footer>
   );
