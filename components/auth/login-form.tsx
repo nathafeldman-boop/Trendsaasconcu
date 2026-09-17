@@ -64,7 +64,7 @@ export function LoginForm({ onSuccess }: { onSuccess?: () => void }) {
             Mot de passe
           </label>
           <Link
-            href="#"
+            href="/mot-de-passe-oublie"
             className="font-body text-[12px] text-ink-faint underline underline-offset-2 hover:text-ink-muted"
           >
             Mot de passe oublié ?

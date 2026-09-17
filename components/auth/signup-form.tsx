@@ -81,11 +81,11 @@ export function SignupForm({ onSuccess }: { onSuccess?: () => void }) {
 
       <p className="text-center font-body text-[12px] leading-relaxed text-ink-faint">
         En créant ton compte, tu acceptes nos{" "}
-        <a href="#" className="underline underline-offset-2 hover:text-ink-muted">
+        <a href="/conditions" className="underline underline-offset-2 hover:text-ink-muted">
           conditions d&apos;utilisation
         </a>{" "}
         et notre{" "}
-        <a href="#" className="underline underline-offset-2 hover:text-ink-muted">
+        <a href="/confidentialite" className="underline underline-offset-2 hover:text-ink-muted">
           politique de confidentialité
         </a>
         .
