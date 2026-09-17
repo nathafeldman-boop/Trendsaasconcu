@@ -4,7 +4,7 @@ import { motion, type Variants } from "framer-motion";
 import { Eyebrow } from "@/components/ui/eyebrow";
 import { Button } from "@/components/ui/button";
 import { VelocityField } from "@/components/landing/velocity-field";
-import { ProofCard } from "@/components/landing/proof-card";
+import { DashboardPreview } from "@/components/landing/dashboard-preview";
 
 const EASE: [number, number, number, number] = [0.16, 1, 0.3, 1];
 
@@ -65,7 +65,7 @@ export function Hero() {
 
         <div className="flex justify-center lg:justify-end">
           <div className="w-full max-w-[380px] translate-x-4 sm:translate-x-8 lg:translate-x-10">
-            <ProofCard />
+            <DashboardPreview />
           </div>
         </div>
       </div>

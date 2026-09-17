@@ -11,11 +11,8 @@
   --color-ink-muted: #9a9a94;
   --color-ink-faint: #5c5d58;
 
-  /* Accent — warm amber, used sparingly */
-  --color-accent: #e8973f;
-  --color-accent-soft: #fbc98a;
-  --color-accent-dim: #7a5324;
-  --color-accent-deep: #3a2712;
+  /* Accent — indigo/violet, used sparingly, consistent across the whole product */
+  --color-accent: #7b6ef6;
 
   /* Radius scale */
   --radius-sm: 8px;
