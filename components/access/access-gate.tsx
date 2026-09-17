@@ -60,12 +60,20 @@ export function AccessGate() {
       title="Entre ton code d'accès"
       subtitle="Reçu par SaaSFounder ou par un membre de l'équipe — il te donne accès à ton espace."
       footer={
-        <p className="font-body text-[13px] text-ink-faint">
-          Pas encore de compte ?{" "}
-          <a href="/commencer" className="text-ink underline underline-offset-2 hover:text-accent">
-            Commence ici
-          </a>
-        </p>
+        <div className="flex flex-col gap-2">
+          <p className="font-body text-[13px] text-ink-faint">
+            Pas encore de compte ?{" "}
+            <a href="/commencer" className="text-ink underline underline-offset-2 hover:text-accent">
+              Commence ici
+            </a>
+          </p>
+          <p className="font-body text-[13px] text-ink-faint">
+            Pas de code ?{" "}
+            <a href="/tarifs" className="text-ink underline underline-offset-2 hover:text-accent">
+              Voir les tarifs
+            </a>
+          </p>
+        </div>
       }
     >
       <FloatingIcon className="mb-6">

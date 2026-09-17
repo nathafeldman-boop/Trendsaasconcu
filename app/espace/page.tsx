@@ -8,7 +8,11 @@ export const metadata: Metadata = {
 
 const HAS_SAAS_EXISTING = "J'ai déjà un SaaS en ligne";
 
-export default async function EspacePage() {
+export default async function EspacePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ checkout?: string }>;
+}) {
   const supabase = await createClient();
   if (!supabase) return null;
 
@@ -17,8 +21,10 @@ export default async function EspacePage() {
   } = await supabase.auth.getUser();
   if (!user) return null;
 
+  const { checkout } = await searchParams;
+
   const [profileRes, onboardingRes, builderRes, marketingRes] = await Promise.all([
-    supabase.from("profiles").select("first_name").eq("id", user.id).single(),
+    supabase.from("profiles").select("first_name, stripe_customer_id").eq("id", user.id).single(),
     supabase.from("onboarding_responses").select("answers").eq("user_id", user.id).maybeSingle(),
     supabase
       .from("builder_progress")
@@ -40,6 +46,8 @@ export default async function EspacePage() {
       userId={user.id}
       firstName={profileRes.data?.first_name ?? null}
       hasExistingSaas={hasExistingSaas}
+      hasStripeSubscription={!!profileRes.data?.stripe_customer_id}
+      checkoutSuccess={checkout === "success"}
       initialBuilder={{
         has_idea: builderRes.data?.has_idea ?? null,
         idea_text: builderRes.data?.idea_text ?? "",

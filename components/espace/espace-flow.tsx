@@ -83,12 +83,16 @@ export function EspaceFlow({
   userId,
   firstName,
   hasExistingSaas,
+  hasStripeSubscription,
+  checkoutSuccess,
   initialBuilder,
   initialMarketing,
 }: {
   userId: string;
   firstName: string | null;
   hasExistingSaas: boolean;
+  hasStripeSubscription: boolean;
+  checkoutSuccess: boolean;
   initialBuilder: BuilderState;
   initialMarketing: MarketingState;
 }) {
@@ -130,12 +134,24 @@ export function EspaceFlow({
         <FloatingIcon>
           <Rocket className="size-5" strokeWidth={1.75} />
         </FloatingIcon>
-        <h1 className="mt-4 font-display text-3xl font-semibold text-ink">
-          {firstName ? `Salut ${firstName}.` : "Ton espace."}
-        </h1>
-        <p className="mt-2 font-body text-ink-muted">
-          La suite : trouver tes premiers clients, puis suivre tes revenus.
-        </p>
+        <div className="mt-4 flex items-start justify-between gap-4">
+          <div>
+            <h1 className="font-display text-3xl font-semibold text-ink">
+              {firstName ? `Salut ${firstName}.` : "Ton espace."}
+            </h1>
+            <p className="mt-2 font-body text-ink-muted">
+              La suite : trouver tes premiers clients, puis suivre tes revenus.
+            </p>
+          </div>
+          {hasStripeSubscription && <ManageSubscriptionButton />}
+        </div>
+        {checkoutSuccess && (
+          <div className="mt-6 rounded-lg border border-emerald-500/30 bg-emerald-500/10 p-4">
+            <p className="font-body text-[14px] text-emerald-300">
+              Paiement confirmé, merci ! Ton accès est actif.
+            </p>
+          </div>
+        )}
         <div className="mt-8">
           <MarketingPanel userId={userId} ideaText={builder.idea_text} initial={initialMarketing} />
         </div>
@@ -368,5 +384,30 @@ export function EspaceFlow({
         </motion.div>
       </AnimatePresence>
     </div>
+  );
+}
+
+function ManageSubscriptionButton() {
+  const [loading, setLoading] = useState(false);
+
+  async function open() {
+    setLoading(true);
+    try {
+      const res = await fetch("/api/billing-portal", { method: "POST" });
+      const data = await res.json();
+      if (data.url) window.location.assign(data.url);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <button
+      onClick={open}
+      disabled={loading}
+      className="shrink-0 rounded-full border border-white/15 px-4 py-2 font-body text-[13px] text-ink-muted transition-colors hover:border-accent/40 hover:text-ink"
+    >
+      {loading ? "..." : "Gérer mon abonnement"}
+    </button>
   );
 }
