@@ -1,18 +1,19 @@
 @import "tailwindcss";
 
 @theme {
-  /* Canvas & surfaces */
-  --color-canvas: #07080a;
-  --color-canvas-raised: #0e1012;
-  --color-canvas-overlay: #16181b;
+  /* Canvas & surfaces — black with a violet cast, not neutral gray */
+  --color-canvas: #06040f;
+  --color-canvas-raised: #120b26;
+  --color-canvas-overlay: #1c1240;
 
-  /* Typography colors */
-  --color-ink: #f5f4f0;
-  --color-ink-muted: #9a9a94;
-  --color-ink-faint: #5c5d58;
+  /* Typography colors — white + lavender tints instead of achromatic gray */
+  --color-ink: #ffffff;
+  --color-ink-muted: #b9b3d9;
+  --color-ink-faint: #7a72a3;
 
-  /* Accent — indigo/violet, used sparingly, consistent across the whole product */
-  --color-accent: #7b6ef6;
+  /* Accent — violet is the dominant brand color, used generously */
+  --color-accent: #8b7bff;
+  --color-accent-deep: #5b4fe0;
 
   /* Radius scale */
   --radius-sm: 8px;
@@ -57,7 +58,7 @@ body {
 
 ::selection {
   background: var(--color-accent);
-  color: #14100a;
+  color: var(--color-canvas);
 }
 
 @media (prefers-reduced-motion: reduce) {

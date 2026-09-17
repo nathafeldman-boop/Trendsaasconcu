@@ -21,7 +21,7 @@ export function SignupForm() {
       </p>
 
       <Button type="submit" showArrow={false} className="mt-1 w-full">
-        Créer mon compte Élan
+        Créer mon compte
       </Button>
 
       <OrDivider />

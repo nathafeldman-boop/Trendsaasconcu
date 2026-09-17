@@ -4,8 +4,8 @@ import { AuthShell } from "@/components/auth/auth-shell";
 import { LoginForm } from "@/components/auth/login-form";
 
 export const metadata: Metadata = {
-  title: "Se connecter — Élan",
-  description: "Connecte-toi à ton compte Élan pour retrouver ton idée, ton prompt et ton plan.",
+  title: "Se connecter — SaaSFounder",
+  description: "Connecte-toi à ton compte SaaSFounder pour retrouver ton idée, ton prompt et ton plan.",
 };
 
 export default function ConnexionPage() {

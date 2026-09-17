@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Bricolage_Grotesque, Manrope, JetBrains_Mono } from "next/font/google";
+import { AmbientGlow } from "@/components/ui/ambient-glow";
 import "./globals.css";
 
 const display = Bricolage_Grotesque({
@@ -21,7 +22,7 @@ const mono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Élan — Lance ton premier SaaS, prends ton élan",
+  title: "SaaSFounder — Deviens fondateur de ton premier SaaS",
   description:
     "La méthode pour trouver ton idée, la construire avec l'IA et encaisser tes premiers revenus. Sans expérience, sans code.",
 };
@@ -36,7 +37,8 @@ export default function RootLayout({
       lang="fr"
       className={`${display.variable} ${body.variable} ${mono.variable} h-full`}
     >
-      <body className="min-h-full bg-canvas text-ink antialiased selection:bg-accent selection:text-[#14100a]">
+      <body className="min-h-full bg-canvas text-ink antialiased selection:bg-accent selection:text-canvas">
+        <AmbientGlow />
         {children}
       </body>
     </html>

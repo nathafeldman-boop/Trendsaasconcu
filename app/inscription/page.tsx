@@ -4,8 +4,8 @@ import { AuthShell } from "@/components/auth/auth-shell";
 import { SignupForm } from "@/components/auth/signup-form";
 
 export const metadata: Metadata = {
-  title: "Créer mon compte — Élan",
-  description: "Crée ton compte Élan pour recevoir ton idée, ton prompt et ton plan des 30 jours.",
+  title: "Créer mon compte — SaaSFounder",
+  description: "Crée ton compte SaaSFounder pour recevoir ton idée, ton prompt et ton plan des 30 jours.",
 };
 
 export default function InscriptionPage() {

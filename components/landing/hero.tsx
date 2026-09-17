@@ -37,7 +37,7 @@ export function Hero() {
             variants={item}
             className="mt-6 font-display text-[42px] font-semibold leading-[1.06] tracking-tight sm:text-[56px] lg:text-[60px]"
           >
-            <span className="text-ink">Prends ton élan,</span>
+            <span className="text-ink">Deviens fondateur,</span>
             <br />
             <span className="text-ink">lance ton premier SaaS</span>
             <br />

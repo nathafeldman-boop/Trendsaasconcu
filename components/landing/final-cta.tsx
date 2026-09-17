@@ -1,10 +1,19 @@
+"use client";
+
+import { motion } from "framer-motion";
 import { Eyebrow } from "@/components/ui/eyebrow";
 import { Button } from "@/components/ui/button";
 
 export function FinalCta() {
   return (
     <section className="relative overflow-hidden border-t border-white/8 bg-canvas-raised">
-      <div className="mx-auto max-w-3xl px-5 py-24 text-center sm:px-8 sm:py-32">
+      <motion.div
+        initial={{ opacity: 0, y: 24 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: "-15%" }}
+        transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+        className="mx-auto max-w-3xl px-5 py-24 text-center sm:px-8 sm:py-32"
+      >
         <div className="flex justify-center">
           <Eyebrow tone="accent">Ton tour</Eyebrow>
         </div>
@@ -22,7 +31,7 @@ export function FinalCta() {
             Trouver mon idée
           </Button>
         </div>
-      </div>
+      </motion.div>
     </section>
   );
 }

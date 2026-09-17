@@ -11,7 +11,7 @@ export function Nav() {
             Se connecter
           </Button>
           <Button href="/commencer" size="sm" showArrow={false}>
-            Prendre mon élan
+            Devenir fondateur
           </Button>
         </div>
       </div>

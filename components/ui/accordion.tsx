@@ -18,11 +18,18 @@ export function Accordion({ items }: { items: AccordionItemData[] }) {
       {items.map((item, index) => {
         const isOpen = openIndex === index;
         return (
-          <div key={item.question}>
-            <button
+          <motion.div
+            key={item.question}
+            initial={{ opacity: 0, y: 14 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-10%" }}
+            transition={{ duration: 0.4, delay: index * 0.06, ease: [0.16, 1, 0.3, 1] }}
+          >
+            <motion.button
               type="button"
               onClick={() => setOpenIndex(isOpen ? null : index)}
               aria-expanded={isOpen}
+              whileTap={{ scale: 0.985 }}
               className="flex w-full items-start justify-between gap-6 py-6 text-left"
             >
               <span
@@ -39,7 +46,7 @@ export function Accordion({ items }: { items: AccordionItemData[] }) {
                   isOpen && "rotate-180 text-accent"
                 )}
               />
-            </button>
+            </motion.button>
             <AnimatePresence initial={false}>
               {isOpen && (
                 <motion.div
@@ -55,7 +62,7 @@ export function Accordion({ items }: { items: AccordionItemData[] }) {
                 </motion.div>
               )}
             </AnimatePresence>
-          </div>
+          </motion.div>
         );
       })}
     </div>

@@ -1,3 +1,6 @@
+"use client";
+
+import { motion } from "framer-motion";
 import { Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -13,15 +16,18 @@ export function ChoiceOption({
   variant?: "single" | "multi";
 }) {
   return (
-    <button
+    <motion.button
       type="button"
       onClick={onClick}
       aria-pressed={selected}
+      whileHover={{ scale: 1.015 }}
+      whileTap={{ scale: 0.97 }}
+      transition={{ type: "spring", stiffness: 500, damping: 30 }}
       className={cn(
         "flex w-full items-center gap-3.5 rounded-lg border px-5 py-4 text-left font-body text-[15px] transition-colors duration-150",
         selected
-          ? "border-accent/60 bg-accent/[0.08] text-ink"
-          : "border-white/12 bg-white/[0.02] text-ink hover:border-white/25"
+          ? "border-accent/70 bg-accent/[0.1] text-ink shadow-[0_0_28px_-10px_var(--color-accent)]"
+          : "border-white/12 bg-white/[0.02] text-ink hover:border-accent/40"
       )}
     >
       <span
@@ -34,6 +40,6 @@ export function ChoiceOption({
         {selected ? <Check className="size-3.5 text-canvas" strokeWidth={3} /> : null}
       </span>
       {label}
-    </button>
+    </motion.button>
   );
 }

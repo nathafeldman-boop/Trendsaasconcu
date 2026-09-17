@@ -28,7 +28,7 @@ export function ExplainerSection() {
         <div>
           <Eyebrow>En 30 secondes</Eyebrow>
           <h2 className="mt-5 max-w-sm font-display text-[32px] font-semibold leading-[1.12] tracking-tight text-ink sm:text-[38px]">
-            Élan, c&apos;est quoi concrètement ?
+            SaaSFounder, c&apos;est quoi concrètement ?
           </h2>
           <p className="mt-5 max-w-sm font-body text-[15px] leading-relaxed text-ink-muted">
             Une méthode en trois temps, pensée pour quelqu&apos;un qui part de zéro

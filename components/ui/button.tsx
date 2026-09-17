@@ -5,14 +5,14 @@ import { ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const buttonStyles = cva(
-  "group relative inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-pill font-body font-semibold transition-all duration-200 ease-out active:scale-[0.97] disabled:pointer-events-none disabled:opacity-40",
+  "group relative inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-pill font-body font-semibold transition-all duration-200 ease-out hover:scale-[1.025] active:scale-[0.94] disabled:pointer-events-none disabled:opacity-40",
   {
     variants: {
       variant: {
         primary:
-          "bg-ink text-canvas hover:bg-accent",
+          "bg-ink text-canvas hover:bg-accent hover:shadow-[0_0_32px_-6px_var(--color-accent)]",
         secondary:
-          "border border-white/15 text-ink bg-white/[0.02] hover:border-white/30 hover:bg-white/[0.06]",
+          "border border-white/15 text-ink bg-white/[0.02] hover:border-accent/50 hover:bg-accent/[0.08] hover:shadow-[0_0_24px_-8px_var(--color-accent)]",
         ghost: "text-ink-muted hover:text-ink",
       },
       size: {
