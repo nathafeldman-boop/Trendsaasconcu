@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { Users, Repeat } from "lucide-react";
 import { StepShell } from "@/components/onboarding/step-shell";
 import { ChoiceOption } from "@/components/onboarding/choice-option";
 import { Button } from "@/components/ui/button";
@@ -27,7 +28,7 @@ const EMPTY_ANSWERS: Answers = {
 };
 
 const STORAGE_KEY = "elan-onboarding";
-const TOTAL_STEPS = 9;
+const TOTAL_STEPS = 11;
 
 const AGE_OPTIONS = ["Moins de 25 ans", "25 – 34 ans", "35 – 44 ans", "45 ans et plus"];
 const EXPERIENCE_OPTIONS = [
@@ -122,6 +123,38 @@ export function OnboardingWizard() {
         step={1}
         total={TOTAL_STEPS}
         onBack={back}
+        eyebrow="Tu n'es pas seul"
+        title={
+          <>
+            <span className="text-ink">Tu n&apos;es pas seul</span>
+            <br />
+            <span className="text-ink-muted">à vouloir te lancer.</span>
+          </>
+        }
+        footer={
+          <Button showArrow={false} onClick={goNext} className="w-full">
+            Continuer
+          </Button>
+        }
+      >
+        <div className="flex size-12 items-center justify-center rounded-full bg-accent/10 text-accent">
+          <Users className="size-5" strokeWidth={1.75} />
+        </div>
+        <p className="mt-5 max-w-md font-body text-[15px] leading-relaxed text-ink-muted">
+          Chaque semaine, des gens avec les mêmes doutes que toi commencent un
+          premier SaaS. Ce qui fait la différence, ce n&apos;est pas le point
+          de départ — c&apos;est la méthode qu&apos;on suit.
+        </p>
+      </StepShell>
+    );
+  }
+
+  if (step === 2) {
+    return (
+      <StepShell
+        step={2}
+        total={TOTAL_STEPS}
+        onBack={back}
         eyebrow="Ton parcours"
         title="Depuis combien de temps tu t'intéresses aux SaaS ?"
       >
@@ -139,10 +172,10 @@ export function OnboardingWizard() {
     );
   }
 
-  if (step === 2) {
+  if (step === 3) {
     return (
       <StepShell
-        step={2}
+        step={3}
         total={TOTAL_STEPS}
         onBack={back}
         eyebrow="Ce qui te fait avancer"
@@ -174,10 +207,50 @@ export function OnboardingWizard() {
     );
   }
 
-  if (step === 3) {
+  if (step === 4) {
     return (
       <StepShell
-        step={3}
+        step={4}
+        total={TOTAL_STEPS}
+        onBack={back}
+        eyebrow="L'économie d'un SaaS"
+        title="Le revenu se répète."
+        footer={
+          <Button showArrow={false} onClick={goNext} className="w-full">
+            Continuer
+          </Button>
+        }
+      >
+        <div className="flex size-12 items-center justify-center rounded-full bg-accent/10 text-accent">
+          <Repeat className="size-5" strokeWidth={1.75} />
+        </div>
+        <p className="mt-5 max-w-md font-body text-[15px] leading-relaxed text-ink-muted">
+          Vendre une fois ne rapporte qu&apos;une fois. Un abonnement, lui,
+          continue de rapporter chaque mois — c&apos;est ce qui change tout
+          quand on démarre de zéro.
+        </p>
+        <div className="mt-5 flex gap-4 rounded-lg border border-white/12 bg-white/[0.02] p-5">
+          <div className="flex size-8 shrink-0 items-center justify-center rounded-full border border-accent/40 font-mono text-sm font-medium text-accent">
+            1
+          </div>
+          <div>
+            <p className="font-display text-[15px] font-semibold text-ink">
+              Un exemple concret
+            </p>
+            <p className="mt-1.5 font-body text-[14px] leading-relaxed text-ink-muted">
+              À 49 € par mois et par client, 60 clients suffisent pour
+              dépasser 3 000 € de revenu récurrent chaque mois.
+            </p>
+          </div>
+        </div>
+      </StepShell>
+    );
+  }
+
+  if (step === 5) {
+    return (
+      <StepShell
+        step={5}
         total={TOTAL_STEPS}
         onBack={back}
         eyebrow="Ce qui bloque"
@@ -209,10 +282,10 @@ export function OnboardingWizard() {
     );
   }
 
-  if (step === 4) {
+  if (step === 6) {
     return (
       <StepShell
-        step={4}
+        step={6}
         total={TOTAL_STEPS}
         onBack={back}
         eyebrow="Ton tempérament"
@@ -244,10 +317,10 @@ export function OnboardingWizard() {
     );
   }
 
-  if (step === 5) {
+  if (step === 7) {
     return (
       <StepShell
-        step={5}
+        step={7}
         total={TOTAL_STEPS}
         onBack={back}
         eyebrow="Ton carburant"
@@ -267,12 +340,12 @@ export function OnboardingWizard() {
     );
   }
 
-  if (step === 6) {
+  if (step === 8) {
     const clients = Math.ceil(answers.revenueGoal / 49);
     const tag = answers.revenueGoal <= 5000 ? "Accessible" : answers.revenueGoal <= 20000 ? "Ambitieux" : "Très ambitieux";
     return (
       <StepShell
-        step={6}
+        step={8}
         total={TOTAL_STEPS}
         onBack={back}
         eyebrow="Ton objectif"
@@ -317,11 +390,11 @@ export function OnboardingWizard() {
     );
   }
 
-  if (step === 7) {
+  if (step === 9) {
     const mainBlocker = answers.blockers[0] ?? "le manque de méthode";
     return (
       <StepShell
-        step={7}
+        step={9}
         total={TOTAL_STEPS}
         onBack={back}
         eyebrow="Ton profil"
@@ -368,7 +441,7 @@ export function OnboardingWizard() {
 
   return (
     <StepShell
-      step={8}
+      step={10}
       total={TOTAL_STEPS}
       onBack={back}
       eyebrow="Ton espace"
