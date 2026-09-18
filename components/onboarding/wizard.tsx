@@ -66,6 +66,7 @@ const HAS_SAAS_EXISTING = "J'ai déjà un SaaS en ligne";
 const HAS_SAAS_SCRATCH = "Je pars de zéro";
 
 const BASE_SEQUENCE = [
+  "signup",
   "intro-carousel",
   "age",
   "chapter1-intro",
@@ -92,7 +93,6 @@ const BASE_SEQUENCE = [
   "revenue",
   "recap",
   "commitment",
-  "signup",
   "budget",
   "tip",
   "analyzing",
@@ -1115,9 +1115,9 @@ export function OnboardingWizard() {
           step={step}
           total={sequence.length}
           onBack={back}
-          eyebrow="Ton espace"
-          title="On garde ton profil au chaud."
-          subtitle="Crée ton compte pour recevoir ton idée, ton prompt et ton plan — et les retrouver quand tu en as besoin."
+          eyebrow="Pour commencer"
+          title="Crée ton compte."
+          subtitle="On personnalise tout ce qui suit à partir de tes réponses, et rien ne se perd si tu reviens plus tard."
         >
           <SignupForm onSuccess={goNext} />
         </StepShell>
