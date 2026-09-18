@@ -20,7 +20,7 @@ export function PricingCards({ isAuthenticated }: { isAuthenticated: boolean }) 
 
   async function choose(planId: PlanId) {
     if (!isAuthenticated) {
-      router.push("/commencer");
+      router.push(`/inscription?plan=${planId}`);
       return;
     }
     setError(null);

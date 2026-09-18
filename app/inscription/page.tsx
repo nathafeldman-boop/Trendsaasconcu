@@ -9,7 +9,14 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-export default function InscriptionPage() {
+export default async function InscriptionPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ plan?: string }>;
+}) {
+  const { plan } = await searchParams;
+  const connexionHref = plan ? `/connexion?plan=${plan}` : "/connexion";
+
   return (
     <AuthShell
       eyebrow="Ton espace"
@@ -18,7 +25,7 @@ export default function InscriptionPage() {
       footer={
         <p className="font-body text-[14px] text-ink-muted">
           Déjà un compte ?{" "}
-          <Link href="/connexion" className="font-medium text-ink underline underline-offset-2">
+          <Link href={connexionHref} className="font-medium text-ink underline underline-offset-2">
             Se connecter
           </Link>
         </p>

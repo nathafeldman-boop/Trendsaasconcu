@@ -2,7 +2,7 @@
 
 import { useState, type FormEvent } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
@@ -10,11 +10,37 @@ import { translateAuthError } from "@/lib/supabase/auth-error";
 
 export function LoginForm({ onSuccess }: { onSuccess?: () => void }) {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const plan = searchParams.get("plan");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const supabase = createClient();
 
-  const complete = () => (onSuccess ? onSuccess() : router.push("/espace"));
+  // Arriving from a pricing card (?plan=) goes straight to Stripe checkout
+  // instead of the dashboard.
+  async function complete() {
+    if (onSuccess) {
+      onSuccess();
+      return;
+    }
+    if (plan) {
+      try {
+        const res = await fetch("/api/checkout", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ planId: plan }),
+        });
+        const data = await res.json();
+        if (data.url) {
+          window.location.assign(data.url);
+          return;
+        }
+      } catch {
+        // fall through to /espace below
+      }
+    }
+    router.push("/espace");
+  }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();

@@ -9,7 +9,14 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-export default function ConnexionPage() {
+export default async function ConnexionPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ plan?: string }>;
+}) {
+  const { plan } = await searchParams;
+  const inscriptionHref = plan ? `/inscription?plan=${plan}` : "/inscription";
+
   return (
     <AuthShell
       eyebrow="Bon retour"
@@ -18,7 +25,7 @@ export default function ConnexionPage() {
       footer={
         <p className="font-body text-[14px] text-ink-muted">
           Pas encore de compte ?{" "}
-          <Link href="/inscription" className="font-medium text-ink underline underline-offset-2">
+          <Link href={inscriptionHref} className="font-medium text-ink underline underline-offset-2">
             Créer un compte
           </Link>
         </p>

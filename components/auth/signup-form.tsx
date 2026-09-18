@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
@@ -9,13 +9,38 @@ import { translateAuthError } from "@/lib/supabase/auth-error";
 
 export function SignupForm({ onSuccess }: { onSuccess?: () => void }) {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const plan = searchParams.get("plan");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const supabase = createClient();
 
-  // Standalone /inscription (no onSuccess) is a brand-new account — send it
-  // into the onboarding wizard, not straight to the paywall.
-  const complete = () => (onSuccess ? onSuccess() : router.push("/commencer"));
+  // Arriving from a pricing card (?plan=) skips the wizard entirely and goes
+  // straight to Stripe checkout — that's the whole point of picking a plan
+  // first. Otherwise, a brand-new account starts the onboarding wizard.
+  async function complete() {
+    if (onSuccess) {
+      onSuccess();
+      return;
+    }
+    if (plan) {
+      try {
+        const res = await fetch("/api/checkout", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ planId: plan }),
+        });
+        const data = await res.json();
+        if (data.url) {
+          window.location.assign(data.url);
+          return;
+        }
+      } catch {
+        // fall through to /commencer below
+      }
+    }
+    router.push("/commencer");
+  }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -85,7 +110,10 @@ export function SignupForm({ onSuccess }: { onSuccess?: () => void }) {
           {error.startsWith("Ce compte existe déjà") && (
             <>
               {" "}
-              <a href="/connexion" className="underline underline-offset-2 hover:text-red-300">
+              <a
+                href={plan ? `/connexion?plan=${plan}` : "/connexion"}
+                className="underline underline-offset-2 hover:text-red-300"
+              >
                 Se connecter
               </a>
             </>
