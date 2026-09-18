@@ -5,7 +5,6 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { GoogleButton } from "@/components/auth/google-button";
 import { OrDivider } from "@/components/auth/or-divider";
-import { VerifyCodeForm } from "@/components/auth/verify-code-form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
@@ -14,7 +13,6 @@ export function LoginForm({ onSuccess }: { onSuccess?: () => void }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [pendingEmail, setPendingEmail] = useState<string | null>(null);
   const supabase = createClient();
 
   const complete = () => (onSuccess ? onSuccess() : router.push("/"));
@@ -37,10 +35,6 @@ export function LoginForm({ onSuccess }: { onSuccess?: () => void }) {
     setLoading(false);
 
     if (signInError) {
-      if (signInError.code === "email_not_confirmed") {
-        setPendingEmail(email);
-        return;
-      }
       setError(signInError.message);
       return;
     }
@@ -56,10 +50,6 @@ export function LoginForm({ onSuccess }: { onSuccess?: () => void }) {
       provider: "google",
       options: { redirectTo: `${window.location.origin}/commencer` },
     });
-  }
-
-  if (pendingEmail) {
-    return <VerifyCodeForm email={pendingEmail} onSuccess={complete} autoResend />;
   }
 
   return (
