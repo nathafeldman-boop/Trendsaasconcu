@@ -37,7 +37,7 @@ export default async function TarifsPage() {
         </p>
         <div className="mt-10">
           <PricingCards isAuthenticated={isAuthenticated} />
-          <AccessCodeInline isAuthenticated={isAuthenticated} />
+          <AccessCodeInline />
         </div>
       </div>
     </div>

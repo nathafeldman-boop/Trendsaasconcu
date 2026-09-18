@@ -6,13 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
 
-export function AccessCodeInline({
-  isAuthenticated,
-  alwaysOpen = false,
-}: {
-  isAuthenticated: boolean;
-  alwaysOpen?: boolean;
-}) {
+export function AccessCodeInline({ alwaysOpen = false }: { alwaysOpen?: boolean }) {
   const router = useRouter();
   const [open, setOpen] = useState(alwaysOpen);
   const [loading, setLoading] = useState(false);
@@ -21,35 +15,30 @@ export function AccessCodeInline({
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError(null);
-
-    if (!isAuthenticated) {
-      router.push("/connexion?next=/acces");
-      return;
-    }
-
-    const supabase = createClient();
-    if (!supabase) {
-      setError("La connexion au serveur n'est pas configurée pour l'instant.");
-      return;
-    }
-
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) {
-      router.push("/connexion?next=/acces");
-      return;
-    }
-
-    const form = new FormData(event.currentTarget);
-    const code = String(form.get("code") ?? "").trim().toUpperCase();
-    if (!code) {
-      setError("Merci d'entrer ton code d'accès.");
-      return;
-    }
-
     setLoading(true);
+
     try {
+      const form = new FormData(event.currentTarget);
+      const code = String(form.get("code") ?? "").trim().toUpperCase();
+      if (!code) {
+        setError("Merci d'entrer ton code d'accès.");
+        return;
+      }
+
+      const supabase = createClient();
+      if (!supabase) {
+        setError("La connexion au serveur n'est pas configurée pour l'instant.");
+        return;
+      }
+
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) {
+        router.push("/connexion?next=/acces");
+        return;
+      }
+
       const { data, error: rpcError } = await supabase.rpc("redeem_access_code", { p_code: code });
       if (rpcError || !data) {
         setError("Code invalide, expiré ou déjà utilisé.");
@@ -63,8 +52,10 @@ export function AccessCodeInline({
         .single();
 
       router.push(profile?.is_admin ? "/admin" : "/espace");
-    } catch {
-      setError("Impossible de contacter le serveur. Vérifie ta connexion et réessaie.");
+    } catch (err) {
+      setError(
+        "Erreur inattendue : " + (err instanceof Error ? err.message : "réessaie dans un instant.")
+      );
     } finally {
       setLoading(false);
     }

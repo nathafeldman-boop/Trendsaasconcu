@@ -57,7 +57,7 @@ export default async function AccesPage() {
         )
       }
     >
-      <AccessCodeInline isAuthenticated={isAuthenticated} alwaysOpen />
+      <AccessCodeInline alwaysOpen />
     </AuthShell>
   );
 }
