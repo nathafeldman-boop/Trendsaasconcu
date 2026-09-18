@@ -32,7 +32,7 @@ export function SignupForm({ onSuccess }: { onSuccess?: () => void }) {
     const password = String(form.get("password") ?? "");
 
     setLoading(true);
-    const { error: signUpError } = await supabase.auth.signUp({
+    const { data, error: signUpError } = await supabase.auth.signUp({
       email,
       password,
       options: { data: { first_name: firstName } },
@@ -41,6 +41,15 @@ export function SignupForm({ onSuccess }: { onSuccess?: () => void }) {
 
     if (signUpError) {
       setError(signUpError.message);
+      return;
+    }
+    if (!data.session) {
+      // signUp succeeded but Supabase didn't hand back a session — email
+      // confirmation is still required server-side. Say so instead of
+      // silently continuing as if the account were logged in.
+      setError(
+        "Ton compte est créé mais pas encore confirmé. Vérifie ta boîte mail (et les spams) pour activer ton accès."
+      );
       return;
     }
     complete();

@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { CountUp } from "@/components/ui/count-up";
 import { SignupForm } from "@/components/auth/signup-form";
 import { IntroCarousel } from "@/components/onboarding/intro-carousel";
+import { WhyUsCarousel } from "@/components/onboarding/why-us-carousel";
 import { CommitmentHold } from "@/components/onboarding/commitment-hold";
 import { FloatingIcon } from "@/components/ui/floating-icon";
 import { createClient } from "@/lib/supabase/client";
@@ -103,8 +104,8 @@ const BASE_SEQUENCE = [
 function getSequence(answers: Answers): string[] {
   const tail =
     answers.hasSaas === HAS_SAAS_EXISTING
-      ? ["url", "analysis", "marketing-help", "closing"]
-      : ["scratch-plan", "closing"];
+      ? ["url", "analysis", "marketing-help", "why-us", "closing"]
+      : ["scratch-plan", "why-us", "closing"];
   return [...BASE_SEQUENCE, ...tail];
 }
 
@@ -160,8 +161,16 @@ const TIMELINE_OPTIONS = [
   "Je préfère prendre mon temps",
 ];
 const CUSTOMER_OPTIONS = ["Des entreprises", "Des particuliers", "Des indépendants comme toi", "Je ne sais pas encore"];
-const BUDGET_OPTIONS = ["0 €, je pars de rien", "Moins de 100 €", "100 € à 500 €", "Plus de 500 €"];
+const BUDGET_OPTIONS = ["10 € à 100 €", "100 € à 500 €", "Plus de 500 €"];
 const MARKETING_HELP_OPTIONS = ["Surtout le marketing", "Surtout le produit", "Les deux"];
+const PLAN_ANALYSIS_TIPS = [
+  "On croise tes réponses avec les profils qui ont le mieux avancé.",
+  "On identifie le format d'idée le plus réaliste pour ton temps disponible.",
+  "On prépare un prompt de démarrage adapté à l'outil que tu choisiras.",
+  "On structure ta checklist de lancement en étapes courtes.",
+  "On prépare des pistes marketing adaptées à ton budget.",
+];
+const PLAN_ANALYSIS_TIP_INTERVAL = 1800;
 const ANALYSIS_ITEMS = [
   "Vérification du site",
   "Analyse du positionnement",
@@ -305,6 +314,7 @@ export function OnboardingWizard() {
   const [step, setStep] = useState(() => readStoredState().step);
   const [answers, setAnswers] = useState<Answers>(() => readStoredState().answers);
   const [futureDraft, setFutureDraft] = useState(() => readStoredState().answers.futureStatement);
+  const [analysisTip, setAnalysisTip] = useState(0);
 
   useEffect(() => {
     try {
@@ -333,8 +343,17 @@ export function OnboardingWizard() {
 
   useEffect(() => {
     if (currentId !== "analyzing") return;
-    const timer = setTimeout(goNext, 2400);
-    return () => clearTimeout(timer);
+    setAnalysisTip(0);
+    const totalDuration = PLAN_ANALYSIS_TIPS.length * PLAN_ANALYSIS_TIP_INTERVAL;
+    const tipTimer = setInterval(
+      () => setAnalysisTip((i) => Math.min(i + 1, PLAN_ANALYSIS_TIPS.length - 1)),
+      PLAN_ANALYSIS_TIP_INTERVAL
+    );
+    const advanceTimer = setTimeout(goNext, totalDuration);
+    return () => {
+      clearInterval(tipTimer);
+      clearTimeout(advanceTimer);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentId]);
 
@@ -362,6 +381,10 @@ export function OnboardingWizard() {
   function renderStep() {
     if (currentId === "intro-carousel") {
       return <IntroCarousel onDone={goNext} />;
+    }
+
+    if (currentId === "why-us") {
+      return <WhyUsCarousel onDone={goNext} />;
     }
 
     if (currentId === "age") {
@@ -410,6 +433,9 @@ export function OnboardingWizard() {
             premier SaaS. Ce qui fait la différence, ce n&apos;est pas le point
             de départ — c&apos;est la méthode qu&apos;on suit.
           </p>
+          <div className="mt-6">
+            <MiniDashboard eyebrow="Exemple illustratif · premières semaines" tone="muted" volume={680} payments={14} clients={9} />
+          </div>
         </StepShell>
       );
     }
@@ -662,6 +688,9 @@ export function OnboardingWizard() {
           <FloatingIcon>
             <Sparkles className="size-5" strokeWidth={1.75} />
           </FloatingIcon>
+          <div className="mt-6">
+            <MiniDashboard eyebrow="Exemple illustratif · là où ça peut mener" tone="accent" volume={2450} payments={38} clients={26} chart />
+          </div>
         </StepShell>
       );
     }
@@ -1182,13 +1211,14 @@ export function OnboardingWizard() {
         >
           <div className="flex flex-col items-center gap-4 py-6">
             <p className="font-display text-5xl font-semibold text-ink">
-              <CountUp value={100} suffix="%" />
+              {Math.round(((analysisTip + 1) / PLAN_ANALYSIS_TIPS.length) * 100)}%
             </p>
             <div className="h-1.5 w-full max-w-xs overflow-hidden rounded-full bg-ink/8">
               <motion.div
-                initial={{ width: 0 }}
-                animate={{ width: "100%" }}
-                transition={{ duration: 1.1, ease: [0.16, 1, 0.3, 1] }}
+                animate={{
+                  width: `${((analysisTip + 1) / PLAN_ANALYSIS_TIPS.length) * 100}%`,
+                }}
+                transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
                 className="h-full rounded-full bg-accent shadow-[0_0_16px_0_var(--color-accent)]"
               />
             </div>
@@ -1196,13 +1226,22 @@ export function OnboardingWizard() {
               Analyse de tes réponses...
             </p>
           </div>
-          <div className="rounded-lg border border-ink/12 bg-ink/[0.02] p-4">
+          <div className="rounded-lg border border-ink/12 bg-ink/[0.02] p-4 min-h-[76px]">
             <p className="font-mono text-[10px] uppercase tracking-wider text-ink-faint">
               Pendant ce temps, on prépare
             </p>
-            <p className="mt-2 font-body text-[14px] leading-relaxed text-ink-muted">
-              Ton idée de SaaS, ton premier prompt et ton plan des 30 prochains jours.
-            </p>
+            <AnimatePresence mode="wait">
+              <motion.p
+                key={analysisTip}
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -6 }}
+                transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+                className="mt-2 font-body text-[14px] leading-relaxed text-ink-muted"
+              >
+                {PLAN_ANALYSIS_TIPS[analysisTip]}
+              </motion.p>
+            </AnimatePresence>
           </div>
         </StepShell>
       );
@@ -1375,7 +1414,7 @@ export function OnboardingWizard() {
         total={sequence.length}
         onBack={back}
         eyebrow="C'est parti"
-        title="Ton dossier est prêt."
+        title="Ton business est prêt."
         footer={
           <Button href="/tarifs" showArrow={false} className="w-full">
             Accéder à mon espace
@@ -1383,8 +1422,9 @@ export function OnboardingWizard() {
         }
       >
         <p className="max-w-md font-body text-[15px] leading-relaxed text-ink-muted">
-          Il ne reste qu&apos;une étape : choisis ta formule pour débloquer
-          ton espace, ton idée, ton prompt et ton plan.
+          Ton idée, ton prompt et ton plan n&apos;attendent que toi. Il ne
+          reste qu&apos;une étape : choisis ta formule pour débloquer ton
+          espace et passer à l&apos;action.
         </p>
       </StepShell>
     );
