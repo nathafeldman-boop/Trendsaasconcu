@@ -16,7 +16,9 @@ export function SignupForm({ onSuccess }: { onSuccess?: () => void }) {
   const [error, setError] = useState<string | null>(null);
   const supabase = createClient();
 
-  const complete = () => (onSuccess ? onSuccess() : router.push("/espace"));
+  // Standalone /inscription (no onSuccess) is a brand-new account — send it
+  // into the onboarding wizard, not straight to the paywall.
+  const complete = () => (onSuccess ? onSuccess() : router.push("/commencer"));
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
