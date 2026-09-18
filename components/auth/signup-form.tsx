@@ -78,7 +78,7 @@ export function SignupForm({ onSuccess }: { onSuccess?: () => void }) {
     setGoogleLoading(true);
     await supabase.auth.signInWithOAuth({
       provider: "google",
-      options: { redirectTo: `${window.location.origin}/commencer` },
+      options: { redirectTo: `${window.location.origin}/auth/callback?next=/commencer` },
     });
   }
 
