@@ -70,7 +70,7 @@ export function MarketingPanel({
   }
 
   return (
-    <div className="rounded-xl border border-white/12 bg-white/[0.02] p-6">
+    <div className="rounded-xl border border-ink/12 bg-ink/[0.02] p-6">
       <FloatingIcon className="size-10">
         <Megaphone className="size-4" strokeWidth={1.75} />
       </FloatingIcon>
@@ -87,7 +87,7 @@ export function MarketingPanel({
             className={`rounded-full border px-4 py-2 font-body text-[14px] transition-colors ${
               state.chosen_channel === channel
                 ? "border-accent/70 bg-accent/10 text-ink"
-                : "border-white/15 text-ink-muted hover:border-accent/40"
+                : "border-ink/15 text-ink-muted hover:border-accent/40"
             }`}
           >
             {channel}
@@ -104,7 +104,7 @@ export function MarketingPanel({
           {ideas.map((idea, i) => (
             <li
               key={i}
-              className="rounded-lg border border-white/10 bg-white/[0.02] p-3 font-body text-[13px] text-ink-muted"
+              className="rounded-lg border border-ink/10 bg-ink/[0.02] p-3 font-body text-[13px] text-ink-muted"
             >
               {idea}
             </li>
@@ -113,7 +113,7 @@ export function MarketingPanel({
       )}
 
       {state.chosen_channel && (
-        <div className="mt-6 border-t border-white/10 pt-6">
+        <div className="mt-6 border-t border-ink/10 pt-6">
           <p className="font-mono text-[11px] uppercase tracking-wider text-ink-faint">Une fois postée</p>
           <div className="mt-3 flex flex-wrap gap-3">
             <Input

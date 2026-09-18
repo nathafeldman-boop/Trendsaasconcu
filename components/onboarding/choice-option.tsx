@@ -27,14 +27,14 @@ export function ChoiceOption({
         "flex w-full items-center gap-3.5 rounded-lg border px-5 py-4 text-left font-body text-[15px] transition-colors duration-150",
         selected
           ? "border-accent/70 bg-accent/[0.1] text-ink shadow-[0_0_28px_-10px_var(--color-accent)]"
-          : "border-white/12 bg-white/[0.02] text-ink hover:border-accent/40"
+          : "border-ink/12 bg-ink/[0.02] text-ink hover:border-accent/40"
       )}
     >
       <span
         className={cn(
           "flex size-5 shrink-0 items-center justify-center border transition-colors duration-150",
           variant === "multi" ? "rounded-[6px]" : "rounded-full",
-          selected ? "border-accent bg-accent" : "border-white/25"
+          selected ? "border-accent bg-accent" : "border-ink/25"
         )}
       >
         {selected ? <Check className="size-3.5 text-canvas" strokeWidth={3} /> : null}

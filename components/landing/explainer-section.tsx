@@ -37,7 +37,7 @@ export function ExplainerSection() {
         </div>
 
         <div className="relative">
-          <div className="absolute top-2 bottom-2 left-[19px] w-px bg-white/10" />
+          <div className="absolute top-2 bottom-2 left-[19px] w-px bg-ink/10" />
           <div className="space-y-10">
             {STEPS.map((step, index) => (
               <motion.div

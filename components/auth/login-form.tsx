@@ -76,7 +76,7 @@ export function LoginForm({ onSuccess }: { onSuccess?: () => void }) {
           type="password"
           autoComplete="current-password"
           required
-          className="h-[52px] rounded-lg border border-white/12 bg-white/[0.03] px-4 font-body text-[15px] text-ink outline-none transition-colors duration-150 focus:border-accent/60 focus:bg-white/[0.05]"
+          className="h-[52px] rounded-lg border border-ink/12 bg-ink/[0.03] px-4 font-body text-[15px] text-ink outline-none transition-colors duration-150 focus:border-accent/60 focus:bg-ink/[0.05]"
         />
       </div>
 

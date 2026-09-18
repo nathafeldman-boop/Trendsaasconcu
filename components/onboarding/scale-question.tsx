@@ -25,7 +25,7 @@ export function ScaleQuestion({
           className={`flex h-16 flex-col items-center justify-center rounded-lg border font-mono text-[10px] uppercase tracking-wide transition-colors duration-150 ${
             value === index + 1
               ? "border-accent/70 bg-accent/[0.1] text-ink shadow-[0_0_24px_-10px_var(--color-accent)]"
-              : "border-white/12 bg-white/[0.02] text-ink-muted hover:border-accent/40"
+              : "border-ink/12 bg-ink/[0.02] text-ink-muted hover:border-accent/40"
           }`}
         >
           <span className="font-display text-lg font-semibold not-italic normal-case tracking-normal">

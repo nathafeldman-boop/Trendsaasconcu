@@ -51,9 +51,9 @@ export function ChatWidget() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 12, scale: 0.97 }}
             transition={{ duration: 0.18 }}
-            className="mb-3 flex h-[420px] w-[320px] flex-col overflow-hidden rounded-xl border border-white/12 bg-canvas-raised shadow-[0_20px_60px_-15px_rgba(0,0,0,0.6)]"
+            className="mb-3 flex h-[420px] w-[320px] flex-col overflow-hidden rounded-xl border border-ink/12 bg-canvas-raised shadow-[0_20px_60px_-15px_rgba(0,0,0,0.6)]"
           >
-            <div className="flex items-center justify-between border-b border-white/10 px-4 py-3">
+            <div className="flex items-center justify-between border-b border-ink/10 px-4 py-3">
               <span className="font-display text-[14px] font-semibold text-ink">Assistant SaaSFounder</span>
               <button onClick={() => setOpen(false)} className="text-ink-faint hover:text-ink">
                 <X className="size-4" />
@@ -66,7 +66,7 @@ export function ChatWidget() {
                   className={`max-w-[85%] rounded-lg px-3 py-2 font-body text-[13px] leading-relaxed ${
                     m.role === "user"
                       ? "ml-auto bg-accent/20 text-ink"
-                      : "bg-white/[0.04] text-ink-muted"
+                      : "bg-ink/[0.04] text-ink-muted"
                   }`}
                 >
                   {m.content}
@@ -74,13 +74,13 @@ export function ChatWidget() {
               ))}
               {loading && <p className="font-body text-[12px] text-ink-faint">L&apos;assistant écrit...</p>}
             </div>
-            <div className="flex items-center gap-2 border-t border-white/10 p-3">
+            <div className="flex items-center gap-2 border-t border-ink/10 p-3">
               <input
                 value={draft}
                 onChange={(e) => setDraft(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && send()}
                 placeholder="Écris ton message..."
-                className="h-9 flex-1 rounded-lg border border-white/12 bg-white/[0.03] px-3 font-body text-[13px] text-ink outline-none focus:border-accent/60"
+                className="h-9 flex-1 rounded-lg border border-ink/12 bg-ink/[0.03] px-3 font-body text-[13px] text-ink outline-none focus:border-accent/60"
               />
               <button
                 onClick={send}

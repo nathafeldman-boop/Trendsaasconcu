@@ -53,7 +53,7 @@ export function PricingCards({ isAuthenticated }: { isAuthenticated: boolean }) 
             className={`relative flex flex-col rounded-xl border p-6 ${
               plan.recommended
                 ? "border-accent/50 bg-accent/[0.06] shadow-[0_0_40px_-15px_var(--color-accent)]"
-                : "border-white/12 bg-white/[0.02]"
+                : "border-ink/12 bg-ink/[0.02]"
             }`}
           >
             {plan.recommended && (

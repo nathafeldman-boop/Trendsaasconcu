@@ -14,7 +14,7 @@ export function Accordion({ items }: { items: AccordionItemData[] }) {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
 
   return (
-    <div className="divide-y divide-white/10 border-t border-b border-white/10">
+    <div className="divide-y divide-ink/10 border-t border-b border-ink/10">
       {items.map((item, index) => {
         const isOpen = openIndex === index;
         return (

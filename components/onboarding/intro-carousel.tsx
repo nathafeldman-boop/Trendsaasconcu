@@ -96,7 +96,7 @@ export function IntroCarousel({ onDone }: { onDone: () => void }) {
               onClick={() => setSlide(index)}
               aria-label={`Étape ${index + 1}`}
               className={`h-1.5 rounded-full transition-all duration-200 ${
-                index === slide ? "w-6 bg-accent" : "w-1.5 bg-white/20"
+                index === slide ? "w-6 bg-accent" : "w-1.5 bg-ink/20"
               }`}
             />
           ))}

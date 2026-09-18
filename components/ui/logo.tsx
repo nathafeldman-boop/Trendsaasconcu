@@ -4,7 +4,7 @@ export function LogoMark({ className }: { className?: string }) {
   return (
     <div
       className={cn(
-        "flex size-8 shrink-0 items-center justify-center rounded-[9px] border border-white/12 bg-white/[0.03]",
+        "flex size-8 shrink-0 items-center justify-center rounded-[9px] border border-ink/12 bg-ink/[0.03]",
         className
       )}
     >

@@ -109,7 +109,7 @@ export function AdminPanel({
       </div>
 
       {online.length > 0 && (
-        <div className="mt-4 rounded-lg border border-white/12 bg-white/[0.02] p-4">
+        <div className="mt-4 rounded-lg border border-ink/12 bg-ink/[0.02] p-4">
           <p className="font-mono text-[11px] uppercase tracking-wider text-ink-faint">En ligne</p>
           <div className="mt-2 flex flex-wrap gap-2">
             {online.map((u) => (
@@ -129,10 +129,10 @@ export function AdminPanel({
           <Users className="size-4 text-accent" strokeWidth={1.75} />
           Utilisateurs
         </h2>
-        <div className="mt-4 overflow-x-auto rounded-lg border border-white/12">
+        <div className="mt-4 overflow-x-auto rounded-lg border border-ink/12">
           <table className="w-full text-left font-body text-[14px]">
             <thead>
-              <tr className="border-b border-white/10 text-ink-faint">
+              <tr className="border-b border-ink/10 text-ink-faint">
                 <th className="px-4 py-3 font-normal">Nom</th>
                 <th className="px-4 py-3 font-normal">Email</th>
                 <th className="px-4 py-3 font-normal">Accès</th>
@@ -142,7 +142,7 @@ export function AdminPanel({
             </thead>
             <tbody>
               {users.map((u) => (
-                <tr key={u.id} className="border-b border-white/5 last:border-0">
+                <tr key={u.id} className="border-b border-ink/5 last:border-0">
                   <td className="px-4 py-3 text-ink">
                     {u.first_name ?? "—"}
                     {u.is_admin && (
@@ -157,7 +157,7 @@ export function AdminPanel({
                       className={`rounded-full px-2 py-0.5 font-mono text-[10px] uppercase ${
                         u.has_access
                           ? "bg-emerald-500/15 text-emerald-400"
-                          : "bg-white/8 text-ink-faint"
+                          : "bg-ink/8 text-ink-faint"
                       }`}
                     >
                       {u.has_access ? "Actif" : "Sans accès"}
@@ -206,10 +206,10 @@ export function AdminPanel({
           </Button>
         </div>
 
-        <div className="mt-5 overflow-x-auto rounded-lg border border-white/12">
+        <div className="mt-5 overflow-x-auto rounded-lg border border-ink/12">
           <table className="w-full text-left font-body text-[14px]">
             <thead>
-              <tr className="border-b border-white/10 text-ink-faint">
+              <tr className="border-b border-ink/10 text-ink-faint">
                 <th className="px-4 py-3 font-normal">Code</th>
                 <th className="px-4 py-3 font-normal">Label</th>
                 <th className="px-4 py-3 font-normal">Utilisations</th>
@@ -218,7 +218,7 @@ export function AdminPanel({
             </thead>
             <tbody>
               {codeList.map((c) => (
-                <tr key={c.id} className="border-b border-white/5 last:border-0">
+                <tr key={c.id} className="border-b border-ink/5 last:border-0">
                   <td className="px-4 py-3 font-mono text-ink">{c.code}</td>
                   <td className="px-4 py-3 text-ink-muted">{c.label ?? "—"}</td>
                   <td className="px-4 py-3 text-ink-muted">
@@ -275,7 +275,7 @@ function StatCard({
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
-      className="rounded-lg border border-white/12 bg-white/[0.02] p-5"
+      className="rounded-lg border border-ink/12 bg-ink/[0.02] p-5"
     >
       <Icon className="size-4 text-accent" strokeWidth={1.75} />
       <p className="mt-3 font-mono text-[11px] uppercase tracking-wider text-ink-faint">{label}</p>

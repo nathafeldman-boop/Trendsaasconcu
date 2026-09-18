@@ -225,7 +225,7 @@ export function EspaceFlow({
                 onChange={(e) => setIdeaDraft(e.target.value)}
                 rows={5}
                 placeholder="Ex : un outil qui aide les coachs sportifs à programmer leurs séances..."
-                className="mt-6 w-full rounded-lg border border-white/12 bg-white/[0.02] p-4 font-body text-[15px] text-ink outline-none focus:border-accent/60"
+                className="mt-6 w-full rounded-lg border border-ink/12 bg-ink/[0.02] p-4 font-body text-[15px] text-ink outline-none focus:border-accent/60"
               />
               <Button
                 showArrow={false}
@@ -261,7 +261,7 @@ export function EspaceFlow({
                       persist({ idea_text: s });
                       setPhase("tool");
                     }}
-                    className="rounded-lg border border-white/12 bg-white/[0.02] p-4 text-left font-body text-[14px] text-ink transition-colors hover:border-accent/40"
+                    className="rounded-lg border border-ink/12 bg-ink/[0.02] p-4 text-left font-body text-[14px] text-ink transition-colors hover:border-accent/40"
                   >
                     {s}
                   </button>
@@ -291,7 +291,7 @@ export function EspaceFlow({
                       fetchPrompt(builder.idea_text, tool.id);
                       setPhase("prompt");
                     }}
-                    className="flex flex-col gap-1 rounded-lg border border-white/12 bg-white/[0.02] p-4 text-left transition-colors hover:border-accent/40"
+                    className="flex flex-col gap-1 rounded-lg border border-ink/12 bg-ink/[0.02] p-4 text-left transition-colors hover:border-accent/40"
                   >
                     <span className="font-display text-[15px] font-semibold text-ink">{tool.name}</span>
                     <span className="font-body text-[13px] text-ink-muted">{tool.desc}</span>
@@ -310,7 +310,7 @@ export function EspaceFlow({
               <p className="mt-2 font-body text-[14px] text-ink-muted">
                 Colle-le dans l&apos;outil que tu as choisi pour lancer ta première version.
               </p>
-              <div className="relative mt-6 rounded-lg border border-white/12 bg-white/[0.02] p-4">
+              <div className="relative mt-6 rounded-lg border border-ink/12 bg-ink/[0.02] p-4">
                 {loadingPrompt ? (
                   <p className="font-body text-[14px] text-ink-faint">Génération en cours...</p>
                 ) : (
@@ -325,7 +325,7 @@ export function EspaceFlow({
                       setCopied(true);
                       setTimeout(() => setCopied(false), 1500);
                     }}
-                    className="absolute right-3 top-3 flex items-center gap-1.5 rounded-full border border-white/15 bg-canvas/80 px-3 py-1.5 font-mono text-[11px] text-ink-muted hover:text-ink"
+                    className="absolute right-3 top-3 flex items-center gap-1.5 rounded-full border border-ink/15 bg-canvas/80 px-3 py-1.5 font-mono text-[11px] text-ink-muted hover:text-ink"
                   >
                     {copied ? <Check className="size-3.5" /> : <Copy className="size-3.5" />}
                     {copied ? "Copié" : "Copier"}
@@ -358,11 +358,11 @@ export function EspaceFlow({
                       onClick={() =>
                         persist({ checklist: { ...builder.checklist, [item.id]: !checked } })
                       }
-                      className="flex items-center gap-3 rounded-lg border border-white/12 bg-white/[0.02] px-4 py-3 text-left"
+                      className="flex items-center gap-3 rounded-lg border border-ink/12 bg-ink/[0.02] px-4 py-3 text-left"
                     >
                       <span
                         className={`flex size-5 shrink-0 items-center justify-center rounded-[6px] border ${
-                          checked ? "border-accent bg-accent" : "border-white/25"
+                          checked ? "border-accent bg-accent" : "border-ink/25"
                         }`}
                       >
                         {checked && <Check className="size-3.5 text-canvas" strokeWidth={3} />}
@@ -413,7 +413,7 @@ function ManageSubscriptionButton() {
     <button
       onClick={open}
       disabled={loading}
-      className="shrink-0 rounded-full border border-white/15 px-4 py-2 font-body text-[13px] text-ink-muted transition-colors hover:border-accent/40 hover:text-ink"
+      className="shrink-0 rounded-full border border-ink/15 px-4 py-2 font-body text-[13px] text-ink-muted transition-colors hover:border-accent/40 hover:text-ink"
     >
       {loading ? "..." : "Gérer mon abonnement"}
     </button>

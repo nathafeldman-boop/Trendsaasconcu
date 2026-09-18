@@ -11,7 +11,7 @@ export function ToolsMarquee() {
   const loop = [...CAPABILITIES, ...CAPABILITIES];
 
   return (
-    <div className="border-y border-white/8 py-8">
+    <div className="border-y border-ink/8 py-8">
       <p className="mb-6 text-center font-mono text-[11px] uppercase tracking-[0.22em] text-ink-faint">
         Ce que tu reçois pour construire
       </p>

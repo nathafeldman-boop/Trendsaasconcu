@@ -1,19 +1,19 @@
 @import "tailwindcss";
 
 @theme {
-  /* Canvas & surfaces — black with a violet cast, not neutral gray */
-  --color-canvas: #06040f;
-  --color-canvas-raised: #120b26;
-  --color-canvas-overlay: #1c1240;
+  /* Canvas & surfaces — white with a violet cast, not neutral gray */
+  --color-canvas: #ffffff;
+  --color-canvas-raised: #f5f2ff;
+  --color-canvas-overlay: #ece4ff;
 
-  /* Typography colors — white + lavender tints instead of achromatic gray */
-  --color-ink: #ffffff;
-  --color-ink-muted: #b9b3d9;
-  --color-ink-faint: #7a72a3;
+  /* Typography colors — dark violet instead of achromatic gray */
+  --color-ink: #1a0f3d;
+  --color-ink-muted: #4d4070;
+  --color-ink-faint: #8b80ac;
 
   /* Accent — violet is the dominant brand color, used generously */
-  --color-accent: #8b7bff;
-  --color-accent-deep: #5b4fe0;
+  --color-accent: #6f5cf0;
+  --color-accent-deep: #4a3bc7;
 
   /* Radius scale */
   --radius-sm: 8px;
@@ -40,14 +40,8 @@
   --font-mono: var(--font-mono);
 }
 
-@media (prefers-color-scheme: light) {
-  :root {
-    color-scheme: dark;
-  }
-}
-
 html {
-  color-scheme: dark;
+  color-scheme: light;
 }
 
 body {

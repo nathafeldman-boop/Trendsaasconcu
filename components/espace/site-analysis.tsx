@@ -23,7 +23,7 @@ export function SiteAnalysis({ url }: { url: string }) {
   }, [url]);
 
   return (
-    <div className="rounded-xl border border-white/12 bg-white/[0.02] p-6">
+    <div className="rounded-xl border border-ink/12 bg-ink/[0.02] p-6">
       <FloatingIcon className="size-10">
         <Globe className="size-4" strokeWidth={1.75} />
       </FloatingIcon>
@@ -42,7 +42,7 @@ export function SiteAnalysis({ url }: { url: string }) {
       )}
 
       {analysis?.reachable && (analysis.title || analysis.description) && (
-        <div className="mt-4 rounded-lg border border-white/10 bg-white/[0.02] p-4">
+        <div className="mt-4 rounded-lg border border-ink/10 bg-ink/[0.02] p-4">
           {analysis.title && (
             <p className="font-body text-[14px] font-medium text-ink">{analysis.title}</p>
           )}
@@ -56,7 +56,7 @@ export function SiteAnalysis({ url }: { url: string }) {
         {TIPS.map((tip) => (
           <li
             key={tip}
-            className="rounded-lg border border-white/10 bg-white/[0.02] p-3 font-body text-[13px] text-ink-muted"
+            className="rounded-lg border border-ink/10 bg-ink/[0.02] p-3 font-body text-[13px] text-ink-muted"
           >
             {tip}
           </li>

@@ -56,7 +56,7 @@ export function StripeDashboard() {
   }
 
   return (
-    <div className="rounded-xl border border-white/12 bg-white/[0.02] p-6">
+    <div className="rounded-xl border border-ink/12 bg-ink/[0.02] p-6">
       <FloatingIcon className="size-10">
         <Wallet className="size-4" strokeWidth={1.75} />
       </FloatingIcon>

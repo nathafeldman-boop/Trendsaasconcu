@@ -12,7 +12,7 @@ const buttonStyles = cva(
         primary:
           "bg-ink text-canvas hover:bg-accent hover:shadow-[0_0_32px_-6px_var(--color-accent)]",
         secondary:
-          "border border-white/15 text-ink bg-white/[0.02] hover:border-accent/50 hover:bg-accent/[0.08] hover:shadow-[0_0_24px_-8px_var(--color-accent)]",
+          "border border-ink/15 text-ink bg-ink/[0.02] hover:border-accent/50 hover:bg-accent/[0.08] hover:shadow-[0_0_24px_-8px_var(--color-accent)]",
         ghost: "text-ink-muted hover:text-ink",
       },
       size: {

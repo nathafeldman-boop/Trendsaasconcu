@@ -38,7 +38,7 @@ export function DashboardPreview() {
         <Eyebrow tone="accent">Aperçu · ton espace paiements</Eyebrow>
       </div>
 
-      <div className="rounded-lg border border-white/10 bg-canvas-overlay/90 p-5 backdrop-blur-xl">
+      <div className="rounded-lg border border-ink/10 bg-canvas-overlay/90 p-5 backdrop-blur-xl">
         <div className="flex items-center gap-2.5">
           <div className="flex size-8 items-center justify-center rounded-full bg-accent/15 text-accent">
             <Wallet className="size-4" strokeWidth={2.25} />
@@ -74,7 +74,7 @@ export function DashboardPreview() {
           </div>
         </div>
 
-        <div className="my-5 h-px bg-white/10" />
+        <div className="my-5 h-px bg-ink/10" />
 
         <div className="flex items-center justify-between">
           <p className="font-body text-[13px] font-medium text-ink">Volume brut · 4 semaines</p>

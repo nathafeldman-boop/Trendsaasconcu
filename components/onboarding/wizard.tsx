@@ -225,7 +225,7 @@ function MiniDashboard({
   return (
     <div
       className={`rounded-lg border p-4 ${
-        tone === "accent" ? "border-accent/40 bg-accent/[0.06]" : "border-white/12 bg-white/[0.02]"
+        tone === "accent" ? "border-accent/40 bg-accent/[0.06]" : "border-ink/12 bg-ink/[0.02]"
       }`}
     >
       <p
@@ -501,12 +501,12 @@ export function OnboardingWizard() {
         >
           <div className="flex flex-col gap-3">
             {situationLine && (
-              <div className="rounded-lg border border-white/12 bg-white/[0.02] p-4">
+              <div className="rounded-lg border border-ink/12 bg-ink/[0.02] p-4">
                 <p className="font-body text-[14px] leading-relaxed text-ink-muted">{situationLine}</p>
               </div>
             )}
             {forceLine && (
-              <div className="rounded-lg border border-white/12 bg-white/[0.02] p-4">
+              <div className="rounded-lg border border-ink/12 bg-ink/[0.02] p-4">
                 <p className="font-body text-[14px] leading-relaxed text-ink-muted">{forceLine}</p>
               </div>
             )}
@@ -775,7 +775,7 @@ export function OnboardingWizard() {
             onChange={(event) => setFutureDraft(event.target.value)}
             rows={4}
             placeholder="Ex : je veux 2 000 € par mois qui tombent sans avoir à être derrière l'écran, pour arrêter de dépendre d'un seul employeur."
-            className="w-full rounded-lg border border-white/12 bg-white/[0.02] p-4 font-body text-[15px] text-ink outline-none transition-colors duration-150 focus:border-accent/60"
+            className="w-full rounded-lg border border-ink/12 bg-ink/[0.02] p-4 font-body text-[15px] text-ink outline-none transition-colors duration-150 focus:border-accent/60"
           />
         </StepShell>
       );
@@ -803,7 +803,7 @@ export function OnboardingWizard() {
             continue de rapporter chaque mois — c&apos;est ce qui change tout
             quand on démarre de zéro.
           </p>
-          <div className="mt-5 flex gap-4 rounded-lg border border-white/12 bg-white/[0.02] p-5">
+          <div className="mt-5 flex gap-4 rounded-lg border border-ink/12 bg-ink/[0.02] p-5">
             <div className="flex size-8 shrink-0 items-center justify-center rounded-full border border-accent/40 font-mono text-sm font-medium text-accent">
               1
             </div>
@@ -949,7 +949,7 @@ export function OnboardingWizard() {
                     {row.value}%
                   </span>
                 </div>
-                <div className="h-2.5 w-full overflow-hidden rounded-full bg-white/8">
+                <div className="h-2.5 w-full overflow-hidden rounded-full bg-ink/8">
                   <motion.div
                     initial={{ width: 0 }}
                     animate={{ width: `${row.value}%` }}
@@ -957,7 +957,7 @@ export function OnboardingWizard() {
                     className={`h-full rounded-full ${
                       row.highlight
                         ? "bg-accent shadow-[0_0_16px_0_var(--color-accent)]"
-                        : "bg-white/25"
+                        : "bg-ink/25"
                     }`}
                   />
                 </div>
@@ -1008,12 +1008,12 @@ export function OnboardingWizard() {
             </Button>
           }
         >
-          <div className="rounded-lg border border-white/12 bg-white/[0.02] p-6">
+          <div className="rounded-lg border border-ink/12 bg-ink/[0.02] p-6">
             <div className="flex items-center justify-between">
               <p className="font-display text-3xl font-semibold text-ink">
                 {formatEuros(answers.revenueGoal)}
               </p>
-              <span className="rounded-full border border-white/15 px-3 py-1 font-mono text-[10px] uppercase tracking-wider text-ink-muted">
+              <span className="rounded-full border border-ink/15 px-3 py-1 font-mono text-[10px] uppercase tracking-wider text-ink-muted">
                 {tag}
               </span>
             </div>
@@ -1032,7 +1032,7 @@ export function OnboardingWizard() {
               <span>1 000 € · réaliste</span>
               <span>50 000 € · ambitieux</span>
             </div>
-            <div className="mt-5 h-px bg-white/10" />
+            <div className="mt-5 h-px bg-ink/10" />
             <p className="mt-5 font-body text-[14px] leading-relaxed text-ink-muted">
               À titre d&apos;exemple, à 49 € par mois et par client, ça fait{" "}
               <span className="font-medium text-ink">{clients} clients</span> à trouver.
@@ -1067,8 +1067,8 @@ export function OnboardingWizard() {
             </Button>
           }
         >
-          <div className="rounded-lg border border-white/12 bg-white/[0.02]">
-            <div className="flex items-center justify-between border-b border-white/10 px-5 py-4">
+          <div className="rounded-lg border border-ink/12 bg-ink/[0.02]">
+            <div className="flex items-center justify-between border-b border-ink/10 px-5 py-4">
               <span className="font-mono text-[10px] uppercase tracking-wider text-ink-faint">
                 Ton parcours
               </span>
@@ -1076,7 +1076,7 @@ export function OnboardingWizard() {
                 {answers.experience ?? "—"}
               </span>
             </div>
-            <div className="flex items-center justify-between border-b border-white/10 px-5 py-4">
+            <div className="flex items-center justify-between border-b border-ink/10 px-5 py-4">
               <span className="font-mono text-[10px] uppercase tracking-wider text-ink-faint">
                 Ce qui bloque
               </span>
@@ -1184,7 +1184,7 @@ export function OnboardingWizard() {
             <p className="font-display text-5xl font-semibold text-ink">
               <CountUp value={100} suffix="%" />
             </p>
-            <div className="h-1.5 w-full max-w-xs overflow-hidden rounded-full bg-white/8">
+            <div className="h-1.5 w-full max-w-xs overflow-hidden rounded-full bg-ink/8">
               <motion.div
                 initial={{ width: 0 }}
                 animate={{ width: "100%" }}
@@ -1196,7 +1196,7 @@ export function OnboardingWizard() {
               Analyse de tes réponses...
             </p>
           </div>
-          <div className="rounded-lg border border-white/12 bg-white/[0.02] p-4">
+          <div className="rounded-lg border border-ink/12 bg-ink/[0.02] p-4">
             <p className="font-mono text-[10px] uppercase tracking-wider text-ink-faint">
               Pendant ce temps, on prépare
             </p>
@@ -1275,7 +1275,7 @@ export function OnboardingWizard() {
             placeholder="https://tonsaas.com"
             value={answers.existingUrl}
             onChange={(event) => setAnswers((a) => ({ ...a, existingUrl: event.target.value }))}
-            className="h-[52px] w-full rounded-lg border border-white/12 bg-white/[0.02] px-4 font-body text-[15px] text-ink outline-none transition-colors duration-150 focus:border-accent/60 focus:bg-white/[0.05]"
+            className="h-[52px] w-full rounded-lg border border-ink/12 bg-ink/[0.02] px-4 font-body text-[15px] text-ink outline-none transition-colors duration-150 focus:border-accent/60 focus:bg-ink/[0.05]"
           />
         </StepShell>
       );
@@ -1302,7 +1302,7 @@ export function OnboardingWizard() {
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.3 + index * 0.35, duration: 0.4 }}
-                className="flex items-center gap-3 rounded-lg border border-white/12 bg-white/[0.02] px-4 py-3"
+                className="flex items-center gap-3 rounded-lg border border-ink/12 bg-ink/[0.02] px-4 py-3"
               >
                 <motion.span
                   initial={{ scale: 0 }}

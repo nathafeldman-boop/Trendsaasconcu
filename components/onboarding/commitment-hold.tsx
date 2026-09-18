@@ -55,7 +55,7 @@ export function CommitmentHold({ onCommit }: { onCommit: () => void }) {
         className="relative flex size-24 items-center justify-center rounded-full text-accent select-none touch-none"
       >
         <svg viewBox="0 0 100 100" className="absolute inset-0 -rotate-90">
-          <circle cx="50" cy="50" r="44" fill="none" stroke="currentColor" strokeWidth="3" className="text-white/10" />
+          <circle cx="50" cy="50" r="44" fill="none" stroke="currentColor" strokeWidth="3" className="text-ink/10" />
           <circle
             cx="50"
             cy="50"
