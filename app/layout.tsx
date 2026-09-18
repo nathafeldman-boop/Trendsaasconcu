@@ -22,10 +22,28 @@ const mono = JetBrains_Mono({
   weight: ["400", "500", "600", "700"],
 });
 
+const title = "SaaSFounder — Deviens fondateur de ton premier SaaS";
+const description =
+  "La méthode pour trouver ton idée, la construire avec l'IA et encaisser tes premiers revenus. Sans expérience, sans code.";
+
 export const metadata: Metadata = {
-  title: "SaaSFounder — Deviens fondateur de ton premier SaaS",
-  description:
-    "La méthode pour trouver ton idée, la construire avec l'IA et encaisser tes premiers revenus. Sans expérience, sans code.",
+  metadataBase: new URL("https://saasfounder.fr"),
+  title,
+  description,
+  alternates: { canonical: "/" },
+  openGraph: {
+    title,
+    description,
+    url: "/",
+    siteName: "SaaSFounder",
+    locale: "fr_FR",
+    type: "website",
+  },
+  twitter: {
+    card: "summary",
+    title,
+    description,
+  },
 };
 
 export default function RootLayout({

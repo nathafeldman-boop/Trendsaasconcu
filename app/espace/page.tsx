@@ -4,6 +4,7 @@ import { EspaceFlow } from "@/components/espace/espace-flow";
 
 export const metadata: Metadata = {
   title: "Ton espace — SaaSFounder",
+  robots: { index: false, follow: false },
 };
 
 const HAS_SAAS_EXISTING = "J'ai déjà un SaaS en ligne";

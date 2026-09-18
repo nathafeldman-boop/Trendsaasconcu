@@ -6,6 +6,7 @@ import { SignupForm } from "@/components/auth/signup-form";
 export const metadata: Metadata = {
   title: "Créer mon compte — SaaSFounder",
   description: "Crée ton compte SaaSFounder pour recevoir ton idée, ton prompt et ton plan des 30 jours.",
+  robots: { index: false, follow: false },
 };
 
 export default function InscriptionPage() {

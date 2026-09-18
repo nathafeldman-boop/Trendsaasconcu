@@ -4,6 +4,7 @@ import { AdminPanel } from "@/components/admin/admin-panel";
 
 export const metadata: Metadata = {
   title: "Admin — SaaSFounder",
+  robots: { index: false, follow: false },
 };
 
 function dayRange(daysAgo: number) {

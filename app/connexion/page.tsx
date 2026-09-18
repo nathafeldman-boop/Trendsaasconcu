@@ -6,6 +6,7 @@ import { LoginForm } from "@/components/auth/login-form";
 export const metadata: Metadata = {
   title: "Se connecter — SaaSFounder",
   description: "Connecte-toi à ton compte SaaSFounder pour retrouver ton idée, ton prompt et ton plan.",
+  robots: { index: false, follow: false },
 };
 
 export default function ConnexionPage() {
