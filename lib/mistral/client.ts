@@ -17,7 +17,10 @@ function hasImage(messages: ChatMessage[]) {
  */
 export async function mistralComplete(messages: ChatMessage[]): Promise<string | null> {
   const apiKey = process.env.MISTRAL_API_KEY;
-  if (!apiKey) return null;
+  if (!apiKey) {
+    console.warn("mistralComplete: MISTRAL_API_KEY is not set");
+    return null;
+  }
 
   try {
     const res = await fetch(MISTRAL_API_URL, {
@@ -32,10 +35,14 @@ export async function mistralComplete(messages: ChatMessage[]): Promise<string |
         temperature: 0.6,
       }),
     });
-    if (!res.ok) return null;
+    if (!res.ok) {
+      console.error(`mistralComplete: Mistral API returned ${res.status}: ${await res.text()}`);
+      return null;
+    }
     const data = await res.json();
     return data.choices?.[0]?.message?.content ?? null;
-  } catch {
+  } catch (err) {
+    console.error("mistralComplete: request failed", err);
     return null;
   }
 }
