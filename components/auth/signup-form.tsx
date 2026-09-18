@@ -2,6 +2,8 @@
 
 import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
+import { GoogleButton } from "@/components/auth/google-button";
+import { OrDivider } from "@/components/auth/or-divider";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
@@ -10,6 +12,7 @@ import { translateAuthError } from "@/lib/supabase/auth-error";
 export function SignupForm({ onSuccess }: { onSuccess?: () => void }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const supabase = createClient();
 
@@ -66,8 +69,24 @@ export function SignupForm({ onSuccess }: { onSuccess?: () => void }) {
     }
   }
 
+  async function handleGoogle() {
+    if (googleLoading) return; // guard against a double-tap starting two OAuth flows at once
+    if (!supabase) {
+      complete();
+      return;
+    }
+    setGoogleLoading(true);
+    await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: { redirectTo: `${window.location.origin}/commencer` },
+    });
+  }
+
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+      <GoogleButton onClick={handleGoogle} disabled={googleLoading} />
+      <OrDivider />
+
       <Input label="Ton prénom" name="firstName" placeholder="Camille" autoComplete="given-name" required />
       <Input label="Ton email" name="email" type="email" placeholder="camille@exemple.fr" autoComplete="email" required />
       <Input label="Un mot de passe" name="password" type="password" placeholder="8 caractères minimum" autoComplete="new-password" minLength={8} required />
