@@ -21,11 +21,11 @@ export function Nav() {
           </a>
         </nav>
         <div className="flex items-center gap-2.5">
-          <Button href="/connexion" variant="secondary" size="sm" showArrow={false} className="hidden sm:inline-flex">
-            Se connecter
-          </Button>
           <Button href="/commencer" size="sm" showArrow={false}>
             Devenir fondateur
+          </Button>
+          <Button href="/connexion" variant="secondary" size="sm" showArrow={false} className="hidden sm:inline-flex">
+            Se connecter
           </Button>
         </div>
       </div>

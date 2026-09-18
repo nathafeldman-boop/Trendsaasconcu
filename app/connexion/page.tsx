@@ -1,7 +1,7 @@
-import Link from "next/link";
 import type { Metadata } from "next";
 import { AuthShell } from "@/components/auth/auth-shell";
 import { LoginForm } from "@/components/auth/login-form";
+import { Button } from "@/components/ui/button";
 
 export const metadata: Metadata = {
   title: "Se connecter — SaaSFounder",
@@ -27,12 +27,12 @@ export default async function ConnexionPage({
       title="Content de te revoir."
       subtitle="Connecte-toi pour retrouver ton idée, ton prompt et ton plan là où tu les as laissés."
       footer={
-        <p className="font-body text-[14px] text-ink-muted">
-          Pas encore de compte ?{" "}
-          <Link href={inscriptionHref} className="font-medium text-ink underline underline-offset-2">
-            Créer un compte
-          </Link>
-        </p>
+        <div className="flex flex-col items-center gap-3">
+          <p className="font-body text-[14px] text-ink-muted">Pas encore de compte ?</p>
+          <Button href={inscriptionHref} variant="secondary" showArrow={false} className="w-full">
+            Créer mon compte
+          </Button>
+        </div>
       }
     >
       <LoginForm />
