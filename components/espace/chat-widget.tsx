@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { MessageCircle, X, Send } from "lucide-react";
 
@@ -16,6 +16,11 @@ export function ChatWidget() {
   ]);
   const [draft, setDraft] = useState("");
   const [loading, setLoading] = useState(false);
+  const bottomRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (open) bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages, loading, open]);
 
   async function send() {
     const content = draft.trim();
@@ -51,7 +56,7 @@ export function ChatWidget() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 12, scale: 0.97 }}
             transition={{ duration: 0.18 }}
-            className="mb-3 flex h-[420px] w-[320px] flex-col overflow-hidden rounded-xl border border-ink/12 bg-canvas-raised shadow-[0_20px_60px_-15px_rgba(0,0,0,0.6)]"
+            className="mb-3 flex h-[420px] w-[320px] flex-col overflow-hidden rounded-xl border border-ink/12 bg-canvas shadow-[0_30px_80px_-40px_rgba(27,22,48,0.35)]"
           >
             <div className="flex items-center justify-between border-b border-ink/10 px-4 py-3">
               <span className="font-display text-[14px] font-semibold text-ink">Assistant SaaSFounder</span>
@@ -73,6 +78,7 @@ export function ChatWidget() {
                 </div>
               ))}
               {loading && <p className="font-body text-[12px] text-ink-faint">L&apos;assistant écrit...</p>}
+              <div ref={bottomRef} />
             </div>
             <div className="flex items-center gap-2 border-t border-ink/10 p-3">
               <input

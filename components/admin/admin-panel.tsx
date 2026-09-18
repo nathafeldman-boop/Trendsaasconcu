@@ -58,11 +58,13 @@ export function AdminPanel({
   const [creating, setCreating] = useState(false);
   const [promoteEmail, setPromoteEmail] = useState("");
   const [promoteStatus, setPromoteStatus] = useState<string | null>(null);
+  const [codeError, setCodeError] = useState<string | null>(null);
 
   async function createCode() {
     const supabase = createClient();
     if (!supabase) return;
     setCreating(true);
+    setCodeError(null);
     const code = randomCode();
     const { data, error } = await supabase
       .from("access_codes")
@@ -70,11 +72,13 @@ export function AdminPanel({
       .select()
       .single();
     setCreating(false);
-    if (!error && data) {
-      setCodeList((list) => [data, ...list]);
-      setLabel("");
-      setMaxUses(1);
+    if (error || !data) {
+      setCodeError("Erreur : " + (error?.message ?? "création impossible."));
+      return;
     }
+    setCodeList((list) => [data, ...list]);
+    setLabel("");
+    setMaxUses(1);
   }
 
   async function promote(event: FormEvent) {
@@ -205,6 +209,7 @@ export function AdminPanel({
             {creating ? "Création..." : "Créer un code"}
           </Button>
         </div>
+        {codeError && <p className="mt-2 font-body text-[13px] text-red-400">{codeError}</p>}
 
         <div className="mt-5 overflow-x-auto rounded-lg border border-ink/12">
           <table className="w-full text-left font-body text-[14px]">

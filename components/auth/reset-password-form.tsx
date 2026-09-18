@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { AuthShell } from "@/components/auth/auth-shell";
 import { Input } from "@/components/ui/input";
@@ -12,6 +12,23 @@ export function ResetPasswordForm() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // The recovery link lands here with a `?code=` that the browser client's
+  // automatic detection usually exchanges on its own — but that's exactly
+  // the mechanism that silently failed for Google sign-in, so exchange it
+  // explicitly too rather than trust it blindly. An "already used" error
+  // here just means the automatic path already succeeded — safe to ignore.
+  useEffect(() => {
+    const code = new URLSearchParams(window.location.search).get("code");
+    if (!code) return;
+    const supabase = createClient();
+    if (!supabase) return;
+    supabase.auth.exchangeCodeForSession(code).finally(() => {
+      const url = new URL(window.location.href);
+      url.searchParams.delete("code");
+      window.history.replaceState({}, "", url.toString());
+    });
+  }, []);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
