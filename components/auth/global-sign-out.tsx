@@ -18,7 +18,7 @@ export function GlobalSignOut() {
     const supabase = createClient();
     setLoading(true);
     if (supabase) await supabase.auth.signOut();
-    router.push("/");
+    router.push("/connexion");
     router.refresh();
     setLoading(false);
   }
@@ -28,7 +28,7 @@ export function GlobalSignOut() {
       type="button"
       onClick={handleSignOut}
       disabled={loading}
-      className="fixed bottom-4 left-4 z-[100] flex items-center gap-1.5 rounded-full border border-ink/12 bg-canvas/90 px-3 py-2 font-mono text-[11px] uppercase tracking-wider text-ink-faint shadow-[0_4px_20px_-6px_rgba(0,0,0,0.25)] backdrop-blur-md transition-colors hover:border-accent/40 hover:text-ink disabled:opacity-50 sm:bottom-6 sm:left-6"
+      className="fixed left-4 top-20 z-[100] flex items-center gap-1.5 rounded-full border border-ink/12 bg-canvas/90 px-3 py-2 font-mono text-[11px] uppercase tracking-wider text-ink-faint shadow-[0_4px_20px_-6px_rgba(0,0,0,0.25)] backdrop-blur-md transition-colors hover:border-accent/40 hover:text-ink disabled:opacity-50 sm:left-6 sm:top-24"
     >
       <LogOut className="size-3.5" strokeWidth={1.75} />
       {loading ? "..." : "Déconnexion"}
