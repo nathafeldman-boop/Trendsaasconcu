@@ -12,10 +12,14 @@ export const metadata: Metadata = {
 export default async function InscriptionPage({
   searchParams,
 }: {
-  searchParams: Promise<{ plan?: string }>;
+  searchParams: Promise<{ plan?: string; next?: string }>;
 }) {
-  const { plan } = await searchParams;
-  const connexionHref = plan ? `/connexion?plan=${plan}` : "/connexion";
+  const { plan, next } = await searchParams;
+  const connexionHref = plan
+    ? `/connexion?plan=${plan}`
+    : next
+      ? `/connexion?next=${next}`
+      : "/connexion";
 
   return (
     <AuthShell

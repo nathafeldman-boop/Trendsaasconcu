@@ -6,9 +6,15 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
 
-export function AccessCodeInline({ isAuthenticated }: { isAuthenticated: boolean }) {
+export function AccessCodeInline({
+  isAuthenticated,
+  alwaysOpen = false,
+}: {
+  isAuthenticated: boolean;
+  alwaysOpen?: boolean;
+}) {
   const router = useRouter();
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(alwaysOpen);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -17,7 +23,7 @@ export function AccessCodeInline({ isAuthenticated }: { isAuthenticated: boolean
     setError(null);
 
     if (!isAuthenticated) {
-      router.push("/connexion");
+      router.push("/connexion?next=/acces");
       return;
     }
 
@@ -31,7 +37,7 @@ export function AccessCodeInline({ isAuthenticated }: { isAuthenticated: boolean
       data: { user },
     } = await supabase.auth.getUser();
     if (!user) {
-      router.push("/connexion");
+      router.push("/connexion?next=/acces");
       return;
     }
 
@@ -76,7 +82,14 @@ export function AccessCodeInline({ isAuthenticated }: { isAuthenticated: boolean
   }
 
   return (
-    <form onSubmit={handleSubmit} className="mx-auto mt-10 flex max-w-xs flex-col gap-3">
+    <form
+      onSubmit={handleSubmit}
+      className={
+        alwaysOpen
+          ? "flex flex-col gap-3"
+          : "mx-auto mt-10 flex max-w-xs flex-col gap-3"
+      }
+    >
       <Input
         label="Code d'accès"
         name="code"

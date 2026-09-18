@@ -12,12 +12,14 @@ export function LoginForm({ onSuccess }: { onSuccess?: () => void }) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const plan = searchParams.get("plan");
+  const next = searchParams.get("next");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const supabase = createClient();
 
   // Arriving from a pricing card (?plan=) goes straight to Stripe checkout
-  // instead of the dashboard.
+  // instead of the dashboard; arriving from elsewhere with ?next= (e.g. the
+  // access-code page) returns there instead of the default /espace.
   async function complete() {
     if (onSuccess) {
       onSuccess();
@@ -36,10 +38,10 @@ export function LoginForm({ onSuccess }: { onSuccess?: () => void }) {
           return;
         }
       } catch {
-        // fall through to /espace below
+        // fall through below
       }
     }
-    router.push("/espace");
+    router.push(next || "/espace");
   }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
