@@ -1,6 +1,9 @@
 import { redirect } from "next/navigation";
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { PresenceHeartbeat } from "@/components/espace/presence-heartbeat";
+import { Logo } from "@/components/ui/logo";
+import { SignOutButton } from "@/components/auth/sign-out-button";
 
 // Always re-check the session server-side — never cache an auth decision.
 export const dynamic = "force-dynamic";
@@ -20,6 +23,12 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   return (
     <>
       <PresenceHeartbeat />
+      <header className="flex items-center justify-between px-5 py-6 sm:px-8">
+        <Link href="/admin" className="inline-flex">
+          <Logo />
+        </Link>
+        <SignOutButton />
+      </header>
       {children}
     </>
   );

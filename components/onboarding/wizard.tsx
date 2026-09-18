@@ -1377,14 +1377,14 @@ export function OnboardingWizard() {
         eyebrow="C'est parti"
         title="Ton dossier est prêt."
         footer={
-          <Button href="/acces" showArrow={false} className="w-full">
+          <Button href="/tarifs" showArrow={false} className="w-full">
             Accéder à mon espace
           </Button>
         }
       >
         <p className="max-w-md font-body text-[15px] leading-relaxed text-ink-muted">
-          Il ne reste qu&apos;une étape : entre ton code d&apos;accès pour
-          débloquer ton espace, ton idée, ton prompt et ton plan.
+          Il ne reste qu&apos;une étape : choisis ta formule pour débloquer
+          ton espace, ton idée, ton prompt et ton plan.
         </p>
       </StepShell>
     );

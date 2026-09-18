@@ -10,10 +10,10 @@ export function Footer() {
           © {new Date().getFullYear()} SaaSFounder · Tous droits réservés
         </p>
         <Link
-          href="/acces"
+          href="/tarifs"
           className="font-mono text-[11px] uppercase tracking-wider text-ink-faint transition-colors hover:text-ink-muted"
         >
-          Code d&apos;accès
+          Tarifs
         </Link>
       </div>
     </footer>

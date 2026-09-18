@@ -1,11 +1,5 @@
-import type { Metadata } from "next";
-import { AccessGate } from "@/components/access/access-gate";
-
-export const metadata: Metadata = {
-  title: "Code d'accès — SaaSFounder",
-  description: "Entre ton code d'accès pour rejoindre ton espace SaaSFounder.",
-};
+import { redirect } from "next/navigation";
 
 export default function AccesPage() {
-  return <AccessGate />;
+  redirect("/tarifs");
 }

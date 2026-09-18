@@ -88,12 +88,6 @@ export function PricingCards({ isAuthenticated }: { isAuthenticated: boolean }) 
         ))}
       </div>
       {error && <p className="mt-4 text-center font-body text-[13px] text-red-400">{error}</p>}
-      <p className="mt-6 text-center font-body text-[13px] text-ink-faint">
-        Un code d&apos;accès ?{" "}
-        <a href="/acces" className="text-ink underline underline-offset-2 hover:text-accent">
-          Entre-le ici
-        </a>
-      </p>
     </div>
   );
 }
