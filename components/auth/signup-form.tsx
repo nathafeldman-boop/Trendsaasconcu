@@ -4,6 +4,7 @@ import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { GoogleButton } from "@/components/auth/google-button";
 import { OrDivider } from "@/components/auth/or-divider";
+import { VerifyCodeForm } from "@/components/auth/verify-code-form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
@@ -12,6 +13,7 @@ export function SignupForm({ onSuccess }: { onSuccess?: () => void }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [pendingEmail, setPendingEmail] = useState<string | null>(null);
   const supabase = createClient();
 
   const complete = () => (onSuccess ? onSuccess() : router.push("/"));
@@ -45,11 +47,9 @@ export function SignupForm({ onSuccess }: { onSuccess?: () => void }) {
     }
     if (!data.session) {
       // signUp succeeded but Supabase didn't hand back a session — email
-      // confirmation is still required server-side. Say so instead of
+      // confirmation is required. Switch to the code-entry step instead of
       // silently continuing as if the account were logged in.
-      setError(
-        "Ton compte est créé mais pas encore confirmé. Vérifie ta boîte mail (et les spams) pour activer ton accès."
-      );
+      setPendingEmail(email);
       return;
     }
     complete();
@@ -64,6 +64,10 @@ export function SignupForm({ onSuccess }: { onSuccess?: () => void }) {
       provider: "google",
       options: { redirectTo: `${window.location.origin}/commencer` },
     });
+  }
+
+  if (pendingEmail) {
+    return <VerifyCodeForm email={pendingEmail} onSuccess={complete} />;
   }
 
   return (
