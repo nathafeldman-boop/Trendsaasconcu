@@ -9,6 +9,7 @@ import { ChoiceOption } from "@/components/onboarding/choice-option";
 import { createClient } from "@/lib/supabase/client";
 import { StripeDashboard } from "@/components/espace/stripe-dashboard";
 import { MarketingPanel } from "@/components/espace/marketing-panel";
+import { ContentGuide } from "@/components/espace/content-guide";
 import { SiteAnalysis } from "@/components/espace/site-analysis";
 import { FloatingIcon } from "@/components/ui/floating-icon";
 
@@ -200,6 +201,9 @@ export function EspaceFlow({
           </div>
         )}
         <div className="mt-8">
+          <ContentGuide />
+        </div>
+        <div className="mt-6">
           <MarketingPanel userId={userId} ideaText={builder.idea_text} initial={initialMarketing} />
         </div>
         <div className="mt-6">
