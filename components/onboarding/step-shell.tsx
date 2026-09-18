@@ -1,8 +1,13 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { Eyebrow } from "@/components/ui/eyebrow";
 import { Logo } from "@/components/ui/logo";
 import { ProgressBar } from "@/components/onboarding/progress-bar";
+import { SignOutButton } from "@/components/auth/sign-out-button";
+import { createClient } from "@/lib/supabase/client";
 
 export function StepShell({
   step,
@@ -23,10 +28,19 @@ export function StepShell({
   children: React.ReactNode;
   footer?: React.ReactNode;
 }) {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  useEffect(() => {
+    const supabase = createClient();
+    if (!supabase) return;
+    supabase.auth.getUser().then(({ data }) => setIsAuthenticated(!!data.user));
+  }, []);
+
   return (
     <div className="flex min-h-screen flex-col">
-      <header className="px-5 py-6 sm:px-8">
+      <header className="flex items-center justify-between px-5 py-6 sm:px-8">
         <Logo />
+        {isAuthenticated && <SignOutButton />}
       </header>
 
       <div className="mx-auto w-full max-w-xl flex-1 px-5 pb-16 sm:px-8">
