@@ -68,6 +68,9 @@ export function SignupForm({ onSuccess }: { onSuccess?: () => void }) {
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+      <GoogleButton onClick={handleGoogle} />
+      <OrDivider />
+
       <Input label="Ton prénom" name="firstName" placeholder="Camille" autoComplete="given-name" required />
       <Input label="Ton email" name="email" type="email" placeholder="camille@exemple.fr" autoComplete="email" required />
       <Input label="Un mot de passe" name="password" type="password" placeholder="8 caractères minimum" autoComplete="new-password" minLength={8} required />
@@ -84,9 +87,6 @@ export function SignupForm({ onSuccess }: { onSuccess?: () => void }) {
       <Button type="submit" showArrow={false} disabled={loading} className="mt-1 w-full">
         {loading ? "Création en cours..." : "Créer mon compte"}
       </Button>
-
-      <OrDivider />
-      <GoogleButton onClick={handleGoogle} />
 
       <p className="text-center font-body text-[12px] leading-relaxed text-ink-faint">
         En créant ton compte, tu acceptes nos{" "}

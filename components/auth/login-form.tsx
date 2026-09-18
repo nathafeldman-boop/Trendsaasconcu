@@ -54,6 +54,9 @@ export function LoginForm({ onSuccess }: { onSuccess?: () => void }) {
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+      <GoogleButton onClick={handleGoogle} />
+      <OrDivider />
+
       <Input label="Ton email" name="email" type="email" placeholder="camille@exemple.fr" autoComplete="email" required />
       <div className="flex flex-col gap-2">
         <div className="flex items-center justify-between">
@@ -87,9 +90,6 @@ export function LoginForm({ onSuccess }: { onSuccess?: () => void }) {
       <Button type="submit" showArrow={false} disabled={loading} className="mt-1 w-full">
         {loading ? "Connexion en cours..." : "Me connecter"}
       </Button>
-
-      <OrDivider />
-      <GoogleButton onClick={handleGoogle} />
     </form>
   );
 }
