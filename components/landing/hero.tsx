@@ -40,33 +40,30 @@ export function Hero() {
       </div>
       <VelocityField className="pointer-events-none absolute inset-0 -z-10" />
 
-      <div className="mx-auto grid max-w-6xl gap-14 px-5 pt-16 pb-20 sm:px-8 sm:pt-24 sm:pb-28 lg:grid-cols-[1.05fr_0.95fr] lg:items-center lg:gap-10 lg:pt-28">
+      <div className="mx-auto grid max-w-6xl gap-10 px-5 pt-10 pb-14 sm:px-8 sm:pt-14 sm:pb-16 lg:grid-cols-[1.05fr_0.95fr] lg:items-center lg:gap-8 lg:pt-16">
         <motion.div variants={stagger} initial="hidden" animate="show">
           <motion.div variants={item}>
-            <Eyebrow>La méthode pour lancer ton premier SaaS</Eyebrow>
+            <Eyebrow>La méthode pour lancer ton SaaS</Eyebrow>
           </motion.div>
 
           <motion.h1
             variants={item}
-            className="mt-6 font-display text-[42px] font-semibold leading-[1.06] tracking-tight sm:text-[56px] lg:text-[60px]"
+            className="mt-5 font-display text-[46px] font-semibold leading-[1.02] tracking-tight sm:text-[60px] lg:text-[68px]"
           >
-            <span className="text-ink">Deviens fondateur,</span>
+            <span className="text-ink">Deviens fondateur.</span>
             <br />
-            <span className="text-ink">lance ton premier SaaS</span>
-            <br />
-            <span className="text-ink-muted">et touche tes premiers revenus.</span>
+            <span className="text-ink-muted">Lance ton SaaS.</span>
           </motion.h1>
 
           <motion.p
             variants={item}
-            className="mt-6 max-w-md font-body text-[17px] leading-relaxed text-ink-muted"
+            className="mt-5 max-w-sm font-body text-[17px] leading-relaxed text-ink-muted"
           >
-            Trouve une idée qui tient debout, construis-la avec l&apos;IA, et{" "}
-            <span className="font-medium text-ink">décroche tes premiers clients</span>{" "}
-            en un mois.
+            Ton idée. <span className="font-medium text-ink">Construite avec l&apos;IA.</span>{" "}
+            Vendue en un mois.
           </motion.p>
 
-          <motion.div variants={item} className="mt-9 flex flex-col gap-3 sm:flex-row sm:items-center">
+          <motion.div variants={item} className="mt-7 flex flex-col gap-3 sm:flex-row sm:items-center">
             <Button href="/commencer" size="default">
               Trouver mon idée
             </Button>
