@@ -3,7 +3,6 @@ import Link from "next/link";
 import { Logo } from "@/components/ui/logo";
 import { PricingCards } from "@/components/pricing/pricing-cards";
 import { AccessCodeInline } from "@/components/access/access-code-inline";
-import { SignOutButton } from "@/components/auth/sign-out-button";
 import { createClient } from "@/lib/supabase/server";
 
 export const metadata: Metadata = {
@@ -25,11 +24,10 @@ export default async function TarifsPage() {
 
   return (
     <div className="min-h-screen">
-      <header className="flex items-center justify-between px-5 py-6 sm:px-8">
+      <header className="px-5 py-6 sm:px-8">
         <Link href="/" className="inline-flex">
           <Logo />
         </Link>
-        {isAuthenticated && <SignOutButton />}
       </header>
       <div className="mx-auto max-w-4xl px-5 pb-24 sm:px-8">
         <h1 className="font-display text-3xl font-semibold text-ink sm:text-4xl">Choisis ton rythme.</h1>
