@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { motion, type Variants } from "framer-motion";
 import { Eyebrow } from "@/components/ui/eyebrow";
 import { Button } from "@/components/ui/button";
@@ -25,6 +26,18 @@ const item: Variants = {
 export function Hero() {
   return (
     <section className="relative overflow-hidden">
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 -z-20 opacity-[0.14] [mask-image:linear-gradient(to_bottom,black,transparent)]"
+      >
+        <Image
+          src="/images/hero-dashboard.jpg"
+          alt=""
+          fill
+          priority
+          className="scale-110 object-cover object-top blur-[2px]"
+        />
+      </div>
       <VelocityField className="pointer-events-none absolute inset-0 -z-10" />
 
       <div className="mx-auto grid max-w-6xl gap-14 px-5 pt-16 pb-20 sm:px-8 sm:pt-24 sm:pb-28 lg:grid-cols-[1.05fr_0.95fr] lg:items-center lg:gap-10 lg:pt-28">
