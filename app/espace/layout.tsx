@@ -1,7 +1,6 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
-import { PresenceHeartbeat } from "@/components/espace/presence-heartbeat";
 import { ChatWidget } from "@/components/espace/chat-widget";
 import { Logo } from "@/components/ui/logo";
 
@@ -27,7 +26,6 @@ export default async function EspaceLayout({ children }: { children: React.React
 
   return (
     <>
-      <PresenceHeartbeat />
       <header className="px-5 py-6 sm:px-8">
         <Link href="/espace" className="inline-flex">
           <Logo />

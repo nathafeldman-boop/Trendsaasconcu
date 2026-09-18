@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Bricolage_Grotesque, Manrope, JetBrains_Mono } from "next/font/google";
 import { AmbientGlow } from "@/components/ui/ambient-glow";
 import { GlobalSignOut } from "@/components/auth/global-sign-out";
+import { ActivityHeartbeat } from "@/components/activity-heartbeat";
 import "./globals.css";
 
 const display = Bricolage_Grotesque({
@@ -58,6 +59,7 @@ export default function RootLayout({
     >
       <body className="min-h-full bg-canvas text-ink antialiased">
         <AmbientGlow />
+        <ActivityHeartbeat />
         <GlobalSignOut />
         {children}
       </body>

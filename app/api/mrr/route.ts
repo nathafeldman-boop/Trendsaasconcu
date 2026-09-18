@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import Stripe from "stripe";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { computeMrr } from "@/lib/stripe/mrr";
 
 export async function GET() {
   const supabase = await createClient();
@@ -28,34 +29,11 @@ export async function GET() {
   try {
     const stripe = new Stripe(connection.stripe_secret_key);
     const subscriptions = await stripe.subscriptions.list({ status: "active", limit: 100 });
-
-    let mrrCents = 0;
-    let currency = "eur";
-
-    for (const sub of subscriptions.data) {
-      for (const item of sub.items.data) {
-        const price = item.price;
-        if (!price?.unit_amount || !price.recurring) continue;
-        const quantity = item.quantity ?? 1;
-        const amount = price.unit_amount * quantity;
-        const count = price.recurring.interval_count || 1;
-        currency = price.currency ?? currency;
-
-        if (price.recurring.interval === "year") {
-          mrrCents += amount / (12 * count);
-        } else if (price.recurring.interval === "month") {
-          mrrCents += amount / count;
-        } else if (price.recurring.interval === "week") {
-          mrrCents += (amount * 52) / (12 * count);
-        } else if (price.recurring.interval === "day") {
-          mrrCents += (amount * 365) / (12 * count);
-        }
-      }
-    }
+    const { mrr, currency } = computeMrr(subscriptions.data);
 
     return NextResponse.json({
       connected: true,
-      mrr: Math.round(mrrCents) / 100,
+      mrr,
       currency,
       activeSubscriptions: subscriptions.data.length,
     });

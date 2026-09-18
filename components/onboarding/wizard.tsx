@@ -331,6 +331,17 @@ export function OnboardingWizard() {
         .from("onboarding_responses")
         .upsert({ user_id: data.user.id, answers }, { onConflict: "user_id" })
         .then(() => {});
+
+      // Overwrites the plain "/commencer" the global heartbeat just set —
+      // this stays put (no route change) until the next step, so it won't
+      // get clobbered by that heartbeat's own keep-alive interval.
+      const liveSequence = getSequence(answers);
+      const liveCurrentId = liveSequence[Math.min(step, liveSequence.length - 1)];
+      supabase
+        .from("profiles")
+        .update({ current_path: `/commencer · étape ${step + 1}/${liveSequence.length} · ${liveCurrentId}` })
+        .eq("id", data.user.id)
+        .then(() => {});
     });
   }, [step, answers]);
 
