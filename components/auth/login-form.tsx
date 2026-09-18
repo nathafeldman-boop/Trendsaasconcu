@@ -2,14 +2,13 @@
 
 import { useState, type FormEvent } from "react";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
 import { translateAuthError } from "@/lib/supabase/auth-error";
 
 export function LoginForm({ onSuccess }: { onSuccess?: () => void }) {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const plan = searchParams.get("plan");
   const next = searchParams.get("next");
@@ -41,7 +40,11 @@ export function LoginForm({ onSuccess }: { onSuccess?: () => void }) {
         // fall through below
       }
     }
-    router.push(next || "/espace");
+    // Hard navigation, not router.push: Next's client Router Cache can
+    // still be holding another route's render from whoever was signed in
+    // before this login, and router.refresh() alone only clears the cache
+    // for the current route, not others already visited in this tab.
+    window.location.assign(next || "/espace");
   }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {

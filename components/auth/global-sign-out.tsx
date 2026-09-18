@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { LogOut } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
@@ -17,16 +16,20 @@ import { createClient } from "@/lib/supabase/client";
 // previously ended up overlapping page content once the user scrolled a
 // taller page like the signup form.
 export function GlobalSignOut() {
-  const router = useRouter();
   const [loading, setLoading] = useState(false);
 
   async function handleSignOut() {
     const supabase = createClient();
     setLoading(true);
     if (supabase) await supabase.auth.signOut();
-    router.push("/connexion");
-    router.refresh();
-    setLoading(false);
+    // A hard navigation, not router.push, because Next's client-side Router
+    // Cache holds other already-visited routes' rendered output in memory —
+    // router.refresh() only clears the cache for the route you're currently
+    // on. Without this, signing out and creating a second account in the
+    // same tab could still serve a stale, signed-in-as-the-old-account
+    // render for some other route until that cache entry expired.
+    // eslint-disable-next-line @next/next/no-location-assign-relative-destination
+    window.location.assign("/connexion");
   }
 
   return (

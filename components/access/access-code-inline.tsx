@@ -51,7 +51,10 @@ export function AccessCodeInline({ alwaysOpen = false }: { alwaysOpen?: boolean 
         .eq("id", user.id)
         .single();
 
-      router.push(profile?.is_admin ? "/admin" : "/espace");
+      // Hard navigation: this account's permissions just changed, and a
+      // cached render of /admin or /espace from before could still reflect
+      // the old, access-less state.
+      window.location.assign(profile?.is_admin ? "/admin" : "/espace");
     } catch (err) {
       setError(
         "Erreur inattendue : " + (err instanceof Error ? err.message : "réessaie dans un instant.")
