@@ -343,6 +343,9 @@ export function OnboardingWizard() {
 
   useEffect(() => {
     if (currentId !== "analyzing") return;
+    // Reset to the first tip every time this step is (re)entered, e.g. via
+    // the back button — an intentional reset, not derivable from render.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setAnalysisTip(0);
     const totalDuration = PLAN_ANALYSIS_TIPS.length * PLAN_ANALYSIS_TIP_INTERVAL;
     const tipTimer = setInterval(
