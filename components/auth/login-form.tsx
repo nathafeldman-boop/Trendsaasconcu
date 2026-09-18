@@ -8,6 +8,7 @@ import { OrDivider } from "@/components/auth/or-divider";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
+import { translateAuthError } from "@/lib/supabase/auth-error";
 
 export function LoginForm({ onSuccess }: { onSuccess?: () => void }) {
   const router = useRouter();
@@ -15,7 +16,7 @@ export function LoginForm({ onSuccess }: { onSuccess?: () => void }) {
   const [error, setError] = useState<string | null>(null);
   const supabase = createClient();
 
-  const complete = () => (onSuccess ? onSuccess() : router.push("/"));
+  const complete = () => (onSuccess ? onSuccess() : router.push("/espace"));
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -31,14 +32,18 @@ export function LoginForm({ onSuccess }: { onSuccess?: () => void }) {
     const password = String(form.get("password") ?? "");
 
     setLoading(true);
-    const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
-    setLoading(false);
-
-    if (signInError) {
-      setError(signInError.message);
-      return;
+    try {
+      const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
+      if (signInError) {
+        setError(translateAuthError(signInError));
+        return;
+      }
+      complete();
+    } catch {
+      setError("Impossible de contacter le serveur. Vérifie ta connexion et réessaie.");
+    } finally {
+      setLoading(false);
     }
-    complete();
   }
 
   async function handleGoogle() {

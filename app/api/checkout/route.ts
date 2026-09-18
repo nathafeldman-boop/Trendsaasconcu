@@ -49,16 +49,24 @@ export async function POST(request: Request) {
 
   const origin = new URL(request.url).origin;
 
-  const session = await stripe.checkout.sessions.create({
-    mode: "subscription",
-    line_items: [{ price: priceId, quantity: 1 }],
-    client_reference_id: user.id,
-    customer: profile?.stripe_customer_id ?? undefined,
-    customer_email: profile?.stripe_customer_id ? undefined : (user.email ?? undefined),
-    success_url: `${origin}/espace?checkout=success`,
-    cancel_url: `${origin}/tarifs`,
-    metadata: { user_id: user.id, plan: plan.id },
-  });
+  try {
+    const session = await stripe.checkout.sessions.create({
+      mode: "subscription",
+      line_items: [{ price: priceId, quantity: 1 }],
+      client_reference_id: user.id,
+      customer: profile?.stripe_customer_id ?? undefined,
+      customer_email: profile?.stripe_customer_id ? undefined : (user.email ?? undefined),
+      success_url: `${origin}/espace?checkout=success`,
+      cancel_url: `${origin}/tarifs`,
+      metadata: { user_id: user.id, plan: plan.id },
+    });
 
-  return NextResponse.json({ url: session.url });
+    return NextResponse.json({ url: session.url });
+  } catch (err) {
+    // A bad price ID (test/live mode mismatch) or any other Stripe-side
+    // failure would otherwise surface as a raw 500 with no JSON body,
+    // breaking the client's res.json() with an unhelpful generic error.
+    console.error("Stripe checkout session creation failed:", err);
+    return NextResponse.json({ error: "Checkout failed" }, { status: 502 });
+  }
 }

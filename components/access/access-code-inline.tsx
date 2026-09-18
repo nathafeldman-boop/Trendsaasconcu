@@ -40,21 +40,25 @@ export function AccessCodeInline({ isAuthenticated }: { isAuthenticated: boolean
     if (!code) return;
 
     setLoading(true);
-    const { data, error: rpcError } = await supabase.rpc("redeem_access_code", { p_code: code });
-    setLoading(false);
+    try {
+      const { data, error: rpcError } = await supabase.rpc("redeem_access_code", { p_code: code });
+      if (rpcError || !data) {
+        setError("Code invalide, expiré ou déjà utilisé.");
+        return;
+      }
 
-    if (rpcError || !data) {
-      setError("Code invalide, expiré ou déjà utilisé.");
-      return;
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("is_admin")
+        .eq("id", user.id)
+        .single();
+
+      router.push(profile?.is_admin ? "/admin" : "/espace");
+    } catch {
+      setError("Impossible de contacter le serveur. Vérifie ta connexion et réessaie.");
+    } finally {
+      setLoading(false);
     }
-
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("is_admin")
-      .eq("id", user.id)
-      .single();
-
-    router.push(profile?.is_admin ? "/admin" : "/espace");
   }
 
   if (!open) {

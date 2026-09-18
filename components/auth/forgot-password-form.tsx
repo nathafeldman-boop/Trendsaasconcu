@@ -5,6 +5,7 @@ import { AuthShell } from "@/components/auth/auth-shell";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
+import { translateAuthError } from "@/lib/supabase/auth-error";
 
 export function ForgotPasswordForm() {
   const [loading, setLoading] = useState(false);
@@ -25,16 +26,20 @@ export function ForgotPasswordForm() {
     }
 
     setLoading(true);
-    const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/reinitialiser-mot-de-passe`,
-    });
-    setLoading(false);
-
-    if (resetError) {
-      setError(resetError.message);
-      return;
+    try {
+      const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reinitialiser-mot-de-passe`,
+      });
+      if (resetError) {
+        setError(translateAuthError(resetError));
+        return;
+      }
+      setSent(true);
+    } catch {
+      setError("Impossible de contacter le serveur. Vérifie ta connexion et réessaie.");
+    } finally {
+      setLoading(false);
     }
-    setSent(true);
   }
 
   if (sent) {

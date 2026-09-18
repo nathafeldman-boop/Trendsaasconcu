@@ -7,6 +7,7 @@ import { OrDivider } from "@/components/auth/or-divider";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
+import { translateAuthError } from "@/lib/supabase/auth-error";
 
 export function SignupForm({ onSuccess }: { onSuccess?: () => void }) {
   const router = useRouter();
@@ -14,7 +15,7 @@ export function SignupForm({ onSuccess }: { onSuccess?: () => void }) {
   const [error, setError] = useState<string | null>(null);
   const supabase = createClient();
 
-  const complete = () => (onSuccess ? onSuccess() : router.push("/"));
+  const complete = () => (onSuccess ? onSuccess() : router.push("/espace"));
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -32,34 +33,39 @@ export function SignupForm({ onSuccess }: { onSuccess?: () => void }) {
     const password = String(form.get("password") ?? "");
 
     setLoading(true);
-    const { data, error: signUpError } = await supabase.auth.signUp({
-      email,
-      password,
-      options: { data: { first_name: firstName } },
-    });
-    setLoading(false);
+    try {
+      const { data, error: signUpError } = await supabase.auth.signUp({
+        email,
+        password,
+        options: { data: { first_name: firstName } },
+      });
 
-    if (signUpError) {
-      setError(signUpError.message);
-      return;
-    }
-    if (!data.session) {
-      // Supabase returns this same shape (a user object, no session, no
-      // error) for two very different cases, to avoid leaking which emails
-      // are registered: a brand-new signup awaiting confirmation, and a
-      // retry on an email that already has an account. `identities` is
-      // empty only in the second case — that's the documented way to tell
-      // them apart.
-      if (data.user?.identities?.length === 0) {
-        setError("Ce compte existe déjà. Connecte-toi plutôt.");
+      if (signUpError) {
+        setError(translateAuthError(signUpError));
         return;
       }
-      setError(
-        "Ton compte est créé mais pas encore confirmé. Vérifie ta boîte mail (et les spams) pour activer ton accès."
-      );
-      return;
+      if (!data.session) {
+        // Supabase returns this same shape (a user object, no session, no
+        // error) for two very different cases, to avoid leaking which
+        // emails are registered: a brand-new signup awaiting confirmation,
+        // and a retry on an email that already has an account. `identities`
+        // is empty only in the second case — that's the documented way to
+        // tell them apart.
+        if (data.user?.identities?.length === 0) {
+          setError("Ce compte existe déjà. Connecte-toi plutôt.");
+          return;
+        }
+        setError(
+          "Ton compte est créé mais pas encore confirmé. Vérifie ta boîte mail (et les spams) pour activer ton accès."
+        );
+        return;
+      }
+      complete();
+    } catch {
+      setError("Impossible de contacter le serveur. Vérifie ta connexion et réessaie.");
+    } finally {
+      setLoading(false);
     }
-    complete();
   }
 
   async function handleGoogle() {
@@ -88,7 +94,17 @@ export function SignupForm({ onSuccess }: { onSuccess?: () => void }) {
       </p>
 
       {error && (
-        <p className="font-body text-[13px] leading-relaxed text-red-400">{error}</p>
+        <p className="font-body text-[13px] leading-relaxed text-red-400">
+          {error}
+          {error.startsWith("Ce compte existe déjà") && (
+            <>
+              {" "}
+              <a href="/connexion" className="underline underline-offset-2 hover:text-red-300">
+                Se connecter
+              </a>
+            </>
+          )}
+        </p>
       )}
 
       <Button type="submit" showArrow={false} disabled={loading} className="mt-1 w-full">

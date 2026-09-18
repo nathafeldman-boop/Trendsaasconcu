@@ -6,6 +6,7 @@ import { AuthShell } from "@/components/auth/auth-shell";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
+import { translateAuthError } from "@/lib/supabase/auth-error";
 
 export function ResetPasswordForm() {
   const router = useRouter();
@@ -26,14 +27,18 @@ export function ResetPasswordForm() {
     }
 
     setLoading(true);
-    const { error: updateError } = await supabase.auth.updateUser({ password });
-    setLoading(false);
-
-    if (updateError) {
-      setError(updateError.message);
-      return;
+    try {
+      const { error: updateError } = await supabase.auth.updateUser({ password });
+      if (updateError) {
+        setError(translateAuthError(updateError));
+        return;
+      }
+      router.push("/espace");
+    } catch {
+      setError("Impossible de contacter le serveur. Vérifie ta connexion et réessaie.");
+    } finally {
+      setLoading(false);
     }
-    router.push("/espace");
   }
 
   return (

@@ -31,10 +31,15 @@ export async function POST(request: Request) {
   }
 
   const origin = new URL(request.url).origin;
-  const session = await stripe.billingPortal.sessions.create({
-    customer: profile.stripe_customer_id,
-    return_url: `${origin}/espace`,
-  });
+  try {
+    const session = await stripe.billingPortal.sessions.create({
+      customer: profile.stripe_customer_id,
+      return_url: `${origin}/espace`,
+    });
 
-  return NextResponse.json({ url: session.url });
+    return NextResponse.json({ url: session.url });
+  } catch (err) {
+    console.error("Stripe billing portal session creation failed:", err);
+    return NextResponse.json({ error: "Billing portal failed" }, { status: 502 });
+  }
 }

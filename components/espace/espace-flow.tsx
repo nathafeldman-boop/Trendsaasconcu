@@ -397,25 +397,36 @@ export function EspaceFlow({
 
 function ManageSubscriptionButton() {
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   async function open() {
+    setError(null);
     setLoading(true);
     try {
       const res = await fetch("/api/billing-portal", { method: "POST" });
       const data = await res.json();
-      if (data.url) window.location.assign(data.url);
+      if (data.url) {
+        window.location.assign(data.url);
+        return;
+      }
+      setError("Impossible d'ouvrir la gestion de l'abonnement pour l'instant.");
+    } catch {
+      setError("Une erreur est survenue. Réessaie.");
     } finally {
       setLoading(false);
     }
   }
 
   return (
-    <button
-      onClick={open}
-      disabled={loading}
-      className="shrink-0 rounded-full border border-ink/15 px-4 py-2 font-body text-[13px] text-ink-muted transition-colors hover:border-accent/40 hover:text-ink"
-    >
-      {loading ? "..." : "Gérer mon abonnement"}
-    </button>
+    <div className="flex flex-col items-end gap-1.5">
+      <button
+        onClick={open}
+        disabled={loading}
+        className="shrink-0 rounded-full border border-ink/15 px-4 py-2 font-body text-[13px] text-ink-muted transition-colors hover:border-accent/40 hover:text-ink disabled:opacity-50"
+      >
+        {loading ? "..." : "Gérer mon abonnement"}
+      </button>
+      {error && <p className="font-body text-[12px] text-red-400">{error}</p>}
+    </div>
   );
 }
