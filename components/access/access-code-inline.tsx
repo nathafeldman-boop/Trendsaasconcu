@@ -42,8 +42,11 @@ export function AccessCodeInline({
     }
 
     const form = new FormData(event.currentTarget);
-    const code = String(form.get("code") ?? "").trim();
-    if (!code) return;
+    const code = String(form.get("code") ?? "").trim().toUpperCase();
+    if (!code) {
+      setError("Merci d'entrer ton code d'accès.");
+      return;
+    }
 
     setLoading(true);
     try {
@@ -93,9 +96,8 @@ export function AccessCodeInline({
       <Input
         label="Code d'accès"
         name="code"
-        placeholder="SAASFOUNDER-XXXX"
+        placeholder="Ton code (ex : NATHANAEL)"
         autoComplete="off"
-        required
       />
       {error && <p className="text-center font-body text-[12px] text-red-400">{error}</p>}
       <Button
