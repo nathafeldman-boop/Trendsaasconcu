@@ -3,8 +3,6 @@
 import { useState, type FormEvent } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { GoogleButton } from "@/components/auth/google-button";
-import { OrDivider } from "@/components/auth/or-divider";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
@@ -13,7 +11,6 @@ import { translateAuthError } from "@/lib/supabase/auth-error";
 export function LoginForm({ onSuccess }: { onSuccess?: () => void }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
-  const [googleLoading, setGoogleLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const supabase = createClient();
 
@@ -47,24 +44,8 @@ export function LoginForm({ onSuccess }: { onSuccess?: () => void }) {
     }
   }
 
-  async function handleGoogle() {
-    if (googleLoading) return; // guard against a double-tap starting two OAuth flows at once
-    if (!supabase) {
-      complete();
-      return;
-    }
-    setGoogleLoading(true);
-    await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: { redirectTo: `${window.location.origin}/auth/callback?next=/espace` },
-    });
-  }
-
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-5">
-      <GoogleButton onClick={handleGoogle} disabled={googleLoading} />
-      <OrDivider />
-
       <Input label="Ton email" name="email" type="email" placeholder="camille@exemple.fr" autoComplete="email" required />
       <div className="flex flex-col gap-2">
         <div className="flex items-center justify-between">
@@ -87,7 +68,7 @@ export function LoginForm({ onSuccess }: { onSuccess?: () => void }) {
           type="password"
           autoComplete="current-password"
           required
-          className="h-[52px] rounded-lg border border-ink/12 bg-ink/[0.03] px-4 font-body text-[15px] text-ink outline-none transition-colors duration-150 focus:border-accent/60 focus:bg-ink/[0.05]"
+          className="h-[52px] rounded-lg border border-ink/12 bg-accent/5 px-4 font-body text-[15px] text-ink outline-none transition-colors duration-150 focus:border-accent/60 focus:bg-accent/[0.08]"
         />
       </div>
 

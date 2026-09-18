@@ -18,6 +18,11 @@ const FAQ_ITEMS: AccordionItemData[] = [
       "Le plan est calibré sur 30 jours, avec une action concrète à chaque étape. Certains vont plus vite, d'autres prennent plus de temps — l'objectif est d'avancer, pas de sprinter.",
   },
   {
+    question: "Les chiffres du dashboard, ils viennent d'où ?",
+    answer:
+      "Ceux affichés en exemple sur cette page sont fictifs, pour montrer à quoi ressemble l'interface. Une fois lancé, tu connectes ta propre clé Stripe en lecture seule et c'est ton volume, ton MRR et tes paiements réels qui s'affichent.",
+  },
+  {
     question: "Est-ce que mon idée est aussi donnée à d'autres ?",
     answer:
       "Non. Les idées sont sélectionnées selon tes réponses, pas distribuées au hasard de la même façon à tout le monde.",

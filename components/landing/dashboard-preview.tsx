@@ -45,7 +45,7 @@ export function DashboardPreview() {
           </div>
           <span className="font-body text-sm font-medium text-ink">Paiements</span>
           <span className="ml-auto flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-wider text-ink-faint">
-            <span className="size-1.5 rounded-full bg-emerald-400" />
+            <span className="size-1.5 rounded-full bg-success" />
             En direct
           </span>
         </div>
@@ -78,7 +78,7 @@ export function DashboardPreview() {
 
         <div className="flex items-center justify-between">
           <p className="font-body text-[13px] font-medium text-ink">Volume brut · 4 semaines</p>
-          <span className="rounded-full bg-emerald-500/15 px-2 py-0.5 font-mono text-[11px] font-medium text-emerald-400">
+          <span className="rounded-full bg-success/12 px-2 py-0.5 font-mono text-[11px] font-medium text-success">
             +47 %
           </span>
         </div>

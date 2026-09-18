@@ -64,7 +64,7 @@ export function CommitmentHold({ onCommit }: { onCommit: () => void }) {
             stroke="currentColor"
             strokeWidth="3"
             strokeLinecap="round"
-            className={done ? "text-emerald-400" : "text-accent"}
+            className={done ? "text-success" : "text-accent"}
             strokeDasharray={CIRCUMFERENCE}
             strokeDashoffset={CIRCUMFERENCE * (1 - progress)}
           />

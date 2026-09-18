@@ -149,8 +149,8 @@ export function EspaceFlow({
           {hasStripeSubscription && <ManageSubscriptionButton />}
         </div>
         {checkoutSuccess && (
-          <div className="mt-6 rounded-lg border border-emerald-500/30 bg-emerald-500/10 p-4">
-            <p className="font-body text-[14px] text-emerald-300">
+          <div className="mt-6 rounded-lg border border-success/30 bg-success/10 p-4">
+            <p className="font-body text-[14px] text-success">
               Paiement confirmé, merci ! Ton accès est actif.
             </p>
           </div>

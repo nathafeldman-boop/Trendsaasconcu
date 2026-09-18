@@ -31,7 +31,7 @@ export function AuthShell({
           initial={{ opacity: 0, y: 20, scale: 0.98 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-          className="w-full max-w-[420px] rounded-xl border border-ink/10 bg-canvas-raised/60 p-8 sm:p-10"
+          className="w-full max-w-[420px] rounded-xl border border-ink/10 bg-canvas p-8 shadow-[0_30px_80px_-40px_rgba(27,22,48,0.25)] sm:p-10"
         >
           <Eyebrow tone="accent">{eyebrow}</Eyebrow>
           <h1 className="mt-5 font-display text-[28px] font-semibold leading-tight tracking-tight text-ink sm:text-[32px]">

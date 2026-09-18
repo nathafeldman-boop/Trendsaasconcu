@@ -2,18 +2,22 @@
 
 @theme {
   /* Canvas & surfaces — white with a violet cast, not neutral gray */
-  --color-canvas: #ffffff;
-  --color-canvas-raised: #f5f2ff;
-  --color-canvas-overlay: #ece4ff;
+  --color-canvas: #faf9fd;
+  --color-canvas-raised: #f3f0fb;
+  --color-canvas-overlay: rgba(255, 255, 255, 0.88);
 
   /* Typography colors — dark violet instead of achromatic gray */
-  --color-ink: #1a0f3d;
-  --color-ink-muted: #4d4070;
-  --color-ink-faint: #8b80ac;
+  --color-ink: #1b1630;
+  --color-ink-muted: #5d5680;
+  --color-ink-faint: #8a83ad;
 
   /* Accent — violet is the dominant brand color, used generously */
-  --color-accent: #6f5cf0;
-  --color-accent-deep: #4a3bc7;
+  --color-accent: #6b57e8;
+  --color-accent-light: #8b7bff;
+  --color-accent-deep: #5b4fe0;
+
+  /* Success — used for KPI deltas and "paid" states */
+  --color-success: #0e9f6e;
 
   /* Radius scale */
   --radius-sm: 8px;
@@ -51,8 +55,8 @@ body {
 }
 
 ::selection {
-  background: var(--color-accent);
-  color: var(--color-canvas);
+  background: rgba(139, 123, 255, 0.28);
+  color: var(--color-ink);
 }
 
 @media (prefers-reduced-motion: reduce) {

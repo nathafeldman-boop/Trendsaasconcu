@@ -156,7 +156,7 @@ export function AdminPanel({
                     <span
                       className={`rounded-full px-2 py-0.5 font-mono text-[10px] uppercase ${
                         u.has_access
-                          ? "bg-emerald-500/15 text-emerald-400"
+                          ? "bg-success/12 text-success"
                           : "bg-ink/8 text-ink-faint"
                       }`}
                     >
