@@ -31,11 +31,11 @@ export function Hero() {
         className="pointer-events-none absolute inset-0 -z-20 opacity-[0.14] [mask-image:linear-gradient(to_bottom,black,transparent)]"
       >
         <Image
-          src="/images/hero-dashboard.jpg"
+          src="/images/hero-bg.jpg"
           alt=""
           fill
           priority
-          className="scale-110 object-cover object-top blur-[2px]"
+          className="scale-110 object-cover object-center blur-[2px]"
         />
       </div>
       <VelocityField className="pointer-events-none absolute inset-0 -z-10" />

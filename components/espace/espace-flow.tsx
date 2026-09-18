@@ -49,6 +49,44 @@ const CHECKLIST_ITEMS = [
   { id: "share", label: "Partage le lien à 5 personnes pour un premier retour" },
 ];
 
+const CHECKLIST_HELP: Record<string, string[]> = {
+  site: [
+    "Colle le prompt fourni dans l'outil choisi sans le modifier la première fois — tu pourras ajuster une fois le résultat sous les yeux.",
+    "Laisse l'outil générer une première version complète avant de juger : certains affichent un aperçu en direct, d'autres demandent de lancer le projet toi-même.",
+    "Si le résultat ne correspond pas, précise en une phrase ce qui cloche (« le formulaire est en anglais », « il manque une page tarifs ») plutôt que de tout redemander depuis le début.",
+    "Une fois satisfait, note où vit le code (ton compte Replit/Lovable, ou un dépôt GitHub) — tu en auras besoin pour le déploiement.",
+  ],
+  auth: [
+    "Crée un compte test avec un email que tu contrôles, puis déconnecte-toi et reconnecte-toi avec pour vérifier que le mot de passe est bien contrôlé.",
+    "Essaie volontairement un mauvais mot de passe : tu dois voir un message d'erreur clair, pas une page blanche.",
+    "Si un « mot de passe oublié » a été généré, teste-le aussi — c'est souvent oublié et ça bloque de vrais utilisateurs plus tard.",
+  ],
+  payment: [
+    "Crée un compte Stripe (gratuit) sur stripe.com si tu n'en as pas déjà un, et reste en mode test au début — aucune vraie carte n'est débitée.",
+    "Demande à ton outil d'intégrer Stripe Checkout avec un seul prix pour commencer, pas besoin de plusieurs plans tout de suite.",
+    "Récupère tes clés dans le dashboard Stripe (Développeurs → Clés API) et ne les partage jamais dans un message ou un dépôt de code public.",
+    "Teste un paiement avec la carte de test 4242 4242 4242 4242 (date future, CVC quelconque) et vérifie qu'il apparaît dans ton dashboard Stripe.",
+  ],
+  deploy: [
+    "Crée un compte Vercel ou Netlify (plan gratuit largement suffisant pour démarrer) avec ton compte GitHub.",
+    "Connecte le dépôt GitHub du projet — demande à ton outil de l'y pousser s'il ne l'a pas déjà fait.",
+    "Ajoute dans les réglages du projet les mêmes variables d'environnement (clés Stripe, Supabase...) que celles utilisées en local, sinon le site déployé ne pourra pas s'y connecter.",
+    "Une fois déployé, ouvre le lien sur ton téléphone en plus de l'ordinateur pour vérifier l'affichage.",
+  ],
+  test: [
+    "Ouvre ton site comme si tu ne le connaissais pas : crée un compte, paie en mode test, utilise la fonctionnalité principale jusqu'au bout.",
+    "Note chaque endroit où tu hésites, même un détail — ce sont les points qui vont bloquer un vrai visiteur.",
+    "Teste sur mobile, pas seulement sur ordinateur.",
+    "Si possible, fais tester quelqu'un de ton entourage sans lui expliquer comment ça marche, et regarde où il bute.",
+  ],
+  share: [
+    "Choisis 5 personnes qui correspondent à qui tu vises, pas juste ta famille par politesse.",
+    "Envoie le lien avec une question précise plutôt que « dis-moi ce que tu en penses » — par exemple « est-ce que tu comprends en 10 secondes à quoi ça sert ? ».",
+    "Demande-leur d'aller jusqu'au bout du parcours, inscription incluse, pas juste de regarder la page d'accueil.",
+    "Note tout ce qu'ils te disent, même ce qui semble insignifiant — ça sert à repérer les frictions, pas à valider que tout est parfait.",
+  ],
+};
+
 const IDEA_SUGGESTIONS = [
   "Un outil qui automatise une tâche répétitive dans un métier que tu connais bien (facturation, planning, suivi client...).",
   "Une version simplifiée d'un logiciel que tu trouves trop cher ou trop compliqué, pour un public précis.",
@@ -106,6 +144,7 @@ export function EspaceFlow({
   const [promptSource, setPromptSource] = useState<"mistral" | "fallback" | null>(null);
   const [loadingPrompt, setLoadingPrompt] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [helpOpen, setHelpOpen] = useState<Record<string, boolean>>({});
 
   async function persist(patch: Partial<BuilderState>) {
     const next = { ...builder, ...patch };
@@ -352,27 +391,60 @@ export function EspaceFlow({
               <div className="mt-6 flex flex-col gap-3">
                 {CHECKLIST_ITEMS.map((item) => {
                   const checked = !!builder.checklist[item.id];
+                  const help = CHECKLIST_HELP[item.id];
+                  const isHelpOpen = !!helpOpen[item.id];
                   return (
-                    <button
-                      key={item.id}
-                      onClick={() =>
-                        persist({ checklist: { ...builder.checklist, [item.id]: !checked } })
-                      }
-                      className="flex items-center gap-3 rounded-lg border border-ink/12 bg-ink/[0.02] px-4 py-3 text-left"
-                    >
-                      <span
-                        className={`flex size-5 shrink-0 items-center justify-center rounded-[6px] border ${
-                          checked ? "border-accent bg-accent" : "border-ink/25"
-                        }`}
+                    <div key={item.id} className="rounded-lg border border-ink/12 bg-ink/[0.02]">
+                      <button
+                        onClick={() =>
+                          persist({ checklist: { ...builder.checklist, [item.id]: !checked } })
+                        }
+                        className="flex w-full items-center gap-3 px-4 py-3 text-left"
                       >
-                        {checked && <Check className="size-3.5 text-canvas" strokeWidth={3} />}
-                      </span>
-                      <span
-                        className={`font-body text-[14px] ${checked ? "text-ink-faint line-through" : "text-ink"}`}
-                      >
-                        {item.label}
-                      </span>
-                    </button>
+                        <span
+                          className={`flex size-5 shrink-0 items-center justify-center rounded-[6px] border ${
+                            checked ? "border-accent bg-accent" : "border-ink/25"
+                          }`}
+                        >
+                          {checked && <Check className="size-3.5 text-canvas" strokeWidth={3} />}
+                        </span>
+                        <span
+                          className={`font-body text-[14px] ${checked ? "text-ink-faint line-through" : "text-ink"}`}
+                        >
+                          {item.label}
+                        </span>
+                      </button>
+                      {help && (
+                        <div className="border-t border-ink/8 px-4 py-2.5">
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setHelpOpen((h) => ({ ...h, [item.id]: !h[item.id] }))
+                            }
+                            className="font-body text-[12px] text-ink-faint underline underline-offset-2 hover:text-accent"
+                          >
+                            {isHelpOpen
+                              ? "Masquer les étapes détaillées"
+                              : "Tu n'y arrives pas ou tu ne comprends pas ?"}
+                          </button>
+                          <AnimatePresence initial={false}>
+                            {isHelpOpen && (
+                              <motion.ol
+                                initial={{ opacity: 0, height: 0 }}
+                                animate={{ opacity: 1, height: "auto" }}
+                                exit={{ opacity: 0, height: 0 }}
+                                transition={{ duration: 0.2 }}
+                                className="mt-2.5 flex list-decimal flex-col gap-1.5 overflow-hidden pl-5 font-body text-[13px] leading-relaxed text-ink-muted"
+                              >
+                                {help.map((step, i) => (
+                                  <li key={i}>{step}</li>
+                                ))}
+                              </motion.ol>
+                            )}
+                          </AnimatePresence>
+                        </div>
+                      )}
+                    </div>
                   );
                 })}
               </div>
