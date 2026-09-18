@@ -1,0 +1,13 @@
+-- All 7 public tables predate this project's ALTER DEFAULT PRIVILEGES setup
+-- for anon/authenticated/service_role (confirmed via pg_default_acl — it's
+-- configured correctly, but only applies to tables created *after* it was
+-- set). None of them ever got the standard Supabase grants retroactively, so
+-- every direct client (PostgREST) query against them — profiles.update from
+-- the activity heartbeat and onboarding wizard, the post-redeem is_admin
+-- check, admin-panel code inserts, builder/marketing progress, stripe key
+-- storage — has been failing with "permission denied for table X" the whole
+-- time, regardless of RLS policy (Postgres checks table-level GRANTs before
+-- RLS runs). RPC calls (SECURITY DEFINER) were unaffected, which is why this
+-- went unnoticed until a client-side query's silent failure became visible
+-- (the access-code redeem flow "doing nothing" after clicking Valider).
+grant select, insert, update, delete on all tables in schema public to authenticated;
