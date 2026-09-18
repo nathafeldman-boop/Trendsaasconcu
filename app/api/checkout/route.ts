@@ -1,13 +1,27 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createStripeClient } from "@/lib/stripe/client";
-import { PLANS } from "@/lib/stripe/plans";
+import { PLANS, type PlanId } from "@/lib/stripe/plans";
+
+// Server-only: which Stripe Price object each plan maps to. Env vars let
+// this point at test-mode prices (alongside a test STRIPE_SECRET_KEY)
+// without touching code; falls back to the live prices created earlier.
+const PRICE_IDS: Record<PlanId, string | undefined> = {
+  weekly: process.env.STRIPE_PRICE_WEEKLY || "price_1UGlKLRd6r34OMU60kyhAwLb",
+  monthly: process.env.STRIPE_PRICE_MONTHLY || "price_1UGlIkRd6r34OMU6NG4M3tTK",
+  annual: process.env.STRIPE_PRICE_ANNUAL || "price_1UGlLHRd6r34OMU6mnaBytQZ",
+};
 
 export async function POST(request: Request) {
   const body = await request.json().catch(() => null);
   const plan = PLANS.find((p) => p.id === body?.planId);
   if (!plan) {
     return NextResponse.json({ error: "Invalid plan" }, { status: 400 });
+  }
+
+  const priceId = PRICE_IDS[plan.id];
+  if (!priceId) {
+    return NextResponse.json({ error: "Plan not configured" }, { status: 503 });
   }
 
   const supabase = await createClient();
@@ -37,7 +51,7 @@ export async function POST(request: Request) {
 
   const session = await stripe.checkout.sessions.create({
     mode: "subscription",
-    line_items: [{ price: plan.priceId, quantity: 1 }],
+    line_items: [{ price: priceId, quantity: 1 }],
     client_reference_id: user.id,
     customer: profile?.stripe_customer_id ?? undefined,
     customer_email: profile?.stripe_customer_id ? undefined : (user.email ?? undefined),

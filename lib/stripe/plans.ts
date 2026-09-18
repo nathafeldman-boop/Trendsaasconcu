@@ -1,10 +1,12 @@
+// Client-safe display metadata only — no Stripe price IDs here. Those are
+// server-only (see app/api/checkout/route.ts), read from env vars so
+// switching between Stripe test/live mode never needs a code change.
 export const PLANS = [
   {
     id: "weekly",
     label: "Hebdomadaire",
     price: "9,99 €",
     interval: "semaine",
-    priceId: "price_1UGlKLRd6r34OMU60kyhAwLb",
     recommended: false,
   },
   {
@@ -12,7 +14,6 @@ export const PLANS = [
     label: "Mensuel",
     price: "16,99 €",
     interval: "mois",
-    priceId: "price_1UGlIkRd6r34OMU6NG4M3tTK",
     recommended: true,
   },
   {
@@ -20,7 +21,6 @@ export const PLANS = [
     label: "Annuel",
     price: "60 €",
     interval: "an",
-    priceId: "price_1UGlLHRd6r34OMU6mnaBytQZ",
     recommended: false,
   },
 ] as const;
