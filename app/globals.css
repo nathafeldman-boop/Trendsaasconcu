@@ -46,12 +46,17 @@
 
 html {
   color-scheme: light;
+  /* clip, not hidden: hidden forces the other axis into its own scroll
+     container too, which would break position: sticky and viewport-based
+     scroll-triggered animations used throughout the app. */
+  overflow-x: clip;
 }
 
 body {
   background: var(--color-canvas);
   color: var(--color-ink);
   font-family: var(--font-body), system-ui, sans-serif;
+  overflow-x: clip;
 }
 
 ::selection {
