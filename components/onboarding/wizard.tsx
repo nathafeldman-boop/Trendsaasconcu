@@ -1431,7 +1431,7 @@ export function OnboardingWizard() {
         title="Ton business est prêt."
         footer={
           <Button href="/tarifs" showArrow={false} className="w-full">
-            Accéder à mon espace
+            Choisir mon offre
           </Button>
         }
       >
