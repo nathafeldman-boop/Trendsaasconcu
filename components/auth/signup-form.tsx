@@ -44,9 +44,16 @@ export function SignupForm({ onSuccess }: { onSuccess?: () => void }) {
       return;
     }
     if (!data.session) {
-      // signUp succeeded but Supabase didn't hand back a session — email
-      // confirmation is still required server-side even though it's meant
-      // to be off. Say so instead of silently continuing as if logged in.
+      // Supabase returns this same shape (a user object, no session, no
+      // error) for two very different cases, to avoid leaking which emails
+      // are registered: a brand-new signup awaiting confirmation, and a
+      // retry on an email that already has an account. `identities` is
+      // empty only in the second case — that's the documented way to tell
+      // them apart.
+      if (data.user?.identities?.length === 0) {
+        setError("Ce compte existe déjà. Connecte-toi plutôt.");
+        return;
+      }
       setError(
         "Ton compte est créé mais pas encore confirmé. Vérifie ta boîte mail (et les spams) pour activer ton accès."
       );
