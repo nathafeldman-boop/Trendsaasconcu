@@ -12,6 +12,7 @@ import { translateAuthError } from "@/lib/supabase/auth-error";
 export function SignupForm({ onSuccess }: { onSuccess?: () => void }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const supabase = createClient();
 
@@ -69,10 +70,12 @@ export function SignupForm({ onSuccess }: { onSuccess?: () => void }) {
   }
 
   async function handleGoogle() {
+    if (googleLoading) return; // guard against a double-tap starting two OAuth flows at once
     if (!supabase) {
       complete();
       return;
     }
+    setGoogleLoading(true);
     await supabase.auth.signInWithOAuth({
       provider: "google",
       options: { redirectTo: `${window.location.origin}/commencer` },
@@ -81,7 +84,7 @@ export function SignupForm({ onSuccess }: { onSuccess?: () => void }) {
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-5">
-      <GoogleButton onClick={handleGoogle} />
+      <GoogleButton onClick={handleGoogle} disabled={googleLoading} />
       <OrDivider />
 
       <Input label="Ton prénom" name="firstName" placeholder="Camille" autoComplete="given-name" required />

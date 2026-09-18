@@ -1,9 +1,10 @@
-export function GoogleButton({ onClick }: { onClick?: () => void }) {
+export function GoogleButton({ onClick, disabled }: { onClick?: () => void; disabled?: boolean }) {
   return (
     <button
       type="button"
       onClick={onClick}
-      className="flex h-[52px] w-full items-center justify-center gap-3 rounded-lg border border-ink/12 bg-ink/[0.03] font-body text-[15px] font-medium text-ink transition-all duration-150 hover:scale-[1.01] hover:border-accent/40 hover:bg-ink/[0.06] active:scale-[0.97]"
+      disabled={disabled}
+      className="flex h-[52px] w-full items-center justify-center gap-3 rounded-lg border border-ink/12 bg-ink/[0.03] font-body text-[15px] font-medium text-ink transition-all duration-150 hover:scale-[1.01] hover:border-accent/40 hover:bg-ink/[0.06] active:scale-[0.97] disabled:pointer-events-none disabled:opacity-60"
     >
       <svg viewBox="0 0 24 24" className="size-[18px]">
         <path
