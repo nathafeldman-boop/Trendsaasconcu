@@ -1,39 +1,61 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ChangeEvent } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { MessageCircle, X, Send } from "lucide-react";
+import { MessageCircle, X, Send, Paperclip } from "lucide-react";
 
-type Message = { role: "user" | "assistant"; content: string };
+type Message = { role: "user" | "assistant"; content: string; image?: string };
+
+const MAX_IMAGE_BYTES = 4 * 1024 * 1024;
 
 export function ChatWidget() {
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
     {
       role: "assistant",
-      content: "Salut, je suis là pour t'aider à avancer sur ton SaaS. Pose-moi une question quand tu veux.",
+      content:
+        "Salut, je suis là pour t'aider à avancer sur ton SaaS. Pose-moi une question, ou joins une capture d'écran si tu es bloqué sur quelque chose de précis.",
     },
   ]);
   const [draft, setDraft] = useState("");
+  const [attachedImage, setAttachedImage] = useState<string | null>(null);
+  const [imageError, setImageError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (open) bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, loading, open]);
 
+  function handleFileSelect(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) return;
+    setImageError(null);
+    if (file.size > MAX_IMAGE_BYTES) {
+      setImageError("Image trop lourde (max 4 Mo).");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => setAttachedImage(reader.result as string);
+    reader.readAsDataURL(file);
+  }
+
   async function send() {
     const content = draft.trim();
-    if (!content || loading) return;
-    const next = [...messages, { role: "user" as const, content }];
+    if ((!content && !attachedImage) || loading) return;
+    const image = attachedImage;
+    const next = [...messages, { role: "user" as const, content, image: image ?? undefined }];
     setMessages(next);
     setDraft("");
+    setAttachedImage(null);
     setLoading(true);
     try {
       const res = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ messages: next }),
+        body: JSON.stringify({ messages: next, image }),
       });
       const data = await res.json();
       setMessages((m) => [...m, { role: "assistant", content: data.reply }]);
@@ -74,13 +96,50 @@ export function ChatWidget() {
                       : "bg-ink/[0.04] text-ink-muted"
                   }`}
                 >
+                  {m.image && (
+                    // eslint-disable-next-line @next/next/no-img-element -- ephemeral data URL, not a static asset
+                    <img
+                      src={m.image}
+                      alt="Capture jointe"
+                      className="mb-1.5 max-h-32 rounded-md object-contain"
+                    />
+                  )}
                   {m.content}
                 </div>
               ))}
               {loading && <p className="font-body text-[12px] text-ink-faint">L&apos;assistant écrit...</p>}
               <div ref={bottomRef} />
             </div>
+            {attachedImage && (
+              <div className="flex items-center gap-2 border-t border-ink/10 px-3 pt-2">
+                {/* eslint-disable-next-line @next/next/no-img-element -- ephemeral data URL, not a static asset */}
+                <img src={attachedImage} alt="" className="size-10 rounded-md object-cover" />
+                <button
+                  onClick={() => setAttachedImage(null)}
+                  className="font-body text-[12px] text-ink-faint underline underline-offset-2 hover:text-ink"
+                >
+                  Retirer
+                </button>
+              </div>
+            )}
+            {imageError && (
+              <p className="px-3 pt-2 font-body text-[11px] text-red-400">{imageError}</p>
+            )}
             <div className="flex items-center gap-2 border-t border-ink/10 p-3">
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleFileSelect}
+                className="hidden"
+              />
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                className="flex size-9 shrink-0 items-center justify-center rounded-lg border border-ink/12 text-ink-faint hover:text-ink"
+                title="Joindre une capture d'écran"
+              >
+                <Paperclip className="size-4" />
+              </button>
               <input
                 value={draft}
                 onChange={(e) => setDraft(e.target.value)}
