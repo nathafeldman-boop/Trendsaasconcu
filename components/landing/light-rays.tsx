@@ -1,8 +1,9 @@
 import type { CSSProperties } from "react";
 import { cn } from "@/lib/utils";
 
-// Soft beams of cyan light falling from the top edge. Pure CSS, so it costs
-// nothing on the main thread and stays still under reduced motion.
+// Soft white beams falling from the top edge, like showroom spotlights on
+// a car. Pure CSS, so it costs nothing on the main thread and stays still
+// under reduced motion.
 const RAYS = [
   { left: "8%", width: 120, height: "62%", alpha: 0.16, delay: "0s", skew: "-16deg", drift: "26px" },
   { left: "24%", width: 60, height: "78%", alpha: 0.22, delay: "-2.5s", skew: "-12deg", drift: "18px" },
@@ -24,7 +25,7 @@ export function LightRays({ className }: { className?: string }) {
               left: ray.left,
               width: ray.width,
               height: ray.height,
-              background: `linear-gradient(180deg, rgba(43, 255, 255, ${ray.alpha}) 0%, rgba(43, 255, 255, 0) 100%)`,
+              background: `linear-gradient(180deg, rgba(255, 255, 255, ${ray.alpha * 0.75}) 0%, rgba(255, 255, 255, 0) 100%)`,
               filter: "blur(clamp(22px, 3vw, 56px))",
               animationDelay: ray.delay,
               "--ray-skew": ray.skew,

@@ -60,7 +60,7 @@ export function HeroPrompt() {
 
   return (
     <div className="w-full max-w-[760px] rounded-[26px] p-2">
-      <div className="relative rounded-[22px] border border-accent-deep/60 bg-[#021e24]/85 shadow-[inset_0_0_18px_rgba(255,255,255,0.08),inset_0_2px_5px_rgba(255,255,255,0.25),0_0_60px_-20px_var(--color-accent)] backdrop-blur-md">
+      <div className="relative rounded-[22px] border border-white/12 bg-[#111113]/85 shadow-[inset_0_0_18px_rgba(255,255,255,0.06),inset_0_2px_5px_rgba(255,255,255,0.18),0_0_60px_-24px_var(--color-accent),0_30px_80px_-30px_rgba(0,0,0,0.9)] backdrop-blur-md">
         <div className="flex flex-wrap gap-1 p-2">
           {MODES.map(({ id, label, icon: Icon }) => (
             <button
@@ -75,7 +75,7 @@ export function HeroPrompt() {
               {mode === id && (
                 <motion.span
                   layoutId="hero-mode"
-                  className="absolute inset-0 rounded-[12px] bg-gradient-to-b from-[#08444b] to-[#106f71] shadow-[inset_0_0_4px_var(--color-accent)]"
+                  className="absolute inset-0 rounded-[12px] bg-gradient-to-b from-[#34343a] to-[#1c1c20] shadow-[inset_0_1px_0_rgba(255,255,255,0.18),inset_0_0_0_1px_rgba(51,244,239,0.35)]"
                   transition={{ type: "spring", stiffness: 420, damping: 34 }}
                 />
               )}

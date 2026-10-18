@@ -119,7 +119,7 @@ function PromptMock() {
         </motion.span>
       </div>
 
-      <div className="mt-3 rounded-[14px] border border-ink/8 bg-[#010d10]/80 p-4">
+      <div className="mt-3 rounded-[14px] border border-ink/8 bg-black/60 p-4">
         <motion.div
           variants={linesIn}
           initial="hidden"
@@ -256,7 +256,7 @@ export function StepsSection() {
         <div className="flex justify-center">
           <Eyebrow tone="accent">La méthode</Eyebrow>
         </div>
-        <h2 className="mt-5 font-display text-[34px] font-normal leading-[1.08] tracking-[-0.045em] text-ink sm:text-[46px]">
+        <h2 className="mt-5 font-display text-[34px] font-normal leading-[1.08] tracking-[-0.045em] text-chrome sm:text-[46px]">
           Ton SaaS en{" "}
           <span className="font-serif italic tracking-normal text-accent">3 étapes.</span>
         </h2>

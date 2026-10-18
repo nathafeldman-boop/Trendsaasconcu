@@ -21,7 +21,7 @@ export function Hero() {
   return (
     <section className="relative overflow-hidden">
       <LightRays className="absolute inset-x-0 top-0 -z-10 h-[760px]" />
-      <div aria-hidden className="tech-grid absolute inset-0 -z-20" />
+      <div aria-hidden className="carbon-weave absolute inset-0 -z-20" />
       <CircuitLines className="absolute inset-x-0 top-0 -z-10 hidden h-[640px] w-full opacity-80 md:block" />
 
       <div className="mx-auto flex max-w-6xl flex-col items-center px-5 pb-16 pt-14 text-center sm:px-8 sm:pt-20 lg:pt-24">
@@ -29,7 +29,7 @@ export function Hero() {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, ease: EASE }}
-          className="inline-flex h-9 items-center gap-2 rounded-[16px] bg-gradient-to-b from-[#11636d]/20 to-[#012e35]/20 pl-2 pr-3.5 shadow-[inset_0_0_4px_rgba(63,252,249,0.25)]"
+          className="inline-flex h-9 items-center gap-2 rounded-[16px] bg-gradient-to-b from-white/[0.09] to-white/[0.02] pl-2 pr-3.5 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.08),inset_0_1px_0_rgba(255,255,255,0.12)]"
         >
           <span className="flex size-6 items-center justify-center rounded-full bg-accent/15 text-accent">
             <Sparkles className="size-3.5" strokeWidth={2} />
@@ -42,12 +42,12 @@ export function Hero() {
           className="mt-6 max-w-[900px] font-display text-[42px] font-normal leading-[1.04] tracking-[-0.055em] text-ink sm:text-[58px] lg:text-[68px]"
         >
           <span aria-hidden>
-            <BlurReveal text="Crée ton SaaS qui" delay={80} />{" "}
+            <BlurReveal text="Crée ton SaaS qui" delay={80} className="text-chrome" />{" "}
             <span className="font-serif text-[1.04em] italic tracking-[-0.01em] text-accent [text-shadow:0_0_32px_rgba(51,244,239,0.45)]">
               <BlurReveal text="rapporte," delay={380} />
             </span>
             <br />
-            <BlurReveal text="en 30 jours avec l'IA." delay={520} className="text-ink/85" />
+            <BlurReveal text="en 30 jours avec l'IA." delay={520} className="text-chrome" />
           </span>
         </h1>
 

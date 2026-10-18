@@ -79,8 +79,8 @@ function RevenueCard() {
 
 function PhoneCard() {
   return (
-    <div className="relative mx-auto w-full max-w-[300px] rounded-[44px] border border-ink/12 bg-[#010d10] p-3 shadow-[0_40px_100px_-30px_rgba(0,0,0,0.9),0_0_80px_-40px_var(--color-accent)]">
-      <div className="relative overflow-hidden rounded-[34px] bg-gradient-to-b from-[#06303a] via-[#031b21] to-[#020f13] px-3.5 pb-6 pt-3">
+    <div className="relative mx-auto w-full max-w-[300px] rounded-[44px] border border-ink/12 bg-gradient-to-b from-[#2a2a2e] via-[#111113] to-[#1c1c1f] p-3 shadow-[0_40px_100px_-30px_rgba(0,0,0,0.9),0_0_80px_-40px_var(--color-accent)]">
+      <div className="relative overflow-hidden rounded-[34px] bg-gradient-to-b from-[#1d2426] via-[#0c0d0e] to-[#050506] px-3.5 pb-6 pt-3">
         <div className="flex items-center justify-between px-2 font-body text-[11px] font-semibold text-ink">
           <span>9:41</span>
           <span className="h-5 w-20 rounded-full bg-black" />
@@ -147,7 +147,7 @@ function JourneyCard() {
             className="flex items-center gap-3"
           >
             <motion.span
-              initial={{ scale: 0.6, backgroundColor: "rgba(155, 251, 243, 0.08)" }}
+              initial={{ scale: 0.6, backgroundColor: "rgba(255, 255, 255, 0.08)" }}
               whileInView={{ scale: 1, backgroundColor: "rgba(51, 244, 239, 1)" }}
               viewport={{ once: true }}
               transition={{ duration: 0.35, delay: 0.5 + index * 0.45, ease: EASE }}
@@ -187,7 +187,7 @@ export function ShowcaseSection() {
         <div className="flex justify-center">
           <Eyebrow tone="accent">Dans 30 jours</Eyebrow>
         </div>
-        <h2 className="mt-5 font-display text-[34px] font-normal leading-[1.08] tracking-[-0.045em] text-ink sm:text-[46px]">
+        <h2 className="mt-5 font-display text-[34px] font-normal leading-[1.08] tracking-[-0.045em] text-chrome sm:text-[46px]">
           Ça pourrait être{" "}
           <span className="font-serif italic tracking-normal text-accent">toi.</span>
         </h2>

@@ -29,7 +29,7 @@ export function ComparisonSection() {
         <div className="flex justify-center">
           <Eyebrow>Une autre façon de lancer</Eyebrow>
         </div>
-        <h2 className="mt-5 font-display text-[34px] font-normal leading-[1.08] tracking-[-0.045em] text-ink sm:text-[46px]">
+        <h2 className="mt-5 font-display text-[34px] font-normal leading-[1.08] tracking-[-0.045em] text-chrome sm:text-[46px]">
           La galère du lancement,{" "}
           <span className="font-serif italic tracking-normal text-accent">supprimée.</span>
         </h2>

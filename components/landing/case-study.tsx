@@ -36,7 +36,7 @@ export function CaseStudy() {
         <div className="flex justify-center">
           <Eyebrow tone="accent">Ton espace paiements</Eyebrow>
         </div>
-        <h2 className="mt-5 font-display text-[34px] font-normal leading-[1.08] tracking-[-0.045em] text-ink sm:text-[46px]">
+        <h2 className="mt-5 font-display text-[34px] font-normal leading-[1.08] tracking-[-0.045em] text-chrome sm:text-[46px]">
           Ton MRR, connecté à ton{" "}
           <span className="font-serif italic tracking-normal text-accent">vrai Stripe.</span>
         </h2>

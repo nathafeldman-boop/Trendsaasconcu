@@ -30,7 +30,7 @@ export function CircuitLines({ className }: { className?: string }) {
     >
       {TRACES.map((trace) => (
         <g key={trace.d}>
-          <path d={trace.d} fill="none" stroke="rgba(155, 251, 243, 0.09)" strokeWidth="1.2" />
+          <path d={trace.d} fill="none" stroke="rgba(255, 255, 255, 0.07)" strokeWidth="1.2" />
           <path
             d={trace.d}
             pathLength={1000}
