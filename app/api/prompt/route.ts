@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { claudeComplete } from "@/lib/claude/client";
+import { createClient } from "@/lib/supabase/server";
 
 const TOOL_LABELS: Record<string, string> = {
   claude: "Claude Code",
@@ -32,6 +33,18 @@ function fallbackContentIdeas(idea: string) {
 }
 
 export async function POST(request: Request) {
+  // Every call spends Claude credits — only signed-in users may trigger one.
+  const supabase = await createClient();
+  if (!supabase) {
+    return NextResponse.json({ error: "Not configured" }, { status: 503 });
+  }
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) {
+    return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+  }
+
   const body = await request.json().catch(() => null);
   if (!body || typeof body.idea !== "string" || typeof body.kind !== "string") {
     return NextResponse.json({ error: "Invalid request" }, { status: 400 });
