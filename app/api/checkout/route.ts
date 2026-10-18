@@ -73,7 +73,16 @@ export async function POST(request: Request) {
 
     const session = await stripe.checkout.sessions.create({
       mode: "subscription",
+      locale: "fr",
       line_items: [{ price: priceId, quantity: 1 }],
+      // Promo codes are created in the Stripe dashboard; this just shows the field.
+      allow_promotion_codes: true,
+      custom_text: {
+        submit: {
+          message:
+            "Accès immédiat à ton espace après le paiement : ton idée, ton prompt de build, ta checklist et ton plan marketing. Résiliable à tout moment depuis ton espace.",
+        },
+      },
       client_reference_id: user.id,
       customer: profile?.stripe_customer_id ?? undefined,
       customer_email: profile?.stripe_customer_id ? undefined : (user.email ?? undefined),
