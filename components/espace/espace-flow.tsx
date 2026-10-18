@@ -12,6 +12,7 @@ import { MarketingPanel } from "@/components/espace/marketing-panel";
 import { ContentGuide } from "@/components/espace/content-guide";
 import { SiteAnalysis } from "@/components/espace/site-analysis";
 import { FloatingIcon } from "@/components/ui/floating-icon";
+import { HERO_IDEA_STORAGE_KEY } from "@/components/landing/hero-prompt";
 
 const TOOLS = [
   {
@@ -240,6 +241,15 @@ export function EspaceFlow({
                   selected={false}
                   onClick={() => {
                     persist({ has_idea: true });
+                    // Whatever they typed in the landing page's idea box.
+                    if (!ideaDraft.trim()) {
+                      try {
+                        const fromHero = window.localStorage.getItem(HERO_IDEA_STORAGE_KEY);
+                        if (fromHero) setIdeaDraft(fromHero);
+                      } catch {
+                        // storage unavailable, start from an empty field
+                      }
+                    }
                     setPhase("idea-text");
                   }}
                 />

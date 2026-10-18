@@ -78,7 +78,7 @@ export function ChatWidget() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 12, scale: 0.97 }}
             transition={{ duration: 0.18 }}
-            className="mb-3 flex h-[420px] w-[320px] flex-col overflow-hidden rounded-xl border border-ink/12 bg-canvas shadow-[0_30px_80px_-40px_rgba(27,22,48,0.35)]"
+            className="mb-3 flex h-[420px] w-[320px] flex-col overflow-hidden rounded-xl border border-ink/12 bg-canvas-raised shadow-[0_30px_80px_-30px_rgba(0,0,0,0.9),0_0_60px_-30px_var(--color-accent)]"
           >
             <div className="flex items-center justify-between border-b border-ink/10 px-4 py-3">
               <span className="font-display text-[14px] font-semibold text-ink">Assistant SaaSFounder</span>

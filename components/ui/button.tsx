@@ -10,9 +10,9 @@ const buttonStyles = cva(
     variants: {
       variant: {
         primary:
-          "bg-accent text-white hover:bg-accent-deep hover:shadow-[0_14px_30px_-18px_var(--color-accent-deep)]",
+          "overflow-hidden bg-accent text-canvas shadow-[0_0_28px_-8px_var(--color-accent),inset_0_1px_0_rgba(255,255,255,0.55)] hover:bg-accent-light hover:shadow-[0_0_40px_-6px_var(--color-accent),inset_0_1px_0_rgba(255,255,255,0.6)]",
         secondary:
-          "border border-ink/12 text-ink bg-accent/5 hover:border-accent/45 hover:bg-accent/10 hover:text-accent",
+          "border border-ink/12 text-ink bg-ink/[0.04] backdrop-blur-sm hover:border-accent/45 hover:bg-accent/10 hover:text-accent",
         ghost: "text-ink-muted hover:text-ink",
       },
       size: {
@@ -42,12 +42,20 @@ type ButtonAsLink = ButtonBaseProps &
 export function Button(props: ButtonAsButton | ButtonAsLink) {
   const { className, variant, size, showArrow = true, children, ...rest } = props;
 
+  const isPrimary = (variant ?? "primary") === "primary";
+
   const content = (
     <>
-      <span>{children}</span>
+      {isPrimary && (
+        <span
+          aria-hidden
+          className="pointer-events-none absolute inset-y-0 left-0 w-1/3 animate-sheen bg-gradient-to-r from-transparent via-white/50 to-transparent"
+        />
+      )}
+      <span className="relative">{children}</span>
       {showArrow && (
         <ArrowRight
-          className="size-4 transition-transform duration-200 ease-out group-hover:translate-x-0.5"
+          className="relative size-4 transition-transform duration-200 ease-out group-hover:translate-x-0.5"
           strokeWidth={2.25}
         />
       )}

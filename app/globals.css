@@ -1,23 +1,23 @@
 @import "tailwindcss";
 
 @theme {
-  /* Canvas & surfaces — white with a violet cast, not neutral gray */
-  --color-canvas: #faf9fd;
-  --color-canvas-raised: #f3f0fb;
-  --color-canvas-overlay: rgba(255, 255, 255, 0.88);
+  /* Canvas & surfaces — deep night teal, never flat black */
+  --color-canvas: #021519;
+  --color-canvas-raised: #052129;
+  --color-canvas-overlay: rgba(4, 28, 35, 0.86);
 
-  /* Typography colors — dark violet instead of achromatic gray */
-  --color-ink: #1b1630;
-  --color-ink-muted: #5d5680;
-  --color-ink-faint: #8a83ad;
+  /* Typography colors — cyan-tinted whites instead of achromatic gray */
+  --color-ink: #e8fcfc;
+  --color-ink-muted: #9dbcc1;
+  --color-ink-faint: #638a91;
 
-  /* Accent — violet is the dominant brand color, used generously */
-  --color-accent: #6b57e8;
-  --color-accent-light: #8b7bff;
-  --color-accent-deep: #5b4fe0;
+  /* Accent — electric cyan, the "live wire" running through the brand */
+  --color-accent: #33f4ef;
+  --color-accent-light: #9bfbf3;
+  --color-accent-deep: #0fb5b1;
 
   /* Success — used for KPI deltas and "paid" states */
-  --color-success: #0e9f6e;
+  --color-success: #3ee39b;
 
   /* Radius scale */
   --radius-sm: 8px;
@@ -27,6 +27,10 @@
   --radius-pill: 999px;
 
   --animate-marquee: marquee 26s linear infinite;
+  --animate-blur-reveal: blur-reveal 0.9s cubic-bezier(0.16, 1, 0.3, 1) both;
+  --animate-ray-sway: ray-sway 9s ease-in-out infinite;
+  --animate-wire-pulse: wire-pulse 5s linear infinite;
+  --animate-sheen: sheen 3.6s ease-in-out infinite;
 }
 
 @keyframes marquee {
@@ -38,14 +42,66 @@
   }
 }
 
+/* Words come in from a blur, the way a signal locks on. */
+@keyframes blur-reveal {
+  0% {
+    opacity: 0;
+    filter: blur(10px);
+    transform: translateX(-12px);
+  }
+  60% {
+    opacity: 0.8;
+    filter: blur(2.5px);
+    transform: translateX(-2px);
+  }
+  100% {
+    opacity: 1;
+    filter: none;
+    transform: none;
+  }
+}
+
+@keyframes ray-sway {
+  0%,
+  100% {
+    opacity: var(--ray-min, 0.5);
+    transform: translateX(0) skewX(var(--ray-skew, -12deg));
+  }
+  50% {
+    opacity: 1;
+    transform: translateX(var(--ray-drift, 18px)) skewX(var(--ray-skew, -12deg));
+  }
+}
+
+/* A short bright dash travelling along a circuit trace. */
+@keyframes wire-pulse {
+  from {
+    stroke-dashoffset: 1000;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes sheen {
+  0%,
+  60% {
+    transform: translateX(-120%) skewX(-20deg);
+  }
+  100% {
+    transform: translateX(220%) skewX(-20deg);
+  }
+}
+
 @theme inline {
   --font-display: var(--font-display);
   --font-body: var(--font-body);
+  --font-serif: var(--font-serif);
   --font-mono: var(--font-mono);
 }
 
 html {
-  color-scheme: light;
+  color-scheme: dark;
   /* clip, not hidden: hidden forces the other axis into its own scroll
      container too, which would break position: sticky and viewport-based
      scroll-triggered animations used throughout the app. */
@@ -60,7 +116,7 @@ body {
 }
 
 ::selection {
-  background: rgba(139, 123, 255, 0.28);
+  background: rgba(51, 244, 239, 0.28);
   color: var(--color-ink);
 }
 
@@ -78,4 +134,26 @@ body {
 .tabular-nums {
   font-variant-numeric: tabular-nums;
   font-feature-settings: "tnum";
+}
+
+/* Frosted dark panel with a faint cyan inner rim — the base surface for
+   every mock dashboard and card on the dark theme. */
+.glass-panel {
+  background: linear-gradient(183deg, rgba(17, 99, 109, 0.2) 0%, rgba(1, 46, 53, 0.2) 100%);
+  box-shadow:
+    inset 0 0 0 1px rgba(155, 251, 243, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 30px 80px -40px rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+/* Faint engineering grid, faded out toward the edges. */
+.tech-grid {
+  background-image:
+    linear-gradient(rgba(155, 251, 243, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(155, 251, 243, 0.05) 1px, transparent 1px);
+  background-size: 56px 56px;
+  mask-image: radial-gradient(ellipse 70% 60% at 50% 0%, black 30%, transparent 75%);
+  -webkit-mask-image: radial-gradient(ellipse 70% 60% at 50% 0%, black 30%, transparent 75%);
 }

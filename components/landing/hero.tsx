@@ -1,83 +1,93 @@
 "use client";
 
-import Image from "next/image";
-import { motion, type Variants } from "framer-motion";
-import { Eyebrow } from "@/components/ui/eyebrow";
-import { Button } from "@/components/ui/button";
-import { VelocityField } from "@/components/landing/velocity-field";
-import { DashboardPreview } from "@/components/landing/dashboard-preview";
+import { motion } from "framer-motion";
+import { Sparkles } from "lucide-react";
+import { BlurReveal } from "@/components/ui/blur-reveal";
+import { CountUp } from "@/components/ui/count-up";
+import { LightRays } from "@/components/landing/light-rays";
+import { CircuitLines } from "@/components/landing/circuit-lines";
+import { HeroPrompt } from "@/components/landing/hero-prompt";
 
 const EASE: [number, number, number, number] = [0.16, 1, 0.3, 1];
 
-const stagger: Variants = {
-  hidden: {},
-  show: { transition: { staggerChildren: 0.09 } },
-};
-
-const item: Variants = {
-  hidden: { opacity: 0, y: 18 },
-  show: {
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.6, ease: EASE },
-  },
-};
+const STATS = [
+  { value: 20, label: "idées de SaaS validées" },
+  { value: 18, label: "questions sur ta situation" },
+  { value: 650, prefix: "~", label: "mots de prompt prêts à coller" },
+  { value: 30, label: "jours de plan d'action" },
+];
 
 export function Hero() {
   return (
     <section className="relative overflow-hidden">
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0 -z-20 opacity-[0.14] [mask-image:linear-gradient(to_bottom,black,transparent)]"
-      >
-        <Image
-          src="/images/hero-bg.jpg"
-          alt=""
-          fill
-          priority
-          className="scale-110 object-cover object-center blur-[2px]"
-        />
-      </div>
-      <VelocityField className="pointer-events-none absolute inset-0 -z-10" />
+      <LightRays className="absolute inset-x-0 top-0 -z-10 h-[760px]" />
+      <div aria-hidden className="tech-grid absolute inset-0 -z-20" />
+      <CircuitLines className="absolute inset-x-0 top-0 -z-10 hidden h-[640px] w-full opacity-80 md:block" />
 
-      <div className="mx-auto grid max-w-6xl gap-10 px-5 pt-10 pb-14 sm:px-8 sm:pt-14 sm:pb-16 lg:grid-cols-[1.05fr_0.95fr] lg:items-center lg:gap-8 lg:pt-16">
-        <motion.div variants={stagger} initial="hidden" animate="show">
-          <motion.div variants={item}>
-            <Eyebrow>La méthode pour lancer ton SaaS</Eyebrow>
-          </motion.div>
-
-          <motion.h1
-            variants={item}
-            className="mt-5 font-display text-[46px] font-semibold leading-[1.02] tracking-tight sm:text-[60px] lg:text-[68px]"
-          >
-            <span className="text-ink">Deviens fondateur.</span>
-            <br />
-            <span className="text-ink-muted">Lance ton SaaS.</span>
-          </motion.h1>
-
-          <motion.p
-            variants={item}
-            className="mt-5 max-w-sm font-body text-[17px] leading-relaxed text-ink-muted"
-          >
-            Ton idée. <span className="font-medium text-ink">Construite avec l&apos;IA.</span>{" "}
-            Vendue en un mois.
-          </motion.p>
-
-          <motion.div variants={item} className="mt-7 flex flex-col gap-3 sm:flex-row sm:items-center">
-            <Button href="/commencer" size="default">
-              Trouver mon idée
-            </Button>
-            <p className="font-mono text-[11px] uppercase tracking-wider text-ink-faint">
-              Sans carte bancaire · 3 min pour démarrer
-            </p>
-          </motion.div>
+      <div className="mx-auto flex max-w-6xl flex-col items-center px-5 pb-16 pt-14 text-center sm:px-8 sm:pt-20 lg:pt-24">
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, ease: EASE }}
+          className="inline-flex h-9 items-center gap-2 rounded-[16px] bg-gradient-to-b from-[#11636d]/20 to-[#012e35]/20 pl-2 pr-3.5 shadow-[inset_0_0_4px_rgba(63,252,249,0.25)]"
+        >
+          <span className="flex size-6 items-center justify-center rounded-full bg-accent/15 text-accent">
+            <Sparkles className="size-3.5" strokeWidth={2} />
+          </span>
+          <span className="font-body text-[13px] text-ink">Ton coach IA intégré, propulsé par Claude</span>
         </motion.div>
 
-        <div className="flex justify-center lg:justify-end">
-          <div className="w-full max-w-[380px] translate-x-4 sm:translate-x-8 lg:translate-x-10">
-            <DashboardPreview />
-          </div>
-        </div>
+        <h1
+          aria-label="Crée ton SaaS qui rapporte, en 30 jours avec l'IA."
+          className="mt-6 max-w-[900px] font-display text-[42px] font-normal leading-[1.04] tracking-[-0.055em] text-ink sm:text-[58px] lg:text-[68px]"
+        >
+          <span aria-hidden>
+            <BlurReveal text="Crée ton SaaS qui" delay={80} />{" "}
+            <span className="font-serif text-[1.04em] italic tracking-[-0.01em] text-accent [text-shadow:0_0_32px_rgba(51,244,239,0.45)]">
+              <BlurReveal text="rapporte," delay={380} />
+            </span>
+            <br />
+            <BlurReveal text="en 30 jours avec l'IA." delay={520} className="text-ink/85" />
+          </span>
+        </h1>
+
+        <motion.p
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.75, ease: EASE }}
+          className="mt-6 max-w-xl font-body text-[16px] leading-relaxed text-ink-muted sm:text-[17px]"
+        >
+          Ton idée validée, ton prompt de build, ton plan marketing.{" "}
+          <span className="text-ink">L&apos;IA fait le gros du travail</span>, tu prends les décisions.
+        </motion.p>
+
+        <motion.div
+          initial={{ opacity: 0, y: 18, scale: 0.98 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ duration: 0.7, delay: 0.9, ease: EASE }}
+          className="mt-8 flex w-full justify-center"
+        >
+          <HeroPrompt />
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.8, delay: 1.15 }}
+          className="mt-12 grid w-full max-w-4xl grid-cols-2 gap-y-8 sm:grid-cols-4"
+        >
+          {STATS.map((stat, index) => (
+            <div
+              key={stat.label}
+              className={`flex flex-col items-center px-3 ${index > 0 ? "sm:border-l sm:border-ink/10" : ""}`}
+            >
+              <p className="font-display text-[34px] font-medium tracking-[-0.04em] text-ink sm:text-[40px]">
+                <CountUp value={stat.value} prefix={stat.prefix} />
+              </p>
+              <p className="mt-1 max-w-[18ch] font-body text-[13px] leading-snug text-ink-faint">{stat.label}</p>
+            </div>
+          ))}
+        </motion.div>
       </div>
     </section>
   );

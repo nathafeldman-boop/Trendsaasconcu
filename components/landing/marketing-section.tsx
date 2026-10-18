@@ -39,8 +39,9 @@ export function MarketingSection() {
   return (
     <section id="marketing" className="mx-auto max-w-6xl px-5 py-20 sm:px-8 sm:py-28">
       <Eyebrow>Le marketing, sans budget</Eyebrow>
-      <h2 className="mt-5 max-w-lg font-display text-[32px] font-semibold leading-[1.12] tracking-tight text-ink sm:text-[38px]">
-        Un bon marketing SaaS, c&apos;est trois phrases et une boucle.
+      <h2 className="mt-5 max-w-xl font-display text-[34px] font-normal leading-[1.08] tracking-[-0.045em] text-ink sm:text-[46px]">
+        Un bon marketing SaaS, c&apos;est trois phrases et{" "}
+        <span className="font-serif italic tracking-normal text-accent">une boucle.</span>
       </h2>
       <p className="mt-5 max-w-lg font-body text-[15px] leading-relaxed text-ink-muted">
         La plupart des premiers SaaS ne meurent pas d&apos;un mauvais produit, mais
@@ -56,7 +57,7 @@ export function MarketingSection() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-10%" }}
             transition={{ duration: 0.5, delay: index * 0.08, ease: [0.16, 1, 0.3, 1] }}
-            className="rounded-lg border border-ink/10 bg-accent/5 p-6"
+            className="glass-panel rounded-[18px] p-6"
           >
             <p className="font-mono text-[11px] uppercase tracking-wider text-accent">
               {phrase.tag}

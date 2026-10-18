@@ -38,8 +38,9 @@ export function FaqSection() {
   return (
     <section className="mx-auto max-w-3xl px-5 py-20 sm:px-8 sm:py-28">
       <Eyebrow>Objections</Eyebrow>
-      <h2 className="mt-5 font-display text-[32px] font-semibold leading-[1.1] tracking-tight text-ink sm:text-[38px]">
-        Les questions qu&apos;on nous pose souvent
+      <h2 className="mt-5 font-display text-[34px] font-normal leading-[1.08] tracking-[-0.045em] text-ink sm:text-[46px]">
+        Les questions qu&apos;on nous pose{" "}
+        <span className="font-serif italic tracking-normal text-accent">souvent.</span>
       </h2>
       <div className="mt-10">
         <Accordion items={FAQ_ITEMS} />

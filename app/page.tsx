@@ -1,9 +1,10 @@
 import { Nav } from "@/components/landing/nav";
 import { Hero } from "@/components/landing/hero";
 import { ToolsMarquee } from "@/components/landing/tools-marquee";
-import { StatsSection } from "@/components/landing/stats-section";
+import { ShowcaseSection } from "@/components/landing/showcase-section";
+import { ComparisonSection } from "@/components/landing/comparison-section";
+import { StepsSection } from "@/components/landing/steps-section";
 import { CaseStudy } from "@/components/landing/case-study";
-import { HelpSection } from "@/components/landing/help-section";
 import { MarketingSection } from "@/components/landing/marketing-section";
 import { PricingSection } from "@/components/landing/pricing-section";
 import { FaqSection } from "@/components/landing/faq-section";
@@ -33,9 +34,10 @@ export default async function Home() {
         <FloatingParticles />
         <Hero />
         <ToolsMarquee />
-        <StatsSection />
+        <ShowcaseSection />
+        <ComparisonSection />
+        <StepsSection />
         <CaseStudy />
-        <HelpSection />
         <MarketingSection />
         <PricingSection isAuthenticated={isAuthenticated} />
         <FaqSection />

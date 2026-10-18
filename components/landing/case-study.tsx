@@ -36,8 +36,9 @@ export function CaseStudy() {
         <div className="flex justify-center">
           <Eyebrow tone="accent">Ton espace paiements</Eyebrow>
         </div>
-        <h2 className="mt-5 font-display text-[32px] font-semibold leading-[1.12] tracking-tight text-ink sm:text-[38px]">
-          Ton MRR, connecté à ton vrai Stripe.
+        <h2 className="mt-5 font-display text-[34px] font-normal leading-[1.08] tracking-[-0.045em] text-ink sm:text-[46px]">
+          Ton MRR, connecté à ton{" "}
+          <span className="font-serif italic tracking-normal text-accent">vrai Stripe.</span>
         </h2>
         <p className="mt-5 font-body text-[15px] leading-relaxed text-ink-muted">
           Une fois lancé, branche ta clé Stripe en lecture seule : ton volume du jour,
@@ -55,7 +56,7 @@ export function CaseStudy() {
       >
         <div className="absolute -inset-8 -z-10 rounded-[40px] bg-accent/10 blur-3xl" />
 
-        <div className="overflow-hidden rounded-lg border border-ink/10 bg-canvas-overlay/95 shadow-[0_30px_80px_-40px_rgba(27,22,48,0.25)] backdrop-blur-xl">
+        <div className="glass-panel overflow-hidden rounded-[22px]">
           {/* Browser chrome */}
           <div className="flex items-center gap-3 border-b border-ink/8 bg-ink/[0.02] px-5 py-3">
             <div className="flex gap-1.5">
@@ -151,6 +152,7 @@ export function CaseStudy() {
                 strokeLinecap="round"
                 strokeLinejoin="round"
                 className="text-accent"
+                style={{ filter: "drop-shadow(0 0 6px var(--color-accent))" }}
                 initial={{ pathLength: 0 }}
                 whileInView={{ pathLength: 1 }}
                 viewport={{ once: true }}

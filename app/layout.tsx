@@ -1,20 +1,26 @@
 import type { Metadata } from "next";
-import { Bricolage_Grotesque, Manrope, JetBrains_Mono } from "next/font/google";
+import { DM_Sans, Instrument_Serif, JetBrains_Mono } from "next/font/google";
 import { AmbientGlow } from "@/components/ui/ambient-glow";
 import { GlobalSignOut } from "@/components/auth/global-sign-out";
 import { ActivityHeartbeat } from "@/components/activity-heartbeat";
 import "./globals.css";
 
-const display = Bricolage_Grotesque({
+const display = DM_Sans({
   variable: "--font-display",
   subsets: ["latin"],
-  weight: ["500", "600", "700", "800"],
 });
 
-const body = Manrope({
+const body = DM_Sans({
   variable: "--font-body",
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700", "800"],
+});
+
+// Only for the one or two italic accent words in a headline.
+const serif = Instrument_Serif({
+  variable: "--font-serif",
+  subsets: ["latin"],
+  weight: "400",
+  style: "italic",
 });
 
 const mono = JetBrains_Mono({
@@ -55,7 +61,7 @@ export default function RootLayout({
   return (
     <html
       lang="fr"
-      className={`${display.variable} ${body.variable} ${mono.variable} h-full`}
+      className={`${display.variable} ${body.variable} ${serif.variable} ${mono.variable} h-full`}
     >
       <body className="min-h-full bg-canvas text-ink antialiased">
         <AmbientGlow />
