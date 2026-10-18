@@ -39,15 +39,23 @@ export default async function EspacePage({
       .maybeSingle(),
   ]);
 
-  const answers = (onboardingRes.data?.answers ?? {}) as { hasSaas?: string; existingUrl?: string };
-  const hasExistingSaas = answers.hasSaas === HAS_SAAS_EXISTING;
+  // `site` / `siteUrl` come from the current questionnaire; `hasSaas` /
+  // `existingUrl` from the previous one, still stored for older accounts.
+  const answers = (onboardingRes.data?.answers ?? {}) as {
+    site?: string;
+    siteUrl?: string;
+    hasSaas?: string;
+    existingUrl?: string;
+  };
+  const hasExistingSaas = answers.site === "oui" || answers.hasSaas === HAS_SAAS_EXISTING;
+  const existingUrl = answers.siteUrl || answers.existingUrl || null;
 
   return (
     <EspaceFlow
       userId={user.id}
       firstName={profileRes.data?.first_name ?? null}
       hasExistingSaas={hasExistingSaas}
-      existingUrl={hasExistingSaas ? (answers.existingUrl ?? null) : null}
+      existingUrl={hasExistingSaas ? existingUrl : null}
       hasStripeSubscription={!!profileRes.data?.stripe_customer_id}
       checkoutSuccess={checkout === "success"}
       initialBuilder={{

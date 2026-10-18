@@ -1,324 +1,96 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Users, Repeat, Sparkles, Check, ArrowDown } from "lucide-react";
-import { StepShell } from "@/components/onboarding/step-shell";
-import { ChoiceOption } from "@/components/onboarding/choice-option";
-import { ScaleQuestion } from "@/components/onboarding/scale-question";
-import { Button } from "@/components/ui/button";
-import { CountUp } from "@/components/ui/count-up";
-import { SignupForm } from "@/components/auth/signup-form";
-import { IntroCarousel } from "@/components/onboarding/intro-carousel";
-import { WhyUsCarousel } from "@/components/onboarding/why-us-carousel";
-import { CommitmentHold } from "@/components/onboarding/commitment-hold";
-import { FloatingIcon } from "@/components/ui/floating-icon";
 import { createClient } from "@/lib/supabase/client";
+import { STEPS, getSequence, type Answers, type Step } from "@/components/onboarding/funnel";
+import {
+  AccountScreen,
+  AnalysisScreen,
+  BarrierScreen,
+  CommitmentScreen,
+  JourneyScreen,
+  LoadingScreen,
+  MessageScreen,
+  MultiScreen,
+  ObjectiveScreen,
+  PlansScreen,
+  ProjectionScreen,
+  Saas101Screen,
+  ScaleScreen,
+  SingleScreen,
+  SliderScreen,
+  TextScreen,
+  UrlScreen,
+} from "@/components/onboarding/funnel-screens";
 
-type Answers = {
-  age: string | null;
-  situation: string | null;
-  experience: string | null;
-  skills: string | null;
-  goals: string[];
-  learningStyle: string | null;
-  blockers: string[];
-  friction: string | null;
-  comfortAction: string | null;
-  timeline: string | null;
-  customerType: string | null;
-  futureStatement: string;
-  persistence: number | null;
-  hours: string | null;
-  revenueGoal: number;
-  budget: string | null;
-  confidence: number | null;
-  hasSaas: string | null;
-  existingUrl: string;
-  marketingHelp: string | null;
-};
+// v2: the funnel was rebuilt (different questions and order), so answers and
+// positions saved by the previous version are deliberately not reused.
+const STORAGE_KEY = "saasfounder-onboarding-v2";
 
-const EMPTY_ANSWERS: Answers = {
-  age: null,
-  situation: null,
-  experience: null,
-  skills: null,
-  goals: [],
-  learningStyle: null,
-  blockers: [],
-  friction: null,
-  comfortAction: null,
-  timeline: null,
-  customerType: null,
-  futureStatement: "",
-  persistence: null,
-  hours: null,
-  revenueGoal: 3000,
-  budget: null,
-  confidence: null,
-  hasSaas: null,
-  existingUrl: "",
-  marketingHelp: null,
-};
-
-const STORAGE_KEY = "saasfounder-onboarding";
-
-const HAS_SAAS_EXISTING = "J'ai déjà un SaaS en ligne";
-const HAS_SAAS_SCRATCH = "Je pars de zéro";
-
-const BASE_SEQUENCE = [
-  "signup",
-  "intro-carousel",
-  "age",
-  "chapter1-intro",
-  "situation",
-  "skills",
-  "experience",
-  "reflection1",
-  "chapter2-intro",
-  "friction",
-  "blockers",
-  "comfort-action",
-  "hours",
-  "chapter3-intro",
-  "goals",
-  "timeline",
-  "customer-type",
-  "future-statement",
-  "economics",
-  "learning",
-  "goalcount",
-  "scenario",
-  "comparison",
-  "persistence",
-  "revenue",
-  "recap",
-  "commitment",
-  "budget",
-  "tip",
-  "analyzing",
-  "confidence",
-  "hassaas",
-];
-
-function getSequence(answers: Answers): string[] {
-  const tail =
-    answers.hasSaas === HAS_SAAS_EXISTING
-      ? ["url", "analysis", "marketing-help", "why-us", "closing"]
-      : ["scratch-plan", "why-us", "closing"];
-  return [...BASE_SEQUENCE, ...tail];
-}
-
-const AGE_OPTIONS = ["Moins de 25 ans", "25 – 34 ans", "35 – 44 ans", "45 ans et plus"];
-const SITUATION_OPTIONS = [
-  "J'ai un emploi à côté",
-  "Je suis freelance / indépendant(e)",
-  "Je suis étudiant(e)",
-  "Je mène déjà un projet en parallèle",
-];
-const EXPERIENCE_OPTIONS = [
-  "Je n'en ai jamais fait",
-  "Depuis moins d'un an",
-  "Entre 1 et 3 ans",
-  "Plus de 3 ans",
-];
-const FORCE_OPTIONS = [
-  "Je fonce, quitte à me tromper",
-  "Je tiens bon sur la durée",
-  "Je n'ai encore rien lancé",
-  "Je sais convaincre facilement",
-];
-const GOAL_OPTIONS = [
-  "Faire mes premiers 1 000 €",
-  "Être libre financièrement",
-  "Quitter mon travail",
-  "Me prouver que j'en suis capable",
-];
-const LEARNING_OPTIONS = ["En vidéo", "En lisant", "En pratiquant directement", "Peu importe"];
-const BLOCKER_OPTIONS = [
-  "Le manque de méthode",
-  "Je ne sais pas par où commencer",
-  "J'ai peur de me lancer",
-  "Je manque de temps",
-];
-const FRICTION_OPTIONS = [
-  "Mes revenus n'avancent plus",
-  "Je n'ai plus de temps pour moi",
-  "Je regarde d'autres réussir sans moi",
-  "J'ai peur de laisser passer ma chance",
-];
-const COMFORT_OPTIONS = [
-  "Contacter des gens directement",
-  "Apparaître en vidéo",
-  "Les deux si besoin",
-  "Rien de tout ça ne me tente vraiment",
-];
-const HOURS_OPTIONS = ["Moins de 5 h", "5 à 15 h", "Plus de 15 h"];
-const TIMELINE_OPTIONS = [
-  "Le plus vite possible",
-  "D'ici 2 semaines",
-  "D'ici 1 mois",
-  "Je préfère prendre mon temps",
-];
-const CUSTOMER_OPTIONS = ["Des entreprises", "Des particuliers", "Des indépendants comme toi", "Je ne sais pas encore"];
-const BUDGET_OPTIONS = ["10 € à 100 €", "100 € à 500 €", "Plus de 500 €"];
-const MARKETING_HELP_OPTIONS = ["Surtout le marketing", "Surtout le produit", "Les deux"];
-const PLAN_ANALYSIS_TIPS = [
-  "On croise tes réponses avec les profils qui ont le mieux avancé.",
-  "On identifie le format d'idée le plus réaliste pour ton temps disponible.",
-  "On prépare un prompt de démarrage adapté à l'outil que tu choisiras.",
-  "On structure ta checklist de lancement en étapes courtes.",
-  "On prépare des pistes marketing adaptées à ton budget.",
-];
-const PLAN_ANALYSIS_TIP_INTERVAL = 1800;
-const ANALYSIS_ITEMS = [
-  "Vérification du site",
-  "Analyse du positionnement",
-  "Détection des opportunités marketing",
-];
-
-const SITUATION_REFLECTIONS: Record<string, string> = {
-  "J'ai un emploi à côté":
-    "Tu as un revenu stable en ce moment — ça te laisse la marge pour tester sans tout risquer d'un coup.",
-  "Je suis freelance / indépendant(e)":
-    "Tu sais déjà ce que c'est de vendre ton temps. Un SaaS te permet d'arrêter d'en dépendre.",
-  "Je suis étudiant(e)":
-    "Tu as moins de charges qu'un actif : c'est souvent le meilleur moment pour te planter vite et recommencer.",
-  "Je mène déjà un projet en parallèle":
-    "Tu sais déjà lancer des choses — la partie technique est surtout ce qu'il te reste à débloquer.",
-};
-
-const FORCE_REFLECTIONS: Record<string, string> = {
-  "Je fonce, quitte à me tromper": "Ton risque : t'éparpiller. Un seul plan à la fois va t'aider.",
-  "Je tiens bon sur la durée": "Ton risque : ne jamais montrer ton travail avant qu'il soit parfait.",
-  "Je n'ai encore rien lancé": "Ton avantage : aucune mauvaise habitude à désapprendre.",
-  "Je sais convaincre facilement": "Ton avantage : trouver tes premiers clients sera la partie la plus facile pour toi.",
-};
-
-const COMPARISON_DATA = [
-  {
-    label: "Seul",
-    value: 15,
-    description: "Pas d'idée fournie, pas de plan : tu pars de zéro.",
-    highlight: false,
-  },
-  {
-    label: "Accompagnement classique",
-    value: 45,
-    description: "Un cadre général, souvent cher, pas pensé pour construire avec l'IA.",
-    highlight: false,
-  },
-  {
-    label: "Avec SaaSFounder",
-    value: 95,
-    description: "Idée, prompt et plan jour par jour déjà prêts pour toi.",
-    highlight: true,
-  },
-];
-
-function MiniDashboard({
-  eyebrow,
-  tone,
-  volume,
-  payments,
-  clients,
-  chart,
-}: {
-  eyebrow: string;
-  tone: "muted" | "accent";
-  volume: number;
-  payments: number;
-  clients: number;
-  chart?: boolean;
-}) {
-  return (
-    <div
-      className={`rounded-lg border p-4 ${
-        tone === "accent" ? "border-accent/40 bg-accent/[0.06]" : "border-ink/12 bg-ink/[0.02]"
-      }`}
-    >
-      <p
-        className={`font-mono text-[10px] uppercase tracking-wider ${
-          tone === "accent" ? "text-accent" : "text-ink-faint"
-        }`}
-      >
-        {eyebrow}
-      </p>
-      <div className="mt-3 grid grid-cols-3 gap-3">
-        <div>
-          <p className={`font-display text-lg font-semibold ${tone === "accent" ? "text-ink" : "text-ink-muted"}`}>
-            <CountUp value={volume} format={(n) => `${n.toLocaleString("fr-FR")} €`} />
-          </p>
-          <p className="mt-0.5 font-body text-[11px] text-ink-faint">Volume brut</p>
-        </div>
-        <div>
-          <p className={`font-display text-lg font-semibold ${tone === "accent" ? "text-ink" : "text-ink-muted"}`}>
-            <CountUp value={payments} />
-          </p>
-          <p className="mt-0.5 font-body text-[11px] text-ink-faint">Paiements</p>
-        </div>
-        <div>
-          <p className={`font-display text-lg font-semibold ${tone === "accent" ? "text-ink" : "text-ink-muted"}`}>
-            <CountUp value={clients} />
-          </p>
-          <p className="mt-0.5 font-body text-[11px] text-ink-faint">Clients</p>
-        </div>
-      </div>
-      {chart && (
-        <svg viewBox="0 0 200 46" className="mt-4 h-11 w-full text-accent" preserveAspectRatio="none">
-          <motion.path
-            d="M4,42 L30,38 L58,34 L88,26 L120,18 L152,10 L196,4"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            initial={{ pathLength: 0 }}
-            animate={{ pathLength: 1 }}
-            transition={{ duration: 1.3, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
-          />
-        </svg>
-      )}
-    </div>
-  );
-}
-
-function toggle(list: string[], value: string) {
-  return list.includes(value) ? list.filter((v) => v !== value) : [...list, value];
-}
-
-function formatEuros(value: number) {
-  return `${value.toLocaleString("fr-FR")} €`;
-}
-
-function readStoredState(): { step: number; answers: Answers } {
+function readStoredState(): { stepId: string; answers: Answers } {
   try {
     const raw = window.localStorage.getItem(STORAGE_KEY);
     if (raw) {
-      const saved = JSON.parse(raw) as { step: number; answers: Answers };
-      return { step: saved.step ?? 0, answers: { ...EMPTY_ANSWERS, ...saved.answers } };
+      const saved = JSON.parse(raw) as { stepId?: string; answers?: Answers };
+      return { stepId: saved.stepId ?? STEPS[0].id, answers: saved.answers ?? {} };
     }
   } catch {
     // ignore corrupted local storage
   }
-  return { step: 0, answers: EMPTY_ANSWERS };
+  return { stepId: STEPS[0].id, answers: {} };
+}
+
+/** Steps actually shown: conditions met, and no signup step once signed in. */
+function visibleSteps(answers: Answers, signedIn: boolean | null) {
+  return getSequence(answers).filter((s) => !(s.type === "account" && signedIn));
+}
+
+/**
+ * Where `stepId` sits in the visible sequence. A step that's no longer
+ * visible (the signup step after Google brings someone back, or a branch
+ * whose condition changed) resolves to the next visible step after it.
+ */
+function resolveIndex(stepId: string, sequence: Step[]) {
+  const index = sequence.findIndex((s) => s.id === stepId);
+  if (index !== -1) return index;
+  const order = STEPS.findIndex((s) => s.id === stepId);
+  const after = sequence.findIndex((s) => STEPS.indexOf(s) > order);
+  return after === -1 ? sequence.length - 1 : after;
 }
 
 const stepTransition = {
   initial: { opacity: 0, y: 14 },
-  animate: { opacity: 1, y: 0, transition: { duration: 0.22, ease: [0.16, 1, 0.3, 1] as const } },
+  animate: { opacity: 1, y: 0, transition: { duration: 0.25, ease: [0.16, 1, 0.3, 1] as const } },
   exit: { opacity: 0, y: -10, transition: { duration: 0.12, ease: "easeIn" as const } },
 };
 
 export function OnboardingWizard() {
-  const [step, setStep] = useState(() => readStoredState().step);
+  const [stepId, setStepId] = useState(() => readStoredState().stepId);
   const [answers, setAnswers] = useState<Answers>(() => readStoredState().answers);
-  const [futureDraft, setFutureDraft] = useState(() => readStoredState().answers.futureStatement);
-  const [analysisTip, setAnalysisTip] = useState(0);
+  const [signedIn, setSignedIn] = useState<boolean | null>(null);
+  const [firstName, setFirstName] = useState<string | null>(null);
+
+  // Who's here: decides whether the signup step shows, and the name used
+  // on the "voilà comment on t'amène..." screen.
+  useEffect(() => {
+    const supabase = createClient();
+    if (!supabase) return;
+    supabase.auth.getUser().then(({ data }) => {
+      setSignedIn(!!data.user);
+      const meta = data.user?.user_metadata ?? {};
+      const name = String(meta.first_name ?? meta.given_name ?? meta.full_name ?? meta.name ?? "").trim().split(/\s+/)[0];
+      setFirstName(name || null);
+    });
+  }, []);
+
+  const sequence = visibleSteps(answers, signedIn);
+  const index = resolveIndex(stepId, sequence);
+  const step = sequence[index];
 
   useEffect(() => {
     try {
-      window.localStorage.setItem(STORAGE_KEY, JSON.stringify({ step, answers }));
+      window.localStorage.setItem(STORAGE_KEY, JSON.stringify({ stepId: step.id, answers }));
     } catch {
       // storage unavailable, continue without persistence
     }
@@ -331,1132 +103,97 @@ export function OnboardingWizard() {
         .from("onboarding_responses")
         .upsert({ user_id: data.user.id, answers }, { onConflict: "user_id" })
         .then(() => {});
-
-      // Overwrites the plain "/commencer" the global heartbeat just set —
-      // this stays put (no route change) until the next step, so it won't
-      // get clobbered by that heartbeat's own keep-alive interval.
-      const liveSequence = getSequence(answers);
-      const liveCurrentId = liveSequence[Math.min(step, liveSequence.length - 1)];
       supabase
         .from("profiles")
-        .update({ current_path: `/commencer · étape ${step + 1}/${liveSequence.length} · ${liveCurrentId}` })
+        .update({ current_path: `/commencer · étape ${index + 1}/${sequence.length} · ${step.id}` })
         .eq("id", data.user.id)
         .then(() => {});
     });
-  }, [step, answers]);
+  }, [step.id, answers, index, sequence.length]);
 
-  // Back from Google sign-in (or simply already signed in): the signup step
-  // has nothing left to ask, so move past it.
-  useEffect(() => {
-    const supabase = createClient();
-    if (!supabase) return;
-    supabase.auth.getUser().then(({ data }) => {
-      if (data.user) setStep((current) => (current === 0 ? 1 : current));
-    });
-  }, []);
+  /** Merge into the answers and return the merged result, for an immediate goNext. */
+  const answer = useCallback(
+    (patch: Answers) => {
+      setAnswers((current) => ({ ...current, ...patch }));
+      return { ...answers, ...patch };
+    },
+    [answers]
+  );
 
-  const sequence = getSequence(answers);
-  const currentId = sequence[Math.min(step, sequence.length - 1)];
+  // Moves on from the step on screen, using the answers just given: a new
+  // answer can open (or close) a branch, e.g. "jamais" adds "Un SaaS, c'est quoi ?".
+  const goNext = useCallback(
+    (fresh?: Answers) => {
+      const nextSequence = visibleSteps(fresh ?? answers, signedIn);
+      const from = resolveIndex(step.id, nextSequence);
+      const atCurrent = nextSequence[from]?.id === step.id;
+      const target = atCurrent ? Math.min(from + 1, nextSequence.length - 1) : from;
+      setStepId(nextSequence[target].id);
+      window.scrollTo({ top: 0 });
+    },
+    [answers, signedIn, step.id]
+  );
 
-  const goNext = () => setStep((s) => Math.min(sequence.length - 1, s + 1));
-  const goBack = () => setStep((s) => Math.max(0, s - 1));
-  const back = step > 0 ? goBack : undefined;
-
-  useEffect(() => {
-    if (currentId !== "analyzing") return;
-    // Reset to the first tip every time this step is (re)entered, e.g. via
-    // the back button — an intentional reset, not derivable from render.
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setAnalysisTip(0);
-    const totalDuration = PLAN_ANALYSIS_TIPS.length * PLAN_ANALYSIS_TIP_INTERVAL;
-    const tipTimer = setInterval(
-      () => setAnalysisTip((i) => Math.min(i + 1, PLAN_ANALYSIS_TIPS.length - 1)),
-      PLAN_ANALYSIS_TIP_INTERVAL
-    );
-    const advanceTimer = setTimeout(goNext, totalDuration);
-    return () => {
-      clearInterval(tipTimer);
-      clearTimeout(advanceTimer);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentId]);
-
-  const selectAndAdvance = (
-    key:
-      | "age"
-      | "situation"
-      | "experience"
-      | "skills"
-      | "learningStyle"
-      | "friction"
-      | "comfortAction"
-      | "hours"
-      | "timeline"
-      | "customerType"
-      | "budget"
-      | "hasSaas"
-      | "marketingHelp",
-    value: string
-  ) => {
-    setAnswers((a) => ({ ...a, [key]: value }));
-    setTimeout(goNext, 220);
+  const goBack = () => {
+    setStepId(sequence[Math.max(0, index - 1)].id);
+    window.scrollTo({ top: 0 });
   };
 
+  const shell = { step: index, total: sequence.length, onBack: index > 0 ? goBack : undefined };
+  const next = () => goNext();
+
   function renderStep() {
-    if (currentId === "intro-carousel") {
-      return <IntroCarousel onDone={goNext} />;
-    }
-
-    if (currentId === "why-us") {
-      return <WhyUsCarousel onDone={goNext} />;
-    }
-
-    if (currentId === "age") {
-      return (
-        <StepShell step={step} total={sequence.length} onBack={back} eyebrow="Pour commencer" title="Tu as quel âge ?">
-          <div className="flex flex-col gap-3">
-            {AGE_OPTIONS.map((option) => (
-              <ChoiceOption
-                key={option}
-                label={option}
-                selected={answers.age === option}
-                onClick={() => selectAndAdvance("age", option)}
-              />
-            ))}
-          </div>
-        </StepShell>
-      );
-    }
-
-    if (currentId === "chapter1-intro") {
-      return (
-        <StepShell
-          step={step}
-          total={sequence.length}
-          onBack={back}
-          eyebrow="Chapitre 1 · Où tu en es"
-          title={
-            <>
-              <span className="text-ink">Tu n&apos;es pas seul</span>
-              <br />
-              <span className="text-ink-muted">à te poser ces questions.</span>
-            </>
-          }
-          subtitle="Trois questions sur ta situation aujourd'hui. Tes réponses restent sur cet appareil."
-          footer={
-            <Button showArrow={false} onClick={goNext} className="w-full">
-              Commencer
-            </Button>
-          }
-        >
-          <FloatingIcon>
-            <Users className="size-5" strokeWidth={1.75} />
-          </FloatingIcon>
-          <p className="mt-5 max-w-md font-body text-[15px] leading-relaxed text-ink-muted">
-            Chaque semaine, des gens avec les mêmes doutes que toi commencent un
-            premier SaaS. Ce qui fait la différence, ce n&apos;est pas le point
-            de départ — c&apos;est la méthode qu&apos;on suit.
-          </p>
-          <div className="mt-6">
-            <MiniDashboard eyebrow="Exemple illustratif · premières semaines" tone="muted" volume={680} payments={14} clients={9} />
-          </div>
-        </StepShell>
-      );
-    }
-
-    if (currentId === "situation") {
-      return (
-        <StepShell
-          step={step}
-          total={sequence.length}
-          onBack={back}
-          eyebrow="Ta situation"
-          title="Aujourd'hui, tu gagnes ta vie comment ?"
-        >
-          <div className="flex flex-col gap-3">
-            {SITUATION_OPTIONS.map((option) => (
-              <ChoiceOption
-                key={option}
-                label={option}
-                selected={answers.situation === option}
-                onClick={() => selectAndAdvance("situation", option)}
-              />
-            ))}
-          </div>
-        </StepShell>
-      );
-    }
-
-    if (currentId === "skills") {
-      return (
-        <StepShell
-          step={step}
-          total={sequence.length}
-          onBack={back}
-          eyebrow="Ta force"
-          title="Qu'est-ce qui te représente le plus ?"
-        >
-          <div className="flex flex-col gap-3">
-            {FORCE_OPTIONS.map((option) => (
-              <ChoiceOption
-                key={option}
-                label={option}
-                selected={answers.skills === option}
-                onClick={() => selectAndAdvance("skills", option)}
-              />
-            ))}
-          </div>
-        </StepShell>
-      );
-    }
-
-    if (currentId === "experience") {
-      return (
-        <StepShell
-          step={step}
-          total={sequence.length}
-          onBack={back}
-          eyebrow="Ton parcours"
-          title="Depuis combien de temps tu t'intéresses aux SaaS ?"
-        >
-          <div className="flex flex-col gap-3">
-            {EXPERIENCE_OPTIONS.map((option) => (
-              <ChoiceOption
-                key={option}
-                label={option}
-                selected={answers.experience === option}
-                onClick={() => selectAndAdvance("experience", option)}
-              />
-            ))}
-          </div>
-        </StepShell>
-      );
-    }
-
-    if (currentId === "reflection1") {
-      const situationLine = answers.situation ? SITUATION_REFLECTIONS[answers.situation] : null;
-      const forceLine = answers.skills ? FORCE_REFLECTIONS[answers.skills] : null;
-      return (
-        <StepShell
-          step={step}
-          total={sequence.length}
-          onBack={back}
-          eyebrow="Ce qu'on retient"
-          title="Ton point de départ, en clair."
-          footer={
-            <Button showArrow={false} onClick={goNext} className="w-full">
-              Continuer
-            </Button>
-          }
-        >
-          <div className="flex flex-col gap-3">
-            {situationLine && (
-              <div className="rounded-lg border border-ink/12 bg-ink/[0.02] p-4">
-                <p className="font-body text-[14px] leading-relaxed text-ink-muted">{situationLine}</p>
-              </div>
-            )}
-            {forceLine && (
-              <div className="rounded-lg border border-ink/12 bg-ink/[0.02] p-4">
-                <p className="font-body text-[14px] leading-relaxed text-ink-muted">{forceLine}</p>
-              </div>
-            )}
-          </div>
-          <p className="mt-5 font-body text-[14px] leading-relaxed text-ink-faint">
-            Chapitre 2 : la partie moins confortable. On regarde ce qui t&apos;a freiné jusqu&apos;ici.
-          </p>
-        </StepShell>
-      );
-    }
-
-    if (currentId === "chapter2-intro") {
-      return (
-        <StepShell
-          step={step}
-          total={sequence.length}
-          onBack={back}
-          eyebrow="Chapitre 2 · Ce qui freine"
-          title="Ce qui t'a retenu jusqu'ici."
-          subtitle="Quatre questions sur les blocages. C'est la partie la moins agréable — et la plus utile."
-          footer={
-            <Button showArrow={false} onClick={goNext} className="w-full">
-              Continuer
-            </Button>
-          }
-        >
-          <FloatingIcon>
-            <ArrowDown className="size-5" strokeWidth={1.75} />
-          </FloatingIcon>
-        </StepShell>
-      );
-    }
-
-    if (currentId === "friction") {
-      return (
-        <StepShell
-          step={step}
-          total={sequence.length}
-          onBack={back}
-          eyebrow="Ce qui pèse"
-          title="Qu'est-ce qui te pèse le plus aujourd'hui ?"
-        >
-          <div className="flex flex-col gap-3">
-            {FRICTION_OPTIONS.map((option) => (
-              <ChoiceOption
-                key={option}
-                label={option}
-                selected={answers.friction === option}
-                onClick={() => selectAndAdvance("friction", option)}
-              />
-            ))}
-          </div>
-        </StepShell>
-      );
-    }
-
-    if (currentId === "blockers") {
-      return (
-        <StepShell
-          step={step}
-          total={sequence.length}
-          onBack={back}
-          eyebrow="Ce qui bloque"
-          title="Qu'est-ce qui t'empêche d'avancer ?"
-          subtitle="Plusieurs réponses possibles."
-          footer={
-            <Button
-              showArrow={false}
-              disabled={answers.blockers.length === 0}
-              onClick={goNext}
-              className="w-full"
-            >
-              Continuer
-            </Button>
-          }
-        >
-          <div className="flex flex-col gap-3">
-            {BLOCKER_OPTIONS.map((option) => (
-              <ChoiceOption
-                key={option}
-                label={option}
-                variant="multi"
-                selected={answers.blockers.includes(option)}
-                onClick={() => setAnswers((a) => ({ ...a, blockers: toggle(a.blockers, option) }))}
-              />
-            ))}
-          </div>
-        </StepShell>
-      );
-    }
-
-    if (currentId === "comfort-action") {
-      return (
-        <StepShell
-          step={step}
-          total={sequence.length}
-          onBack={back}
-          eyebrow="Ta zone de confort"
-          title="Prêt à faire quoi pour trouver tes premiers clients ?"
-        >
-          <div className="flex flex-col gap-3">
-            {COMFORT_OPTIONS.map((option) => (
-              <ChoiceOption
-                key={option}
-                label={option}
-                selected={answers.comfortAction === option}
-                onClick={() => selectAndAdvance("comfortAction", option)}
-              />
-            ))}
-          </div>
-        </StepShell>
-      );
-    }
-
-    if (currentId === "hours") {
-      return (
-        <StepShell
-          step={step}
-          total={sequence.length}
-          onBack={back}
-          eyebrow="Ton carburant"
-          title="Tu peux y consacrer combien d'heures par semaine ?"
-        >
-          <div className="flex flex-col gap-3">
-            {HOURS_OPTIONS.map((option) => (
-              <ChoiceOption
-                key={option}
-                label={option}
-                selected={answers.hours === option}
-                onClick={() => selectAndAdvance("hours", option)}
-              />
-            ))}
-          </div>
-        </StepShell>
-      );
-    }
-
-    if (currentId === "chapter3-intro") {
-      return (
-        <StepShell
-          step={step}
-          total={sequence.length}
-          onBack={back}
-          eyebrow="Chapitre 3 · Ce que tu vises"
-          title="Ce que tu vises."
-          subtitle="Quatre questions sur la situation que tu veux atteindre. Elles orientent le plan qu'on te prépare."
-          footer={
-            <Button showArrow={false} onClick={goNext} className="w-full">
-              Continuer
-            </Button>
-          }
-        >
-          <FloatingIcon>
-            <Sparkles className="size-5" strokeWidth={1.75} />
-          </FloatingIcon>
-          <div className="mt-6">
-            <MiniDashboard eyebrow="Exemple illustratif · là où ça peut mener" tone="accent" volume={2450} payments={38} clients={26} chart />
-          </div>
-        </StepShell>
-      );
-    }
-
-    if (currentId === "goals") {
-      return (
-        <StepShell
-          step={step}
-          total={sequence.length}
-          onBack={back}
-          eyebrow="Ce qui te fait avancer"
-          title="Quel est ton objectif principal ?"
-          subtitle="Plusieurs réponses possibles."
-          footer={
-            <Button
-              showArrow={false}
-              disabled={answers.goals.length === 0}
-              onClick={goNext}
-              className="w-full"
-            >
-              Continuer
-            </Button>
-          }
-        >
-          <div className="flex flex-col gap-3">
-            {GOAL_OPTIONS.map((option) => (
-              <ChoiceOption
-                key={option}
-                label={option}
-                variant="multi"
-                selected={answers.goals.includes(option)}
-                onClick={() => setAnswers((a) => ({ ...a, goals: toggle(a.goals, option) }))}
-              />
-            ))}
-          </div>
-        </StepShell>
-      );
-    }
-
-    if (currentId === "timeline") {
-      return (
-        <StepShell
-          step={step}
-          total={sequence.length}
-          onBack={back}
-          eyebrow="Ton rythme"
-          title="D'ici quand tu veux voir un premier résultat ?"
-        >
-          <div className="flex flex-col gap-3">
-            {TIMELINE_OPTIONS.map((option) => (
-              <ChoiceOption
-                key={option}
-                label={option}
-                selected={answers.timeline === option}
-                onClick={() => selectAndAdvance("timeline", option)}
-              />
-            ))}
-          </div>
-        </StepShell>
-      );
-    }
-
-    if (currentId === "customer-type") {
-      return (
-        <StepShell step={step} total={sequence.length} onBack={back} eyebrow="Tes clients" title="Tu préfères vendre à qui ?">
-          <div className="flex flex-col gap-3">
-            {CUSTOMER_OPTIONS.map((option) => (
-              <ChoiceOption
-                key={option}
-                label={option}
-                selected={answers.customerType === option}
-                onClick={() => selectAndAdvance("customerType", option)}
-              />
-            ))}
-          </div>
-        </StepShell>
-      );
-    }
-
-    if (currentId === "future-statement") {
-      return (
-        <StepShell
-          step={step}
-          total={sequence.length}
-          onBack={back}
-          eyebrow="Dans un an"
-          title="Décris en une phrase où tu veux être dans un an."
-          footer={
-            <div className="flex items-center gap-4">
-              <Button
-                showArrow={false}
-                onClick={() => {
-                  setAnswers((a) => ({ ...a, futureStatement: futureDraft.trim() }));
-                  goNext();
-                }}
-              >
-                Valider
-              </Button>
-              <button
-                type="button"
-                onClick={goNext}
-                className="font-body text-[13px] text-ink-faint underline underline-offset-2 hover:text-ink-muted"
-              >
-                Passer cette étape
-              </button>
-            </div>
-          }
-        >
-          <textarea
-            value={futureDraft}
-            onChange={(event) => setFutureDraft(event.target.value)}
-            rows={4}
-            placeholder="Ex : je veux 2 000 € par mois qui tombent sans avoir à être derrière l'écran, pour arrêter de dépendre d'un seul employeur."
-            className="w-full rounded-lg border border-ink/12 bg-ink/[0.02] p-4 font-body text-[15px] text-ink outline-none transition-colors duration-150 focus:border-accent/60"
-          />
-        </StepShell>
-      );
-    }
-
-    if (currentId === "economics") {
-      return (
-        <StepShell
-          step={step}
-          total={sequence.length}
-          onBack={back}
-          eyebrow="L'économie d'un SaaS"
-          title="Le revenu se répète."
-          footer={
-            <Button showArrow={false} onClick={goNext} className="w-full">
-              Continuer
-            </Button>
-          }
-        >
-          <FloatingIcon>
-            <Repeat className="size-5" strokeWidth={1.75} />
-          </FloatingIcon>
-          <p className="mt-5 max-w-md font-body text-[15px] leading-relaxed text-ink-muted">
-            Vendre une fois ne rapporte qu&apos;une fois. Un abonnement, lui,
-            continue de rapporter chaque mois — c&apos;est ce qui change tout
-            quand on démarre de zéro.
-          </p>
-          <div className="mt-5 flex gap-4 rounded-lg border border-ink/12 bg-ink/[0.02] p-5">
-            <div className="flex size-8 shrink-0 items-center justify-center rounded-full border border-accent/40 font-mono text-sm font-medium text-accent">
-              1
-            </div>
-            <div>
-              <p className="font-display text-[15px] font-semibold text-ink">
-                Un exemple concret
-              </p>
-              <p className="mt-1.5 font-body text-[14px] leading-relaxed text-ink-muted">
-                À 49 € par mois et par client, 60 clients suffisent pour
-                dépasser 3 000 € de revenu récurrent chaque mois.
-              </p>
-            </div>
-          </div>
-        </StepShell>
-      );
-    }
-
-    if (currentId === "learning") {
-      return (
-        <StepShell
-          step={step}
-          total={sequence.length}
-          onBack={back}
-          eyebrow="Ta méthode d'apprentissage"
-          title="Comment tu préfères apprendre ?"
-        >
-          <div className="flex flex-col gap-3">
-            {LEARNING_OPTIONS.map((option) => (
-              <ChoiceOption
-                key={option}
-                label={option}
-                selected={answers.learningStyle === option}
-                onClick={() => selectAndAdvance("learningStyle", option)}
-              />
-            ))}
-          </div>
-        </StepShell>
-      );
-    }
-
-    if (currentId === "goalcount") {
-      return (
-        <StepShell
-          step={step}
-          total={sequence.length}
-          onBack={back}
-          eyebrow="Notre objectif"
-          title={
-            <>
-              <span className="text-accent">
-                + <CountUp value={40000} />
-              </span>
-              <br />
-              <span className="text-ink">personnes qu&apos;on veut aider</span>
-              <br />
-              <span className="text-ink-muted">à lancer leur premier SaaS.</span>
-            </>
-          }
-          footer={
-            <Button showArrow={false} onClick={goNext} className="w-full">
-              Continuer
-            </Button>
-          }
-        >
-          <p className="max-w-md font-body text-[15px] leading-relaxed text-ink-muted">
-            On n&apos;en est qu&apos;au début. Ce n&apos;est pas un chiffre
-            qu&apos;on a déjà atteint — c&apos;est celui qu&apos;on vise. Tu
-            peux faire partie des premiers à y arriver.
-          </p>
-        </StepShell>
-      );
-    }
-
-    if (currentId === "scenario") {
-      return (
-        <StepShell
-          step={step}
-          total={sequence.length}
-          onBack={back}
-          eyebrow="Un scénario type"
-          title="Ce qu'un même point de départ peut donner, avec la bonne méthode."
-          subtitle="Un exemple illustratif, pas un cas réel — pour montrer l'écart que fait un plan clair."
-          footer={
-            <Button showArrow={false} onClick={goNext} className="w-full">
-              Continuer
-            </Button>
-          }
-        >
-          <div className="flex flex-col gap-3">
-            <MiniDashboard eyebrow="Sans méthode" tone="muted" volume={0} payments={0} clients={0} />
-            <div className="flex justify-center text-ink-faint">
-              <ArrowDown className="size-4" />
-            </div>
-            <MiniDashboard
-              eyebrow="Avec un plan clair · 4 semaines"
-              tone="accent"
-              volume={1240}
-              payments={27}
-              clients={19}
-              chart
-            />
-          </div>
-          <p className="mt-4 font-body text-[12px] leading-relaxed text-ink-faint">
-            Ces chiffres illustrent un scénario, pas un résultat garanti — ils dépendent de ce que tu
-            construis et du temps que tu y mets.
-          </p>
-        </StepShell>
-      );
-    }
-
-    if (currentId === "comparison") {
-      return (
-        <StepShell
-          step={step}
-          total={sequence.length}
-          onBack={back}
-          eyebrow="La différence"
-          title="Se lancer seul, accompagné, ou avec la bonne méthode."
-          subtitle="Ce que chaque approche te donne déjà, avant même que tu commences."
-          footer={
-            <Button showArrow={false} onClick={goNext} className="w-full">
-              Continuer
-            </Button>
-          }
-        >
-          <div className="flex flex-col gap-5">
-            {COMPARISON_DATA.map((row, index) => (
-              <div key={row.label}>
-                <div className="mb-2 flex items-center justify-between gap-3">
-                  <span
-                    className={`flex items-center gap-1.5 font-display text-[14px] font-semibold ${
-                      row.highlight ? "text-ink" : "text-ink-muted"
-                    }`}
-                  >
-                    {row.highlight && <Sparkles className="size-3.5 text-accent" strokeWidth={2} />}
-                    {row.label}
-                  </span>
-                  <span
-                    className={`font-mono text-[13px] font-medium ${
-                      row.highlight ? "text-accent" : "text-ink-faint"
-                    }`}
-                  >
-                    {row.value}%
-                  </span>
-                </div>
-                <div className="h-2.5 w-full overflow-hidden rounded-full bg-ink/8">
-                  <motion.div
-                    initial={{ width: 0 }}
-                    animate={{ width: `${row.value}%` }}
-                    transition={{ duration: 0.8, delay: 0.15 + index * 0.15, ease: [0.16, 1, 0.3, 1] }}
-                    className={`h-full rounded-full ${
-                      row.highlight
-                        ? "bg-accent shadow-[0_0_16px_0_var(--color-accent)]"
-                        : "bg-ink/25"
-                    }`}
-                  />
-                </div>
-                <p className="mt-2 font-body text-[13px] leading-relaxed text-ink-faint">
-                  {row.description}
-                </p>
-              </div>
-            ))}
-          </div>
-        </StepShell>
-      );
-    }
-
-    if (currentId === "persistence") {
-      return (
-        <StepShell
-          step={step}
-          total={sequence.length}
-          onBack={back}
-          eyebrow="Ton tempérament"
-          title="Je suis du genre à persévérer même quand c'est dur."
-        >
-          <ScaleQuestion
-            value={answers.persistence}
-            onSelect={(value) => {
-              setAnswers((a) => ({ ...a, persistence: value }));
-              setTimeout(goNext, 220);
+    switch (step.type) {
+      case "single":
+        return <SingleScreen key={step.id} shell={shell} step={step} answers={answers} onAnswer={answer} onNext={goNext} />;
+      case "multi":
+        return <MultiScreen key={step.id} shell={shell} step={step} answers={answers} onAnswer={answer} onNext={goNext} />;
+      case "scale":
+        return <ScaleScreen shell={shell} step={step} answers={answers} onAnswer={answer} onNext={goNext} />;
+      case "slider":
+        return <SliderScreen shell={shell} step={step} answers={answers} onAnswer={answer} onNext={goNext} />;
+      case "text":
+        return <TextScreen key={step.id} shell={shell} step={step} answers={answers} onAnswer={answer} onNext={goNext} />;
+      case "url":
+        return <UrlScreen key={step.id} shell={shell} step={step} answers={answers} onAnswer={answer} onNext={goNext} />;
+      case "message":
+        return <MessageScreen shell={shell} step={step} onNext={next} />;
+      case "saas101":
+        return <Saas101Screen shell={shell} onNext={next} />;
+      case "analysis":
+        return <AnalysisScreen shell={shell} answers={answers} onNext={next} />;
+      case "loading":
+        return <LoadingScreen shell={shell} answers={answers} onAnswer={answer} onNext={goNext} />;
+      case "projection":
+        return <ProjectionScreen shell={shell} answers={answers} onNext={next} />;
+      case "barrier":
+        return <BarrierScreen shell={shell} onNext={next} />;
+      case "account":
+        return (
+          <AccountScreen
+            shell={shell}
+            onDone={() => {
+              // Signed in now: the sequence drops this step, and resolveIndex
+              // lands on the one right after it.
+              setSignedIn(true);
+              window.scrollTo({ top: 0 });
             }}
           />
-        </StepShell>
-      );
+        );
+      case "objective":
+        return <ObjectiveScreen shell={shell} answers={answers} onNext={next} />;
+      case "journey":
+        return <JourneyScreen shell={shell} firstName={firstName} onNext={next} />;
+      case "commitment":
+        return <CommitmentScreen shell={shell} onNext={next} />;
+      case "plans":
+        return <PlansScreen shell={shell} answers={answers} signedIn={!!signedIn} />;
     }
-
-    if (currentId === "revenue") {
-      const clients = Math.ceil(answers.revenueGoal / 49);
-      const tag =
-        answers.revenueGoal <= 5000 ? "Accessible" : answers.revenueGoal <= 20000 ? "Ambitieux" : "Très ambitieux";
-      return (
-        <StepShell
-          step={step}
-          total={sequence.length}
-          onBack={back}
-          eyebrow="Ton objectif"
-          title="Combien de revenu tu veux atteindre dans 3 mois ?"
-          footer={
-            <Button showArrow={false} onClick={goNext} className="w-full">
-              Continuer
-            </Button>
-          }
-        >
-          <div className="rounded-lg border border-ink/12 bg-ink/[0.02] p-6">
-            <div className="flex items-center justify-between">
-              <p className="font-display text-3xl font-semibold text-ink">
-                {formatEuros(answers.revenueGoal)}
-              </p>
-              <span className="rounded-full border border-ink/15 px-3 py-1 font-mono text-[10px] uppercase tracking-wider text-ink-muted">
-                {tag}
-              </span>
-            </div>
-            <input
-              type="range"
-              min={1000}
-              max={50000}
-              step={500}
-              value={answers.revenueGoal}
-              onChange={(event) =>
-                setAnswers((a) => ({ ...a, revenueGoal: Number(event.target.value) }))
-              }
-              className="accent-accent mt-6 w-full"
-            />
-            <div className="mt-2 flex justify-between font-mono text-[10px] uppercase tracking-wider text-ink-faint">
-              <span>1 000 € · réaliste</span>
-              <span>50 000 € · ambitieux</span>
-            </div>
-            <div className="mt-5 h-px bg-ink/10" />
-            <p className="mt-5 font-body text-[14px] leading-relaxed text-ink-muted">
-              À titre d&apos;exemple, à 49 € par mois et par client, ça fait{" "}
-              <span className="font-medium text-ink">{clients} clients</span> à trouver.
-            </p>
-            <p className="mt-3 font-body text-[12px] leading-relaxed text-ink-faint">
-              Projection illustrative, pas une promesse : elle dépend de ce que tu construis
-              et du temps que tu y mets.
-            </p>
-          </div>
-        </StepShell>
-      );
-    }
-
-    if (currentId === "recap") {
-      const mainBlocker = answers.blockers[0] ?? "le manque de méthode";
-      return (
-        <StepShell
-          step={step}
-          total={sequence.length}
-          onBack={back}
-          eyebrow="Ton profil"
-          title={
-            <>
-              <span className="text-ink">Il te manque juste</span>
-              <br />
-              <span className="text-ink-muted">la méthode, pas la motivation.</span>
-            </>
-          }
-          footer={
-            <Button showArrow={false} onClick={goNext} className="w-full">
-              Voir mon plan
-            </Button>
-          }
-        >
-          <div className="rounded-lg border border-ink/12 bg-ink/[0.02]">
-            <div className="flex items-center justify-between border-b border-ink/10 px-5 py-4">
-              <span className="font-mono text-[10px] uppercase tracking-wider text-ink-faint">
-                Ton parcours
-              </span>
-              <span className="font-body text-[14px] font-medium text-ink">
-                {answers.experience ?? "—"}
-              </span>
-            </div>
-            <div className="flex items-center justify-between border-b border-ink/10 px-5 py-4">
-              <span className="font-mono text-[10px] uppercase tracking-wider text-ink-faint">
-                Ce qui bloque
-              </span>
-              <span className="font-body text-[14px] font-medium text-ink">{mainBlocker}</span>
-            </div>
-            <div className="flex items-center justify-between px-5 py-4">
-              <span className="font-mono text-[10px] uppercase tracking-wider text-ink-faint">
-                Ton objectif à 3 mois
-              </span>
-              <span className="font-body text-[14px] font-medium text-accent">
-                {formatEuros(answers.revenueGoal)}
-              </span>
-            </div>
-          </div>
-        </StepShell>
-      );
-    }
-
-    if (currentId === "commitment") {
-      return (
-        <StepShell step={step} total={sequence.length} onBack={back} eyebrow="Ton engagement" title="Avant d'aller plus loin, prends un engagement.">
-          <p className="max-w-md font-body text-[15px] italic leading-relaxed text-ink-muted">
-            « Je choisis de ne pas lâcher au premier obstacle. D&apos;avancer sur ce projet même
-            les jours où j&apos;ai moins envie. Et de me donner une vraie chance d&apos;y arriver. »
-          </p>
-          <div className="mt-8 flex justify-center">
-            <CommitmentHold onCommit={goNext} />
-          </div>
-        </StepShell>
-      );
-    }
-
-    if (currentId === "signup") {
-      return (
-        <StepShell
-          step={step}
-          total={sequence.length}
-          onBack={back}
-          eyebrow="Pour commencer"
-          title="Crée ton compte."
-          subtitle="On personnalise tout ce qui suit à partir de tes réponses, et rien ne se perd si tu reviens plus tard."
-        >
-          <SignupForm onSuccess={goNext} />
-        </StepShell>
-      );
-    }
-
-    if (currentId === "budget") {
-      return (
-        <StepShell
-          step={step}
-          total={sequence.length}
-          onBack={back}
-          eyebrow="Ton budget"
-          title="Combien peux-tu investir pour lancer ton SaaS ?"
-        >
-          <div className="flex flex-col gap-3">
-            {BUDGET_OPTIONS.map((option) => (
-              <ChoiceOption
-                key={option}
-                label={option}
-                selected={answers.budget === option}
-                onClick={() => selectAndAdvance("budget", option)}
-              />
-            ))}
-          </div>
-        </StepShell>
-      );
-    }
-
-    if (currentId === "tip") {
-      return (
-        <StepShell
-          step={step}
-          total={sequence.length}
-          onBack={back}
-          eyebrow="Le conseil"
-          title="Ton premier client n'a pas besoin de perfection."
-          footer={
-            <Button showArrow={false} onClick={goNext} className="w-full">
-              Continuer
-            </Button>
-          }
-        >
-          <p className="max-w-md font-body text-[15px] leading-relaxed text-ink-muted">
-            La plupart des SaaS qui percent ont été lancés avec une version
-            imparfaite. Le but du premier mois, ce n&apos;est pas d&apos;avoir
-            fini — c&apos;est d&apos;avoir quelqu&apos;un qui paie.
-          </p>
-        </StepShell>
-      );
-    }
-
-    if (currentId === "analyzing") {
-      return (
-        <StepShell
-          step={step}
-          total={sequence.length}
-          onBack={back}
-          eyebrow="Calcul en cours"
-          title="On assemble ton plan."
-          subtitle="Encore deux questions pendant que ça tourne."
-        >
-          <div className="flex flex-col items-center gap-4 py-6">
-            <p className="font-display text-5xl font-semibold text-ink">
-              {Math.round(((analysisTip + 1) / PLAN_ANALYSIS_TIPS.length) * 100)}%
-            </p>
-            <div className="h-1.5 w-full max-w-xs overflow-hidden rounded-full bg-ink/8">
-              <motion.div
-                animate={{
-                  width: `${((analysisTip + 1) / PLAN_ANALYSIS_TIPS.length) * 100}%`,
-                }}
-                transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-                className="h-full rounded-full bg-accent shadow-[0_0_16px_0_var(--color-accent)]"
-              />
-            </div>
-            <p className="font-mono text-[11px] uppercase tracking-wider text-ink-faint">
-              Analyse de tes réponses...
-            </p>
-          </div>
-          <div className="rounded-lg border border-ink/12 bg-ink/[0.02] p-4 min-h-[76px]">
-            <p className="font-mono text-[10px] uppercase tracking-wider text-ink-faint">
-              Pendant ce temps, on prépare
-            </p>
-            <AnimatePresence mode="wait">
-              <motion.p
-                key={analysisTip}
-                initial={{ opacity: 0, y: 6 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -6 }}
-                transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
-                className="mt-2 font-body text-[14px] leading-relaxed text-ink-muted"
-              >
-                {PLAN_ANALYSIS_TIPS[analysisTip]}
-              </motion.p>
-            </AnimatePresence>
-          </div>
-        </StepShell>
-      );
-    }
-
-    if (currentId === "confidence") {
-      return (
-        <StepShell
-          step={step}
-          total={sequence.length}
-          onBack={back}
-          eyebrow="Ta confiance"
-          title="Je me sens capable de mener ce projet à terme."
-        >
-          <ScaleQuestion
-            value={answers.confidence}
-            onSelect={(value) => {
-              setAnswers((a) => ({ ...a, confidence: value }));
-              setTimeout(goNext, 220);
-            }}
-          />
-        </StepShell>
-      );
-    }
-
-    if (currentId === "hassaas") {
-      return (
-        <StepShell
-          step={step}
-          total={sequence.length}
-          onBack={back}
-          eyebrow="Ta situation"
-          title="As-tu déjà un SaaS en ligne, ou tu pars de zéro ?"
-        >
-          <div className="flex flex-col gap-3">
-            {[HAS_SAAS_EXISTING, HAS_SAAS_SCRATCH].map((option) => (
-              <ChoiceOption
-                key={option}
-                label={option}
-                selected={answers.hasSaas === option}
-                onClick={() => selectAndAdvance("hasSaas", option)}
-              />
-            ))}
-          </div>
-        </StepShell>
-      );
-    }
-
-    if (currentId === "url") {
-      return (
-        <StepShell
-          step={step}
-          total={sequence.length}
-          onBack={back}
-          eyebrow="Ton site"
-          title="Quelle est l'URL de ton SaaS ?"
-          footer={
-            <Button
-              showArrow={false}
-              disabled={!answers.existingUrl.trim()}
-              onClick={goNext}
-              className="w-full"
-            >
-              Continuer
-            </Button>
-          }
-        >
-          <input
-            type="url"
-            placeholder="https://tonsaas.com"
-            value={answers.existingUrl}
-            onChange={(event) => setAnswers((a) => ({ ...a, existingUrl: event.target.value }))}
-            className="h-[52px] w-full rounded-lg border border-ink/12 bg-ink/[0.02] px-4 font-body text-[15px] text-ink outline-none transition-colors duration-150 focus:border-accent/60 focus:bg-ink/[0.05]"
-          />
-        </StepShell>
-      );
-    }
-
-    if (currentId === "analysis") {
-      return (
-        <StepShell
-          step={step}
-          total={sequence.length}
-          onBack={back}
-          eyebrow="Analyse en cours"
-          title="On regarde ton SaaS de plus près."
-          footer={
-            <Button showArrow={false} onClick={goNext} className="w-full">
-              Continuer
-            </Button>
-          }
-        >
-          <div className="flex flex-col gap-3">
-            {ANALYSIS_ITEMS.map((item, index) => (
-              <motion.div
-                key={item}
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.3 + index * 0.35, duration: 0.4 }}
-                className="flex items-center gap-3 rounded-lg border border-ink/12 bg-ink/[0.02] px-4 py-3"
-              >
-                <motion.span
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  transition={{ delay: 0.5 + index * 0.35, type: "spring", stiffness: 400, damping: 20 }}
-                  className="flex size-5 shrink-0 items-center justify-center rounded-full bg-accent text-canvas"
-                >
-                  <Check className="size-3" strokeWidth={3} />
-                </motion.span>
-                <span className="font-body text-[14px] text-ink">{item}</span>
-              </motion.div>
-            ))}
-          </div>
-          <p className="mt-5 font-body text-[14px] leading-relaxed text-ink-muted">
-            Le détail complet t&apos;attend dans ton espace, juste après.
-          </p>
-        </StepShell>
-      );
-    }
-
-    if (currentId === "marketing-help") {
-      return (
-        <StepShell
-          step={step}
-          total={sequence.length}
-          onBack={back}
-          eyebrow="Priorité"
-          title="Tu veux qu'on t'aide surtout sur quoi ?"
-        >
-          <div className="flex flex-col gap-3">
-            {MARKETING_HELP_OPTIONS.map((option) => (
-              <ChoiceOption
-                key={option}
-                label={option}
-                selected={answers.marketingHelp === option}
-                onClick={() => selectAndAdvance("marketingHelp", option)}
-              />
-            ))}
-          </div>
-        </StepShell>
-      );
-    }
-
-    if (currentId === "scratch-plan") {
-      return (
-        <StepShell
-          step={step}
-          total={sequence.length}
-          onBack={back}
-          eyebrow="Ton plan"
-          title="On s'occupe du site et du marketing."
-          footer={
-            <Button showArrow={false} onClick={goNext} className="w-full">
-              Continuer
-            </Button>
-          }
-        >
-          <p className="max-w-md font-body text-[15px] leading-relaxed text-ink-muted">
-            Tu pars de zéro, donc on te fournit l&apos;idée, le prompt pour
-            construire le site, et un plan marketing pour trouver tes premiers
-            clients.
-          </p>
-        </StepShell>
-      );
-    }
-
-    return (
-      <StepShell
-        step={step}
-        total={sequence.length}
-        onBack={back}
-        eyebrow="C'est parti"
-        title="Ton business est prêt."
-        footer={
-          <Button href="/tarifs" showArrow={false} className="w-full">
-            Choisir mon offre
-          </Button>
-        }
-      >
-        <p className="max-w-md font-body text-[15px] leading-relaxed text-ink-muted">
-          Ton idée, ton prompt et ton plan n&apos;attendent que toi. Il ne
-          reste qu&apos;une étape : choisis ta formule pour débloquer ton
-          espace et passer à l&apos;action.
-        </p>
-      </StepShell>
-    );
   }
 
   return (
     <AnimatePresence mode="wait">
-      <motion.div key={step} {...stepTransition}>
+      <motion.div key={step.id} {...stepTransition}>
         {renderStep()}
       </motion.div>
     </AnimatePresence>
