@@ -13,15 +13,20 @@ import { ContentGuide } from "@/components/espace/content-guide";
 import { SiteAnalysis } from "@/components/espace/site-analysis";
 import { FloatingIcon } from "@/components/ui/floating-icon";
 import { HERO_IDEA_STORAGE_KEY } from "@/components/landing/hero-prompt";
+import { BrandLogo, type Brand } from "@/components/ui/brand-logo";
 
-const TOOLS = [
+// `brand` points at a Simple Icons logo; tools without one (Lovable, ChatGPT,
+// Grok — not in Simple Icons) show their initial instead.
+const TOOLS: { id: string; name: string; desc: string; brand?: Brand }[] = [
   {
     id: "claude",
+    brand: "claude",
     name: "Claude Code",
     desc: "L'assistant de codage d'Anthropic. Très bon pour construire une app complète étape par étape avec toi.",
   },
   {
     id: "replit",
+    brand: "replit",
     name: "Replit",
     desc: "Éditeur en ligne avec IA intégrée (Replit Agent). Pratique pour coder et héberger sans rien installer.",
   },
@@ -344,10 +349,19 @@ export function EspaceFlow({
                       fetchPrompt(builder.idea_text, tool.id);
                       setPhase("prompt");
                     }}
-                    className="flex flex-col gap-1 rounded-lg border border-ink/12 bg-ink/[0.02] p-4 text-left transition-colors hover:border-accent/40"
+                    className="flex items-start gap-4 rounded-lg border border-ink/12 bg-ink/[0.02] p-4 text-left transition-colors hover:border-accent/40"
                   >
-                    <span className="font-display text-[15px] font-semibold text-ink">{tool.name}</span>
-                    <span className="font-body text-[13px] text-ink-muted">{tool.desc}</span>
+                    <span className="flex size-10 shrink-0 items-center justify-center rounded-[12px] border border-ink/10 bg-ink/[0.04]">
+                      {tool.brand ? (
+                        <BrandLogo brand={tool.brand} className="size-5" />
+                      ) : (
+                        <span className="font-display text-[16px] font-semibold text-ink-muted">{tool.name[0]}</span>
+                      )}
+                    </span>
+                    <span className="flex flex-col gap-1">
+                      <span className="font-display text-[15px] font-semibold text-ink">{tool.name}</span>
+                      <span className="font-body text-[13px] text-ink-muted">{tool.desc}</span>
+                    </span>
                   </button>
                 ))}
               </div>

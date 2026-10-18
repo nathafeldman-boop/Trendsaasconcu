@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { motion, type Variants } from "framer-motion";
 import { Check, CreditCard, TrendingUp, UserPlus } from "lucide-react";
 import { Eyebrow } from "@/components/ui/eyebrow";
@@ -13,7 +14,6 @@ const NOTIFICATIONS = [
   { icon: CreditCard, title: "Paiement reçu", detail: "29,00 € · Plan mensuel", when: "maintenant" },
   { icon: UserPlus, title: "Nouvel abonné", detail: "lea.m••••@gmail.com", when: "il y a 4 min" },
   { icon: CreditCard, title: "Paiement reçu", detail: "249,00 € · Plan annuel", when: "il y a 12 min" },
-  { icon: CreditCard, title: "Paiement reçu", detail: "29,00 € · Plan mensuel", when: "il y a 31 min" },
 ];
 
 const JOURNEY = ["Idée trouvée", "Site en ligne", "Premier post publié", "Premier paiement reçu"];
@@ -80,14 +80,33 @@ function RevenueCard() {
 function PhoneCard() {
   return (
     <div className="relative mx-auto w-full max-w-[300px] rounded-[44px] border border-ink/12 bg-gradient-to-b from-[#2a2a2e] via-[#111113] to-[#1c1c1f] p-3 shadow-[0_40px_100px_-30px_rgba(0,0,0,0.9),0_0_80px_-40px_var(--color-accent)]">
-      <div className="relative overflow-hidden rounded-[34px] bg-gradient-to-b from-[#1d2426] via-[#0c0d0e] to-[#050506] px-3.5 pb-6 pt-3">
-        <div className="flex items-center justify-between px-2 font-body text-[11px] font-semibold text-ink">
+      {/* Lock screen whose wallpaper is the jet + supercars photo; the
+          notifications stack at the bottom, iOS-style, over the tarmac. */}
+      <div className="relative flex aspect-[9/19] flex-col overflow-hidden rounded-[34px] bg-black px-3.5 pb-5 pt-3">
+        <motion.div
+          initial={{ scale: 1.15 }}
+          whileInView={{ scale: 1 }}
+          viewport={{ once: true }}
+          transition={{ duration: 2, ease: EASE }}
+          className="absolute inset-0"
+        >
+          <Image
+            src="/images/hero-bg.jpg"
+            alt="Une sportive noire et une supercar turquoise devant un jet privé, de nuit"
+            fill
+            sizes="300px"
+            className="object-cover object-[50%_45%]"
+          />
+        </motion.div>
+        <div aria-hidden className="absolute inset-0 bg-gradient-to-b from-black/75 via-black/5 to-black/70" />
+
+        <div className="relative flex items-center justify-between px-2 font-body text-[11px] font-semibold text-ink">
           <span>9:41</span>
           <span className="h-5 w-20 rounded-full bg-black" />
           <span>5G</span>
         </div>
-        <p className="mt-6 text-center font-body text-[12px] text-ink-muted">lundi 8 septembre</p>
-        <p className="text-center font-display text-[56px] font-light leading-none tracking-[-0.04em] text-ink">
+        <p className="relative mt-5 text-center font-body text-[12px] text-ink/85">lundi 8 septembre</p>
+        <p className="relative text-center font-display text-[56px] font-light leading-none tracking-[-0.04em] text-ink [text-shadow:0_2px_20px_rgba(0,0,0,0.6)]">
           9:41
         </p>
 
@@ -96,13 +115,13 @@ function PhoneCard() {
           initial="hidden"
           whileInView="show"
           viewport={{ once: true, margin: "-10%" }}
-          className="mt-6 flex flex-col gap-2"
+          className="relative mt-auto flex flex-col gap-2"
         >
           {NOTIFICATIONS.map((notif, index) => (
             <motion.div
               key={index}
               variants={notifIn}
-              className="flex items-center gap-2.5 rounded-[18px] border border-ink/8 bg-ink/[0.07] p-2.5 backdrop-blur-md"
+              className="flex items-center gap-2.5 rounded-[18px] border border-white/10 bg-black/45 p-2.5 backdrop-blur-xl"
             >
               <span className="flex size-8 shrink-0 items-center justify-center rounded-[10px] bg-accent text-canvas">
                 <notif.icon className="size-4" strokeWidth={2.25} />
