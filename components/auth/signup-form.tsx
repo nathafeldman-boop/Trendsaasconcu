@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
 import { translateAuthError } from "@/lib/supabase/auth-error";
+import { GoogleSignIn } from "@/components/auth/google-sign-in";
 
 export function SignupForm({ onSuccess }: { onSuccess?: () => void }) {
   const searchParams = useSearchParams();
@@ -99,48 +100,53 @@ export function SignupForm({ onSuccess }: { onSuccess?: () => void }) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-5">
-      <Input label="Ton prénom" name="firstName" placeholder="Camille" autoComplete="given-name" required />
-      <Input label="Ton email" name="email" type="email" placeholder="camille@exemple.fr" autoComplete="email" required />
-      <Input label="Un mot de passe" name="password" type="password" placeholder="8 caractères minimum" autoComplete="new-password" minLength={8} required />
+    <div>
+      {/* In the wizard (onSuccess), Google brings them back to /commencer,
+          which skips its signup step once they're signed in. */}
+      <GoogleSignIn next={onSuccess ? "/commencer" : plan ? "/tarifs" : next || "/commencer"} />
+      <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+        <Input label="Ton prénom" name="firstName" placeholder="Camille" autoComplete="given-name" required />
+        <Input label="Ton email" name="email" type="email" placeholder="camille@exemple.fr" autoComplete="email" required />
+        <Input label="Un mot de passe" name="password" type="password" placeholder="8 caractères minimum" autoComplete="new-password" minLength={8} required />
 
-      <p className="font-body text-[13px] leading-relaxed text-ink-faint">
-        Ton prénom personnalise ton espace, ton email sert uniquement à te
-        renvoyer ton idée et ton plan.
-      </p>
-
-      {error && (
-        <p className="font-body text-[13px] leading-relaxed text-red-400">
-          {error}
-          {error.startsWith("Ce compte existe déjà") && (
-            <>
-              {" "}
-              <a
-                href={plan ? `/connexion?plan=${plan}` : next ? `/connexion?next=${next}` : "/connexion"}
-                className="underline underline-offset-2 hover:text-red-300"
-              >
-                Se connecter
-              </a>
-            </>
-          )}
+        <p className="font-body text-[13px] leading-relaxed text-ink-faint">
+          Ton prénom personnalise ton espace, ton email sert uniquement à te
+          renvoyer ton idée et ton plan.
         </p>
-      )}
 
-      <Button type="submit" showArrow={false} disabled={loading} className="mt-1 w-full">
-        {loading ? "Création en cours..." : "Créer mon compte"}
-      </Button>
+        {error && (
+          <p className="font-body text-[13px] leading-relaxed text-red-400">
+            {error}
+            {error.startsWith("Ce compte existe déjà") && (
+              <>
+                {" "}
+                <a
+                  href={plan ? `/connexion?plan=${plan}` : next ? `/connexion?next=${next}` : "/connexion"}
+                  className="underline underline-offset-2 hover:text-red-300"
+                >
+                  Se connecter
+                </a>
+              </>
+            )}
+          </p>
+        )}
 
-      <p className="text-center font-body text-[12px] leading-relaxed text-ink-faint">
-        En créant ton compte, tu acceptes nos{" "}
-        <a href="/conditions" className="underline underline-offset-2 hover:text-ink-muted">
-          conditions d&apos;utilisation
-        </a>{" "}
-        et notre{" "}
-        <a href="/confidentialite" className="underline underline-offset-2 hover:text-ink-muted">
-          politique de confidentialité
-        </a>
-        .
-      </p>
-    </form>
+        <Button type="submit" showArrow={false} disabled={loading} className="mt-1 w-full">
+          {loading ? "Création en cours..." : "Créer mon compte"}
+        </Button>
+
+        <p className="text-center font-body text-[12px] leading-relaxed text-ink-faint">
+          En créant ton compte, tu acceptes nos{" "}
+          <a href="/conditions" className="underline underline-offset-2 hover:text-ink-muted">
+            conditions d&apos;utilisation
+          </a>{" "}
+          et notre{" "}
+          <a href="/confidentialite" className="underline underline-offset-2 hover:text-ink-muted">
+            politique de confidentialité
+          </a>
+          .
+        </p>
+      </form>
+    </div>
   );
 }

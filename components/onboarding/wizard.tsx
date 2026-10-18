@@ -345,6 +345,16 @@ export function OnboardingWizard() {
     });
   }, [step, answers]);
 
+  // Back from Google sign-in (or simply already signed in): the signup step
+  // has nothing left to ask, so move past it.
+  useEffect(() => {
+    const supabase = createClient();
+    if (!supabase) return;
+    supabase.auth.getUser().then(({ data }) => {
+      if (data.user) setStep((current) => (current === 0 ? 1 : current));
+    });
+  }, []);
+
   const sequence = getSequence(answers);
   const currentId = sequence[Math.min(step, sequence.length - 1)];
 

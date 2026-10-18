@@ -1,16 +1,27 @@
 import { NextResponse } from "next/server";
+import type Stripe from "stripe";
 import { createClient } from "@/lib/supabase/server";
 import { createStripeClient } from "@/lib/stripe/client";
 import { PLANS, type PlanId } from "@/lib/stripe/plans";
 
 // Server-only: which Stripe Price object each plan maps to. Env vars let
 // this point at test-mode prices (alongside a test STRIPE_SECRET_KEY)
-// without touching code; falls back to the live prices created earlier.
+// without touching code. Only the monthly plan has a live price created
+// already; the others stay unavailable until their env var is set.
 const PRICE_IDS: Record<PlanId, string | undefined> = {
-  weekly: process.env.STRIPE_PRICE_WEEKLY || "price_1UGlKLRd6r34OMU60kyhAwLb",
   monthly: process.env.STRIPE_PRICE_MONTHLY || "price_1UGlIkRd6r34OMU6NG4M3tTK",
-  annual: process.env.STRIPE_PRICE_ANNUAL || "price_1UGlLHRd6r34OMU6mnaBytQZ",
+  quarterly: process.env.STRIPE_PRICE_QUARTERLY,
+  annual: process.env.STRIPE_PRICE_ANNUAL,
 };
+
+function billedMonths(price: Stripe.Price) {
+  const recurring = price.recurring;
+  if (!recurring) return null;
+  const count = recurring.interval_count || 1;
+  if (recurring.interval === "month") return count;
+  if (recurring.interval === "year") return 12 * count;
+  return null;
+}
 
 export async function POST(request: Request) {
   const body = await request.json().catch(() => null);
@@ -50,6 +61,16 @@ export async function POST(request: Request) {
   const origin = new URL(request.url).origin;
 
   try {
+    // Never charge something other than what /tarifs shows: an env var
+    // still pointing at an old price (e.g. the former 60 €/an) is refused.
+    const price = await stripe.prices.retrieve(priceId);
+    if (price.unit_amount !== plan.amountCents || price.currency !== "eur" || billedMonths(price) !== plan.months) {
+      console.error(
+        `Stripe price ${priceId} doesn't match plan ${plan.id}: expected ${plan.amountCents} eur every ${plan.months} month(s), got ${price.unit_amount} ${price.currency} every ${billedMonths(price)} month(s)`
+      );
+      return NextResponse.json({ error: "Plan not configured" }, { status: 503 });
+    }
+
     const session = await stripe.checkout.sessions.create({
       mode: "subscription",
       line_items: [{ price: priceId, quantity: 1 }],

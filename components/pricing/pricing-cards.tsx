@@ -36,7 +36,11 @@ export function PricingCards({ isAuthenticated }: { isAuthenticated: boolean }) 
         window.location.assign(data.url);
         return;
       }
-      setError("Le paiement n'est pas encore configuré. Réessaie plus tard ou utilise un code d'accès.");
+      setError(
+        data.error === "Plan not configured"
+          ? "Cette formule n'est pas encore ouverte au paiement. Choisis-en une autre ou utilise un code d'accès."
+          : "Le paiement n'est pas encore configuré. Réessaie plus tard ou utilise un code d'accès."
+      );
     } catch {
       setError("Une erreur est survenue.");
     } finally {
@@ -67,7 +71,10 @@ export function PricingCards({ isAuthenticated }: { isAuthenticated: boolean }) 
               {plan.price}
               <span className="font-body text-[14px] font-normal text-ink-faint"> /{plan.interval}</span>
             </p>
-            <ul className="mt-6 flex flex-col gap-2.5">
+            <p className="mt-1 h-5 font-body text-[13px] text-accent">
+              {plan.perMonth ? `soit ${plan.perMonth}/mois` : null}
+            </p>
+            <ul className="mt-5 flex flex-col gap-2.5">
               {FEATURES.map((feature) => (
                 <li key={feature} className="flex items-start gap-2 font-body text-[13px] text-ink-muted">
                   <Check className="mt-0.5 size-3.5 shrink-0 text-accent" strokeWidth={2.5} />
