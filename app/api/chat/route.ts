@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { mistralComplete } from "@/lib/mistral/client";
+import { claudeComplete, imageBlockFromDataUrl } from "@/lib/claude/client";
 
 const SYSTEM_PROMPT =
   "Tu es l'assistant de SaaSFounder, une plateforme qui aide des débutants à lancer leur premier SaaS. Réponds en français, de façon concise, concrète et encourageante. Tu n'inventes jamais de chiffres ou de garanties de résultat. On peut te joindre une capture d'écran : décris ce que tu vois et aide à résoudre le problème visible.";
@@ -24,39 +24,34 @@ export async function POST(request: Request) {
       content: String(m.content).slice(0, 2000),
     }));
 
+  // The widget's static opening greeting is an assistant turn with nothing
+  // before it — Claude's API requires the conversation to start on "user".
+  const firstUserIndex = history.findIndex((m) => m.role === "user");
+  const trimmedHistory = firstUserIndex === -1 ? [] : history.slice(firstUserIndex);
+
   const image =
     typeof body.image === "string" &&
     body.image.startsWith("data:image/") &&
     body.image.length <= MAX_IMAGE_DATA_URL_LENGTH
       ? body.image
       : null;
+  const imageBlock = image ? imageBlockFromDataUrl(image) : null;
 
-  const mistralMessages = [
-    { role: "system" as const, content: SYSTEM_PROMPT },
-    ...history.slice(0, -1),
-    ...(history.length > 0
-      ? [
-          {
-            role: "user" as const,
-            content: image
-              ? [
-                  { type: "text" as const, text: history[history.length - 1].content },
-                  { type: "image_url" as const, image_url: image },
-                ]
-              : history[history.length - 1].content,
-          },
-        ]
-      : []),
-  ];
+  const claudeMessages = trimmedHistory.map((m, i) => {
+    if (i === trimmedHistory.length - 1 && imageBlock) {
+      return { role: m.role, content: [{ type: "text" as const, text: m.content }, imageBlock] };
+    }
+    return { role: m.role, content: m.content };
+  });
 
-  const reply = await mistralComplete(mistralMessages);
+  const reply = trimmedHistory.length > 0 ? await claudeComplete(SYSTEM_PROMPT, claudeMessages) : null;
 
   if (reply) {
-    return NextResponse.json({ reply, source: "mistral" });
+    return NextResponse.json({ reply, source: "claude" });
   }
   return NextResponse.json({
     reply:
-      "L'assistant IA n'est pas encore branché (il manque une clé Mistral côté serveur). En attendant, avance avec le prompt et la checklist fournis.",
+      "L'assistant IA n'est pas encore branché (il manque une clé Claude côté serveur). En attendant, avance avec le prompt et la checklist fournis.",
     source: "fallback",
   });
 }

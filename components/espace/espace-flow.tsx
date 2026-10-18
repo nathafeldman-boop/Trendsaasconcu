@@ -142,7 +142,7 @@ export function EspaceFlow({
   const [phase, setPhase] = useState<Phase>(() => initialPhase(initialBuilder, hasExistingSaas));
   const [ideaDraft, setIdeaDraft] = useState(initialBuilder.idea_text);
   const [prompt, setPrompt] = useState<string | null>(null);
-  const [promptSource, setPromptSource] = useState<"mistral" | "fallback" | null>(null);
+  const [promptSource, setPromptSource] = useState<"claude" | "fallback" | null>(null);
   const [loadingPrompt, setLoadingPrompt] = useState(false);
   const [copied, setCopied] = useState(false);
   const [helpOpen, setHelpOpen] = useState<Record<string, boolean>>({});

@@ -21,8 +21,8 @@ export default function ConditionsPage() {
           Un questionnaire pour cerner ta situation, une aide au choix d&apos;une idée de SaaS, un
           prompt de démarrage généré à partir de tes réponses, une checklist de lancement, et des
           conseils marketing (canal, formats de contenu). Certains contenus sont générés par un modèle
-          d&apos;IA tiers (Mistral) ; quand ce service n&apos;est pas disponible, un contenu générique
-          est utilisé à la place.
+          d&apos;IA tiers (Claude, par Anthropic) ; quand ce service n&apos;est pas disponible, un
+          contenu générique est utilisé à la place.
         </p>
       </section>
 
@@ -64,8 +64,8 @@ export default function ConditionsPage() {
         <h2>5. Contenu que tu fournis</h2>
         <p>
           L&apos;idée de SaaS et les messages que tu fournis restent les tiens. Tu nous autorises à les
-          transmettre à Mistral (fournisseur d&apos;IA) uniquement pour générer tes prompts et réponses
-          d&apos;assistant.
+          transmettre à Anthropic (fournisseur de l&apos;IA Claude) uniquement pour générer tes prompts
+          et réponses d&apos;assistant.
         </p>
       </section>
 

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { mistralComplete } from "@/lib/mistral/client";
+import { claudeComplete } from "@/lib/claude/client";
 
 const TOOL_LABELS: Record<string, string> = {
   claude: "Claude Code",
@@ -41,35 +41,27 @@ export async function POST(request: Request) {
   const tool = TOOL_LABELS[body.tool as string] ?? "l'outil de ton choix";
 
   if (body.kind === "content") {
-    const completion = await mistralComplete([
-      {
-        role: "system",
-        content:
-          "Tu es un coach marketing pour créateurs de SaaS débutants. Réponds en français, en 3 idées de contenu courtes et concrètes pour TikTok/Instagram, une par ligne, sans numérotation ni intro.",
-      },
-      { role: "user", content: `Mon idée de SaaS : ${idea}` },
-    ]);
+    const completion = await claudeComplete(
+      "Tu es un coach marketing pour créateurs de SaaS débutants. Réponds en français, en 3 idées de contenu courtes et concrètes pour TikTok/Instagram, une par ligne, sans numérotation ni intro.",
+      [{ role: "user", content: `Mon idée de SaaS : ${idea}` }]
+    );
     if (completion) {
       const ideas = completion
         .split("\n")
         .map((line) => line.replace(/^[-*\d.\s]+/, "").trim())
         .filter(Boolean);
-      return NextResponse.json({ ideas, source: "mistral" });
+      return NextResponse.json({ ideas, source: "claude" });
     }
     return NextResponse.json({ ideas: fallbackContentIdeas(idea), source: "fallback" });
   }
 
-  const completion = await mistralComplete([
-    {
-      role: "system",
-      content:
-        "Tu es un coach technique pour créateurs de SaaS débutants. Écris, en français, un prompt prêt à coller dans un outil de codage IA pour construire une première version du SaaS décrit par l'utilisateur. Sois concret et structuré (contraintes, étapes). Ne réponds qu'avec le prompt, sans commentaire autour.",
-    },
-    { role: "user", content: `Mon idée : ${idea}\nOutil utilisé : ${tool}` },
-  ]);
+  const completion = await claudeComplete(
+    "Tu es un coach technique pour créateurs de SaaS débutants. Écris, en français, un prompt prêt à coller dans un outil de codage IA pour construire une première version du SaaS décrit par l'utilisateur. Sois concret et structuré (contraintes, étapes). Ne réponds qu'avec le prompt, sans commentaire autour.",
+    [{ role: "user", content: `Mon idée : ${idea}\nOutil utilisé : ${tool}` }]
+  );
 
   if (completion) {
-    return NextResponse.json({ prompt: completion.trim(), source: "mistral" });
+    return NextResponse.json({ prompt: completion.trim(), source: "claude" });
   }
   return NextResponse.json({ prompt: fallbackBuildPrompt(idea, tool), source: "fallback" });
 }
