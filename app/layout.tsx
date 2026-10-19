@@ -29,9 +29,9 @@ const mono = JetBrains_Mono({
   weight: ["400", "500", "600", "700"],
 });
 
-const title = "SaaSFounder — Deviens fondateur de ton premier SaaS";
+const title = "SaaSFounder — Crée ton SaaS et encaisse dès maintenant";
 const description =
-  "La méthode pour trouver ton idée, la construire avec l'IA et encaisser tes premiers revenus. Sans expérience, sans code.";
+  "Notre but : que tu crées ton SaaS avec l'IA et que tu encaisses tes premiers paiements dès maintenant. Idée, prompt de build, coach IA et suivi de tes revenus Stripe. Sans expérience, sans code.";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://saasfounder.fr"),

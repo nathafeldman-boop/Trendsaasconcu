@@ -38,16 +38,16 @@ export function Hero() {
         </motion.div>
 
         <h1
-          aria-label="Crée ton SaaS qui rapporte, en 30 jours avec l'IA."
+          aria-label="Crée ton SaaS. Encaisse dès maintenant."
           className="mt-6 max-w-[900px] font-display text-[42px] font-normal leading-[1.04] tracking-[-0.055em] text-ink sm:text-[58px] lg:text-[68px]"
         >
           <span aria-hidden>
-            <BlurReveal text="Crée ton SaaS qui" delay={80} className="text-chrome" />{" "}
-            <span className="font-serif text-[1.04em] italic tracking-[-0.01em] text-accent [text-shadow:0_0_32px_rgba(51,244,239,0.45)]">
-              <BlurReveal text="rapporte," delay={380} />
-            </span>
+            <BlurReveal text="Crée ton SaaS." delay={80} className="text-chrome" />
             <br />
-            <BlurReveal text="en 30 jours avec l'IA." delay={520} className="text-chrome" />
+            <span className="font-serif text-[1.04em] italic tracking-[-0.01em] text-accent [text-shadow:0_0_32px_rgba(51,244,239,0.45)]">
+              <BlurReveal text="Encaisse" delay={380} />
+            </span>{" "}
+            <BlurReveal text="dès maintenant." delay={520} className="text-chrome" />
           </span>
         </h1>
 
@@ -57,8 +57,8 @@ export function Hero() {
           transition={{ duration: 0.6, delay: 0.75, ease: EASE }}
           className="mt-6 max-w-xl font-body text-[16px] leading-relaxed text-ink-muted sm:text-[17px]"
         >
-          Ton idée validée, ton prompt de build, ton plan marketing.{" "}
-          <span className="text-ink">L&apos;IA fait le gros du travail</span>, tu prends les décisions.
+          Notre but : que tu crées ton SaaS avec l&apos;IA et que tu{" "}
+          <span className="text-ink">encaisses tes premiers paiements dès maintenant</span>, pas dans six mois.
         </motion.p>
 
         <motion.div

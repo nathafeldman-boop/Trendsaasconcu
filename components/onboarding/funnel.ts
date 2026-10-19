@@ -293,7 +293,7 @@ export const STEPS: Step[] = [
     illustration: "star",
     kicker: "Bienvenue",
     title: "Bienvenue dans SaaSFounder.",
-    sub: "Ton idée de SaaS, le prompt exact pour la construire avec l'IA, et le plan pour trouver tes premiers clients. Au même endroit.",
+    sub: "Notre but : que tu crées ton SaaS et que tu encaisses dès maintenant. Ton idée, le prompt exact pour la construire avec l'IA et le plan pour trouver tes premiers clients, au même endroit.",
     cta: "Suivant",
   },
   {

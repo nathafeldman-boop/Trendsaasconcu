@@ -34,7 +34,7 @@ export function Footer() {
         <div className="col-span-2 md:col-span-1">
           <Logo />
           <p className="mt-4 max-w-[28ch] font-body text-[13px] leading-relaxed text-ink-faint">
-            Idée, build et marketing de ton premier SaaS, au même endroit.
+            Crée ton SaaS avec l&apos;IA, et encaisse dès maintenant.
           </p>
         </div>
         {LINKS.map((group) => (
