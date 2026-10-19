@@ -38,6 +38,7 @@ import { creationRecommendations } from "@/lib/espace/recommendations";
 import { Recommendations } from "@/components/espace/recommendations";
 import { PromptBlock, scrollToSection, StatusChip, Steps, TabHeader } from "@/components/espace/kit";
 import { cn } from "@/lib/utils";
+import { track } from "@/lib/analytics/track";
 
 export type BuilderState = {
   has_idea: boolean | null;
@@ -81,6 +82,7 @@ export function CreationTab({
   }
 
   function toggle(id: string) {
+    track("checklist_toggled", { item: id, done: !builder.checklist[id] });
     persist({ checklist: { ...builder.checklist, [id]: !builder.checklist[id] } });
   }
 
@@ -448,6 +450,7 @@ function IdeaSection({
         body: JSON.stringify({ regenerate }),
       });
       const data = await res.json();
+      track("ideas_generated", { regenerate, source: data.source ?? null, ok: Array.isArray(data.ideas) && data.ideas.length > 0 });
       if (Array.isArray(data.ideas) && data.ideas.length) {
         setIdeas(data.ideas);
       } else {
@@ -464,6 +467,7 @@ function IdeaSection({
     const idea = text.trim().slice(0, 2000);
     if (!idea) return;
     setDraft(idea);
+    track("idea_saved", { source: hasIdea ? "own" : "ai" });
     await persist({ idea_text: idea, has_idea: hasIdea });
     setMode("view");
   }
@@ -740,6 +744,7 @@ function CodeSection({
       });
       const data = await res.json();
       if (typeof data.prompt === "string") setPrompt({ text: data.prompt, key: currentKey });
+      track("build_prompt_generated", { tool: builder.chosen_tool, regenerate, source: data.source ?? null });
       if (data.message) setNote(data.message);
       else if (data.source === "fallback")
         setNote("Prompt de secours : l'IA n'a pas pu écrire ton prompt sur mesure. Réessaie dans un moment.");
@@ -765,7 +770,10 @@ function CodeSection({
           <button
             key={t.id}
             type="button"
-            onClick={() => persist({ chosen_tool: t.id })}
+            onClick={() => {
+              track("tool_chosen", { tool: t.id });
+              persist({ chosen_tool: t.id });
+            }}
             className={cn(
               "flex items-start gap-3.5 rounded-[18px] border p-4 text-left transition-colors",
               t.id === builder.chosen_tool ? "border-accent/50 bg-accent/[0.07]" : "border-ink/10 hover:border-ink/25"
@@ -963,7 +971,10 @@ function LaunchSection({
           </button>
         </motion.div>
       ) : (
-        <Button showArrow={false} onClick={() => persist({ mvp_launched: true })} className="mt-6 w-full">
+        <Button showArrow={false} onClick={() => {
+            track("mvp_launched");
+            persist({ mvp_launched: true });
+          }} className="mt-6 w-full">
           <Rocket className="-mt-0.5 mr-1.5 inline size-4" />
           J&apos;ai lancé ma MVP
         </Button>

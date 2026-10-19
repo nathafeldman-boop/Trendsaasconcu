@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Check, Copy } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { track } from "@/lib/analytics/track";
 
 // Small building blocks shared by the member-area tabs.
 
@@ -29,12 +30,13 @@ export function TabHeader({
   );
 }
 
-export function CopyButton({ text, className }: { text: string; className?: string }) {
+export function CopyButton({ text, className, label }: { text: string; className?: string; label?: string }) {
   const [copied, setCopied] = useState(false);
 
   async function copy() {
     try {
       await navigator.clipboard.writeText(text);
+      if (label) track("prompt_copied", { label });
       setCopied(true);
       setTimeout(() => setCopied(false), 1500);
     } catch {
@@ -62,7 +64,7 @@ export function PromptBlock({ label, text, tall = false }: { label: string; text
     <div className="overflow-hidden rounded-[16px] border border-ink/10 bg-black/40">
       <div className="flex items-center justify-between gap-3 border-b border-ink/8 px-4 py-2.5">
         <span className="font-mono text-[10.5px] uppercase tracking-[0.18em] text-ink-faint">{label}</span>
-        <CopyButton text={text} />
+        <CopyButton text={text} label={label} />
       </div>
       <pre
         className={cn(

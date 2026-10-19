@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { logEvent } from "@/lib/analytics/server";
 
 // Supabase's OAuth redirect (Google) lands here with a `?code=`. Route
 // Handlers can actually persist cookies (unlike Server Components), so the
@@ -29,6 +30,11 @@ export async function GET(request: Request) {
           .split(/\s+/)[0];
         if (data.user && firstName) {
           await supabase.from("profiles").update({ first_name: firstName }).eq("id", data.user.id).is("first_name", null);
+        }
+        if (data.user) {
+          // A Google account created in the last couple of minutes is a sign-up.
+          const isNew = Date.now() - new Date(data.user.created_at).getTime() < 2 * 60 * 1000;
+          await logEvent({ name: isNew ? "signup_completed" : "login", user_id: data.user.id, props: { method: "google" } });
         }
         return NextResponse.redirect(`${origin}${next}`);
       }

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
+import { track } from "@/lib/analytics/track";
 
 export function AccessCodeInline({ alwaysOpen = false }: { alwaysOpen?: boolean }) {
   const router = useRouter();
@@ -49,6 +50,7 @@ export function AccessCodeInline({ alwaysOpen = false }: { alwaysOpen?: boolean 
       // cached render of /espace from before could still reflect the old,
       // access-less state. Admin codes also land in the premium app: the
       // admin dashboard is one click away from its sidebar.
+      track("access_code_redeemed");
       // eslint-disable-next-line @next/next/no-location-assign-relative-destination
       window.location.assign("/espace");
     } catch (err) {

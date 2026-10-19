@@ -1,8 +1,9 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { createClient } from "@/lib/supabase/client";
+import { track } from "@/lib/analytics/track";
 import { STEPS, getSequence, type Answers, type Step } from "@/components/onboarding/funnel";
 import {
   AccountScreen,
@@ -110,6 +111,14 @@ export function OnboardingWizard() {
         .then(() => {});
     });
   }, [step.id, answers, index, sequence.length]);
+
+  // One onboarding_step per step reached, for the drop-off chart in /admin.
+  const trackedStep = useRef<string | null>(null);
+  useEffect(() => {
+    if (trackedStep.current === step.id) return;
+    trackedStep.current = step.id;
+    track("onboarding_step", { step: step.id, index, total: sequence.length });
+  }, [step.id, index, sequence.length]);
 
   /** Merge into the answers and return the merged result, for an immediate goNext. */
   const answer = useCallback(

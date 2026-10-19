@@ -7,6 +7,7 @@ import { motion } from "framer-motion";
 import { Hammer, LineChart, Megaphone, ShieldCheck, Sparkles, type LucideIcon } from "lucide-react";
 import { Logo } from "@/components/ui/logo";
 import { cn } from "@/lib/utils";
+import { track } from "@/lib/analytics/track";
 
 type Tab = { href: string; label: string; hint: string; icon: LucideIcon };
 
@@ -142,6 +143,7 @@ function ManageSubscriptionLink({ compact = false }: { compact?: boolean }) {
   async function open() {
     setLoading(true);
     try {
+      track("billing_portal_opened");
       const res = await fetch("/api/billing-portal", { method: "POST" });
       const data = await res.json();
       if (data.url) window.location.assign(data.url);

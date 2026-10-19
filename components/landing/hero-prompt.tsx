@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { track } from "@/lib/analytics/track";
 import { AnimatePresence, motion } from "framer-motion";
 import { ArrowUp, Compass, Lightbulb, Rocket } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -48,6 +49,7 @@ export function HeroPrompt() {
   }, []);
 
   function start() {
+    track("hero_submitted", { mode, has_idea: !!idea.trim() });
     if (mode === "idea" && idea.trim()) {
       try {
         window.localStorage.setItem(HERO_IDEA_STORAGE_KEY, idea.trim().slice(0, 2000));

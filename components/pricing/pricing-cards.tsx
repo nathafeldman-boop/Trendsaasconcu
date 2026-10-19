@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { preconnect } from "react-dom";
 import { useRouter } from "next/navigation";
 import { Check, Loader2, Sparkles } from "lucide-react";
@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { PLANS, type PlanId } from "@/lib/stripe/plans";
 import { createClient } from "@/lib/supabase/client";
 import { InAppBrowserHint } from "@/components/pricing/in-app-browser-hint";
+import { track } from "@/lib/analytics/track";
 
 const FEATURES = [
   "Ton idée de SaaS et ton prompt de démarrage",
@@ -22,6 +23,21 @@ export function PricingCards() {
   const router = useRouter();
   const [loadingPlan, setLoadingPlan] = useState<PlanId | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const rootRef = useRef<HTMLDivElement>(null);
+
+  // "Voit les prix" in the admin funnel: the cards actually came on screen.
+  useEffect(() => {
+    const node = rootRef.current;
+    if (!node || typeof IntersectionObserver === "undefined") return;
+    const observer = new IntersectionObserver((entries) => {
+      if (entries.some((entry) => entry.isIntersecting)) {
+        track("pricing_viewed");
+        observer.disconnect();
+      }
+    }, { threshold: 0.3 });
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, []);
 
   async function choose(planId: PlanId) {
     if (loadingPlan) return;
@@ -33,6 +49,7 @@ export function PricingCards() {
     // visitor isn't signed in. The server re-checks the session anyway.
     const supabase = createClient();
     const { data } = supabase ? await supabase.auth.getSession() : { data: { session: null } };
+    track("checkout_clicked", { plan: planId, signed_in: !!data.session });
     if (!data.session) {
       toSignup();
       return;
@@ -67,7 +84,7 @@ export function PricingCards() {
   }
 
   return (
-    <div>
+    <div ref={rootRef}>
       <InAppBrowserHint />
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-3">
         {PLANS.map((plan) => (

@@ -3,6 +3,7 @@ import { DM_Sans, Instrument_Serif, JetBrains_Mono } from "next/font/google";
 import { AmbientGlow } from "@/components/ui/ambient-glow";
 import { GlobalSignOut } from "@/components/auth/global-sign-out";
 import { ActivityHeartbeat } from "@/components/activity-heartbeat";
+import { PageViewTracker } from "@/components/analytics/page-view-tracker";
 import "./globals.css";
 
 const display = DM_Sans({
@@ -66,6 +67,7 @@ export default function RootLayout({
       <body className="min-h-full bg-canvas text-ink antialiased">
         <AmbientGlow />
         <ActivityHeartbeat />
+        <PageViewTracker />
         <GlobalSignOut />
         {children}
       </body>

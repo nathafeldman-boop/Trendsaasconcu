@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useSyncExternalStore } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import { Check, Compass, Copy } from "lucide-react";
+import { track } from "@/lib/analytics/track";
 
 // Apple Pay doesn't show inside the browsers built into TikTok, Instagram
 // and co on iPhone. Visitors arriving from those apps get a nudge to reopen
@@ -31,6 +32,10 @@ export function InAppBrowserHint() {
   const app = useSyncExternalStore(noSubscribe, detectInAppBrowser, () => null);
   const [copied, setCopied] = useState(false);
 
+  useEffect(() => {
+    if (app) track("in_app_hint_shown", { app });
+  }, [app]);
+
   if (!app) return null;
 
   // Back to /tarifs in Safari: signed out there, so a plan click goes
@@ -39,6 +44,7 @@ export function InAppBrowserHint() {
 
   async function copy() {
     try {
+      track("in_app_link_copied", { app });
       await navigator.clipboard.writeText(url);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
@@ -66,6 +72,7 @@ export function InAppBrowserHint() {
       <div className="mt-4 flex flex-wrap gap-2">
         <a
           href={url.replace(/^(https?):\/\//, "x-safari-$1://")}
+          onClick={() => track("open_in_safari_clicked", { app })}
           className="inline-flex h-10 items-center gap-2 rounded-full bg-accent px-4 font-body text-[13.5px] font-semibold text-canvas"
         >
           <Compass className="size-4" /> Ouvrir dans Safari

@@ -10,6 +10,7 @@ import { money, revenueRecommendations } from "@/lib/espace/recommendations";
 import { Recommendations } from "@/components/espace/recommendations";
 import { Steps, TabHeader } from "@/components/espace/kit";
 import { cn } from "@/lib/utils";
+import { track } from "@/lib/analytics/track";
 
 const INTERVALS: Record<string, [string, string]> = {
   day: ["jour", "jours"],
@@ -46,6 +47,7 @@ export function RevenueTab({ initialMetrics, revenueGoal }: { initialMetrics: St
   async function disconnect() {
     const res = await fetch("/api/stripe-connection", { method: "DELETE" });
     if (res.ok) {
+      track("stripe_disconnected");
       setMetrics({ connected: false });
       setShowForm(true);
     }
@@ -231,6 +233,7 @@ function ConnectCard({
         return;
       }
       setKey("");
+      track("stripe_connected");
       onConnected(data.metrics);
     } catch {
       setMessage("Erreur réseau, réessaie.");

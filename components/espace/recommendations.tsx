@@ -7,6 +7,7 @@ import { ArrowRight, ArrowUpRight, Lightbulb, Sparkles, X } from "lucide-react";
 import type { Impact, Recommendation } from "@/lib/espace/recommendations";
 import { PromptBlock, scrollToSection, Steps } from "@/components/espace/kit";
 import { cn } from "@/lib/utils";
+import { track } from "@/lib/analytics/track";
 
 const IMPACT: Record<Impact, { label: string; className: string }> = {
   fort: { label: "Impact fort", className: "border-accent/40 bg-accent/12 text-accent" },
@@ -47,7 +48,10 @@ export function Recommendations({ items }: { items: Recommendation[] }) {
           <motion.button
             key={rec.id}
             type="button"
-            onClick={() => setOpenId(rec.id)}
+            onClick={() => {
+              track("recommendation_opened", { id: rec.id, impact: rec.impact });
+              setOpenId(rec.id);
+            }}
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3, delay: i * 0.05 }}

@@ -3,6 +3,7 @@ import type Stripe from "stripe";
 import { createStripeClient } from "@/lib/stripe/client";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { grantAccessFromCheckout } from "@/lib/stripe/grant-access";
+import { logEvent } from "@/lib/analytics/server";
 
 export async function POST(request: Request) {
   const stripe = createStripeClient();
@@ -31,11 +32,22 @@ export async function POST(request: Request) {
   // event was handled and stops its retries, silently leaving has_access
   // stale (e.g. someone paid but never got unlocked).
   if (event.type === "checkout.session.completed") {
-    const { error } = await grantAccessFromCheckout(admin, event.data.object as Stripe.Checkout.Session);
+    const session = event.data.object as Stripe.Checkout.Session;
+    const { error } = await grantAccessFromCheckout(admin, session);
     if (error) {
       console.error("Failed to grant access after checkout:", error);
       return NextResponse.json({ error: "Update failed" }, { status: 500 });
     }
+    await logEvent({
+      name: "payment_completed",
+      user_id: session.client_reference_id ?? session.metadata?.user_id ?? null,
+      props: {
+        plan: session.metadata?.plan ?? null,
+        amount: (session.amount_total ?? 0) / 100,
+        currency: session.currency,
+        discount: (session.total_details?.amount_discount ?? 0) / 100,
+      },
+    });
   }
 
   if (event.type === "customer.subscription.updated" || event.type === "customer.subscription.deleted") {
@@ -48,6 +60,14 @@ export async function POST(request: Request) {
     if (error) {
       console.error("Failed to sync subscription status:", error);
       return NextResponse.json({ error: "Update failed" }, { status: 500 });
+    }
+    if (event.type === "customer.subscription.deleted") {
+      const { data: profile } = await admin
+        .from("profiles")
+        .select("id")
+        .eq("stripe_subscription_id", subscription.id)
+        .maybeSingle();
+      await logEvent({ name: "subscription_canceled", user_id: profile?.id ?? null, props: { subscription: subscription.id } });
     }
   }
 

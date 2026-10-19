@@ -23,6 +23,11 @@ export default function ConfidentialitePage() {
           </li>
           <li>Ton avancée dans l&apos;espace (checklist, outil choisi, canal marketing).</li>
           <li>
+            Des statistiques de visite internes : pages vues, étapes du questionnaire, boutons clés
+            (formule choisie, idée enregistrée...), type d&apos;appareil, pays et site d&apos;origine. Elles
+            servent uniquement à améliorer SaaSFounder et ne sont partagées avec personne.
+          </li>
+          <li>
             Si tu connectes ta clé Stripe pour suivre ton MRR, cette clé est stockée de façon à n&apos;être
             lisible que par nos serveurs, jamais par un autre utilisateur ni transmise à un tiers autre
             que Stripe lui-même.
@@ -52,8 +57,10 @@ export default function ConfidentialitePage() {
       <section>
         <h2>3. Cookies</h2>
         <p>
-          Seuls des cookies techniques nécessaires à la connexion (session Supabase) sont utilisés. Pas
-          de cookies publicitaires ou de traceurs tiers.
+          Seuls des cookies techniques nécessaires à la connexion (session Supabase) sont utilisés. Pour
+          nos statistiques de visite internes, ton navigateur garde un identifiant aléatoire (stockage
+          local), qui ne sert qu&apos;à relier tes visites entre elles. Pas de cookies publicitaires ni de
+          traceurs tiers.
         </p>
       </section>
 

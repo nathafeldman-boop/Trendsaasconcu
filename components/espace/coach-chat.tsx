@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ArrowUp, Brain, ImagePlus, RotateCcw, Sparkles, X } from "lucide-react";
 import { PromptBlock, TabHeader } from "@/components/espace/kit";
 import { cn } from "@/lib/utils";
+import { track } from "@/lib/analytics/track";
 
 type Message = { role: "user" | "assistant"; content: string; image?: string };
 
@@ -95,6 +96,7 @@ export function CoachChat({
     const content = text.trim();
     if ((!content && !image) || loading) return;
     const attached = image;
+    track("coach_message", { has_image: !!attached, turn: messages.filter((m) => m.role === "user").length + 1 });
     const next: Message[] = [...messages, { role: "user", content, image: attached ?? undefined }];
     setMessages(next);
     setDraft("");

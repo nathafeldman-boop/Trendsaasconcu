@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { translateAuthError } from "@/lib/supabase/auth-error";
+import { track } from "@/lib/analytics/track";
 
 // "Continuer avec Google" plus the "ou" divider, shared by the login and
 // signup forms. `next` is where /auth/callback sends the user once Google
@@ -20,6 +21,7 @@ export function GoogleSignIn({ next }: { next: string }) {
     }
     setError(null);
     setLoading(true);
+    track("google_clicked", { next });
     const { error: oauthError } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: { redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}` },

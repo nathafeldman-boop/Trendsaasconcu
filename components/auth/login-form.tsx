@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
 import { translateAuthError } from "@/lib/supabase/auth-error";
 import { GoogleSignIn } from "@/components/auth/google-sign-in";
+import { track } from "@/lib/analytics/track";
 
 export function LoginForm({ onSuccess }: { onSuccess?: () => void }) {
   const searchParams = useSearchParams();
@@ -32,6 +33,7 @@ export function LoginForm({ onSuccess }: { onSuccess?: () => void }) {
       return;
     }
     if (plan) {
+      track("checkout_clicked", { plan, from: "login" });
       try {
         const res = await fetch("/api/checkout", {
           method: "POST",
@@ -75,6 +77,7 @@ export function LoginForm({ onSuccess }: { onSuccess?: () => void }) {
         setError(translateAuthError(signInError));
         return;
       }
+      track("login", { method: "email", plan });
       navigating = true;
       await complete();
     } catch {

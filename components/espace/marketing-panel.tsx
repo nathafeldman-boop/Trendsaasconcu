@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { BrandLogo, type Brand } from "@/components/ui/brand-logo";
 import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
+import { track } from "@/lib/analytics/track";
 
 export type MarketingProgress = {
   chosen_channel: string | null;
@@ -51,6 +52,7 @@ export function MarketingPanel({
         body: JSON.stringify({ kind: "content", tool: channel }),
       });
       const data = await res.json();
+      track("video_ideas_generated", { channel, source: data.source ?? null });
       setIdeas(Array.isArray(data.ideas) ? data.ideas : []);
     } catch {
       setIdeas([]);
@@ -60,6 +62,7 @@ export function MarketingPanel({
   }
 
   async function pickChannel(channel: string) {
+    track("channel_chosen", { channel });
     await persist({ chosen_channel: channel });
     loadIdeas(channel);
   }
@@ -172,6 +175,7 @@ export function MarketingPanel({
               variant="secondary"
               disabled={!urlDraft.trim()}
               onClick={async () => {
+                track("video_saved", { channel: state.chosen_channel });
                 await persist({ tiktok_url: urlDraft.trim(), submitted_at: new Date().toISOString() });
                 flash("Vidéo enregistrée.");
               }}
@@ -197,6 +201,7 @@ export function MarketingPanel({
               disabled={viewsDraft === ""}
               onClick={async () => {
                 const views = Number(viewsDraft);
+                track("views_logged", { views: Number.isFinite(views) ? Math.round(views) : null });
                 await persist({ self_reported_views: Number.isFinite(views) && views >= 0 ? Math.round(views) : null });
                 flash("Vues notées, recommandations mises à jour.");
               }}

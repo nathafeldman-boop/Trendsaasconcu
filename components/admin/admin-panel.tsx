@@ -1,11 +1,11 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
+import Link from "next/link";
 import { motion } from "framer-motion";
 import { UserPlus, Users, Radio, Ticket, Wallet } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { FloatingIcon } from "@/components/ui/floating-icon";
 import { createClient } from "@/lib/supabase/client";
 
 type AccessCode = {
@@ -36,6 +36,7 @@ type UserRow = {
   plan: string | null;
   current_path: string | null;
   created_at: string;
+  last_seen_at: string | null;
 };
 
 type PlatformRevenue =
@@ -124,14 +125,9 @@ export function AdminPanel({
   }
 
   return (
-    <div className="mx-auto max-w-5xl px-5 py-12 sm:px-8">
-      <FloatingIcon>
-        <Users className="size-5" strokeWidth={1.75} />
-      </FloatingIcon>
-      <h1 className="mt-4 font-display text-3xl font-semibold text-ink">Admin</h1>
-      <p className="mt-2 font-body text-ink-muted">Vue d&apos;ensemble et gestion des accès.</p>
-
-      <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-4">
+    <div className="mt-12">
+      <h2 className="font-display text-[22px] font-semibold text-ink">Inscriptions et accès</h2>
+      <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-4">
         <StatCard icon={UserPlus} label="Inscrits aujourd'hui" value={stats.today} />
         <StatCard icon={UserPlus} label="Inscrits hier" value={stats.yesterday} />
         <StatCard icon={UserPlus} label="Avant-hier" value={stats.dayBefore} />
@@ -248,13 +244,16 @@ export function AdminPanel({
                 <th className="px-4 py-3 font-normal">Plan</th>
                 <th className="px-4 py-3 font-normal">Où</th>
                 <th className="px-4 py-3 font-normal">Inscrit le</th>
+                <th className="px-4 py-3 font-normal">Vu pour la dernière fois</th>
               </tr>
             </thead>
             <tbody>
               {users.map((u) => (
                 <tr key={u.id} className="border-b border-ink/5 last:border-0">
                   <td className="px-4 py-3 text-ink">
-                    {u.first_name ?? "—"}
+                    <Link href={`/admin/parcours/${u.id}`} className="text-accent hover:underline">
+                      {u.first_name ?? "Voir le parcours"}
+                    </Link>
                     {u.is_admin && (
                       <span className="ml-2 rounded-full border border-accent/40 px-2 py-0.5 font-mono text-[10px] uppercase text-accent">
                         Admin
@@ -280,11 +279,22 @@ export function AdminPanel({
                   <td className="px-4 py-3 text-ink-faint">
                     {new Date(u.created_at).toLocaleDateString("fr-FR")}
                   </td>
+                  <td className="px-4 py-3 text-ink-faint">
+                    {u.last_seen_at
+                      ? new Date(u.last_seen_at).toLocaleString("fr-FR", {
+                          timeZone: "Europe/Paris",
+                          day: "2-digit",
+                          month: "2-digit",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })
+                      : "—"}
+                  </td>
                 </tr>
               ))}
               {users.length === 0 && (
                 <tr>
-                  <td colSpan={6} className="px-4 py-6 text-center text-ink-faint">
+                  <td colSpan={7} className="px-4 py-6 text-center text-ink-faint">
                     Aucun utilisateur pour l&apos;instant.
                   </td>
                 </tr>

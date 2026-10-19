@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
 import { translateAuthError } from "@/lib/supabase/auth-error";
 import { GoogleSignIn } from "@/components/auth/google-sign-in";
+import { track } from "@/lib/analytics/track";
 
 const SIGNUP_ERRORS: Record<string, string> = {
   exists: "Ce compte existe déjà. Connecte-toi plutôt.",
@@ -34,6 +35,7 @@ export function SignupForm({ onSuccess }: { onSuccess?: () => void }) {
       return;
     }
     if (plan) {
+      track("checkout_clicked", { plan, from: "signup" });
       try {
         const res = await fetch("/api/checkout", {
           method: "POST",
@@ -91,6 +93,7 @@ export function SignupForm({ onSuccess }: { onSuccess?: () => void }) {
         setError(translateAuthError(signInError));
         return;
       }
+      track("signup_completed", { method: "email", plan });
       navigating = true;
       await complete();
     } catch {
