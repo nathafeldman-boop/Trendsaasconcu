@@ -3,6 +3,7 @@ import Stripe from "stripe";
 import { getAuth } from "@/lib/supabase/auth";
 import { createStripeClient } from "@/lib/stripe/client";
 import { euros, PLANS, type PlanId } from "@/lib/stripe/plans";
+import { paymentMethodConfiguration } from "@/lib/stripe/payment-methods";
 
 type Plan = (typeof PLANS)[number];
 
@@ -119,9 +120,10 @@ export async function POST(request: Request) {
 
   try {
     // Independent lookups: run them side by side instead of one after the other.
-    const [{ data: profile }, priceId] = await Promise.all([
+    const [{ data: profile }, priceId, methodsConfig] = await Promise.all([
       supabase.from("profiles").select("stripe_customer_id").eq("id", user.id).single(),
       resolvePrice(stripe, plan),
+      paymentMethodConfiguration(stripe),
     ]);
     if (!priceId) {
       return NextResponse.json({ error: "Plan not configured" }, { status: 503 });
@@ -131,10 +133,9 @@ export async function POST(request: Request) {
       mode: "subscription",
       locale: "fr",
       line_items: [{ price: priceId, quantity: 1 }],
-      // Card only: Apple Pay and Google Pay come with it and show up as
-      // one-tap buttons on the devices that support them. No Link (its
-      // pre-ticked "save with Link" box and phone field), Klarna or Amazon Pay.
-      payment_method_types: ["card"],
+      // Card, Apple Pay and Google Pay only: no Link (its pre-ticked "save
+      // with Link" box and phone field), Klarna or Amazon Pay.
+      ...(methodsConfig ? { payment_method_configuration: methodsConfig } : { payment_method_types: ["card"] }),
       wallet_options: { link: { display: "never" } },
       // Promo codes are created in the Stripe dashboard; this just shows the field.
       allow_promotion_codes: true,
@@ -164,10 +165,15 @@ export async function POST(request: Request) {
     try {
       session = await stripe.checkout.sessions.create({ ...params, branding_settings: branding(origin) });
     } catch (err) {
-      // Branding is cosmetic: if Stripe ever refuses it, take the payment anyway.
+      // Branding and the methods configuration are extras: if Stripe ever
+      // refuses them, take the payment with a plain card-only session.
       if (!(err instanceof Stripe.errors.StripeInvalidRequestError)) throw err;
-      console.error("Checkout branding refused, retrying without it:", err.message);
-      session = await stripe.checkout.sessions.create(params);
+      console.error("Checkout session refused, retrying card-only without branding:", err.message);
+      session = await stripe.checkout.sessions.create({
+        ...params,
+        payment_method_configuration: undefined,
+        payment_method_types: ["card"],
+      });
     }
 
     return NextResponse.json({ url: session.url });
