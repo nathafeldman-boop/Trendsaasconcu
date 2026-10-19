@@ -789,7 +789,7 @@ export function CommitmentScreen({ shell, onNext }: { shell: ShellProps; onNext:
 const HOURS_LABEL: Record<string, string> = { low: "moins de 5 h / semaine", mid: "5 à 15 h / semaine", high: "plus de 15 h / semaine" };
 const DEADLINE_LABEL: Record<string, string> = { asap: "le plus vite possible", "2sem": "2 semaines", "1mois": "1 mois", "3mois": "3 mois" };
 
-export function PlansScreen({ shell, answers, signedIn }: { shell: ShellProps; answers: Answers; signedIn: boolean }) {
+export function PlansScreen({ shell, answers }: { shell: ShellProps; answers: Answers }) {
   const recap = [
     { label: "Objectif", value: `${Math.round(Number(answers.revenueGoal ?? 3000)).toLocaleString("fr-FR")} € / mois` },
     { label: "Ton temps", value: HOURS_LABEL[String(answers.hours)] ?? "—" },
@@ -816,7 +816,7 @@ export function PlansScreen({ shell, answers, signedIn }: { shell: ShellProps; a
         ))}
       </div>
       <div className="-mx-2 sm:-mx-24">
-        <PricingCards isAuthenticated={signedIn} />
+        <PricingCards />
       </div>
       <p className="mt-6 text-center font-body text-[13px] text-ink-faint">
         <Link href="/acces" className="underline underline-offset-2 hover:text-ink-muted">

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import type Stripe from "stripe";
 import { createStripeClient } from "@/lib/stripe/client";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { grantAccessFromCheckout } from "@/lib/stripe/grant-access";
 
 export async function POST(request: Request) {
   const stripe = createStripeClient();
@@ -30,26 +31,10 @@ export async function POST(request: Request) {
   // event was handled and stops its retries, silently leaving has_access
   // stale (e.g. someone paid but never got unlocked).
   if (event.type === "checkout.session.completed") {
-    const session = event.data.object as Stripe.Checkout.Session;
-    const userId = session.client_reference_id ?? session.metadata?.user_id;
-    if (userId) {
-      const { error } = await admin
-        .from("profiles")
-        .update({
-          has_access: true,
-          stripe_customer_id:
-            typeof session.customer === "string" ? session.customer : (session.customer?.id ?? null),
-          stripe_subscription_id:
-            typeof session.subscription === "string"
-              ? session.subscription
-              : (session.subscription?.id ?? null),
-          plan: session.metadata?.plan ?? null,
-        })
-        .eq("id", userId);
-      if (error) {
-        console.error("Failed to grant access after checkout:", error);
-        return NextResponse.json({ error: "Update failed" }, { status: 500 });
-      }
+    const { error } = await grantAccessFromCheckout(admin, event.data.object as Stripe.Checkout.Session);
+    if (error) {
+      console.error("Failed to grant access after checkout:", error);
+      return NextResponse.json({ error: "Update failed" }, { status: 500 });
     }
   }
 

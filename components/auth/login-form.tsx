@@ -27,6 +27,7 @@ export function LoginForm({ onSuccess }: { onSuccess?: () => void }) {
   // access-code page) returns there instead of the default /espace.
   async function complete() {
     if (onSuccess) {
+      setLoading(false);
       onSuccess();
       return;
     }
@@ -67,17 +68,21 @@ export function LoginForm({ onSuccess }: { onSuccess?: () => void }) {
     const password = String(form.get("password") ?? "");
 
     setLoading(true);
+    let navigating = false;
     try {
       const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
       if (signInError) {
         setError(translateAuthError(signInError));
         return;
       }
-      complete();
+      navigating = true;
+      await complete();
     } catch {
       setError("Impossible de contacter le serveur. Vérifie ta connexion et réessaie.");
     } finally {
-      setLoading(false);
+      // Once heading to Stripe or the next page, the button stays in its
+      // loading state instead of flicking back while that page loads.
+      if (!navigating) setLoading(false);
     }
   }
 

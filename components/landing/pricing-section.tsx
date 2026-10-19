@@ -1,7 +1,7 @@
 import { Eyebrow } from "@/components/ui/eyebrow";
 import { PricingCards } from "@/components/pricing/pricing-cards";
 
-export function PricingSection({ isAuthenticated }: { isAuthenticated: boolean }) {
+export function PricingSection() {
   return (
     <section id="tarifs" className="mx-auto max-w-6xl px-5 py-20 sm:px-8 sm:py-28">
       <Eyebrow>Tarifs</Eyebrow>
@@ -13,7 +13,7 @@ export function PricingSection({ isAuthenticated }: { isAuthenticated: boolean }
         maintenant. Même contenu, même accompagnement, résiliable à tout moment.
       </p>
       <div className="mt-10">
-        <PricingCards isAuthenticated={isAuthenticated} />
+        <PricingCards />
       </div>
     </section>
   );

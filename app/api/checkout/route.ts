@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import type Stripe from "stripe";
-import { createClient } from "@/lib/supabase/server";
+import { getAuth } from "@/lib/supabase/auth";
 import { createStripeClient } from "@/lib/stripe/client";
 import { PLANS, type PlanId } from "@/lib/stripe/plans";
 
@@ -23,6 +23,25 @@ function billedMonths(price: Stripe.Price) {
   return null;
 }
 
+// A price that passed the check stays valid for this server instance's
+// lifetime (prices are immutable in Stripe), so warm requests skip the call.
+const verifiedPrices = new Set<string>();
+
+async function verifyPrice(stripe: Stripe, priceId: string, plan: (typeof PLANS)[number]) {
+  if (verifiedPrices.has(priceId)) return true;
+  const price = await stripe.prices.retrieve(priceId);
+  // Never charge something other than what /tarifs shows: an env var still
+  // pointing at an old price (e.g. the former 60 €/an) is refused.
+  if (price.unit_amount !== plan.amountCents || price.currency !== "eur" || billedMonths(price) !== plan.months) {
+    console.error(
+      `Stripe price ${priceId} doesn't match plan ${plan.id}: expected ${plan.amountCents} eur every ${plan.months} month(s), got ${price.unit_amount} ${price.currency} every ${billedMonths(price)} month(s)`
+    );
+    return false;
+  }
+  verifiedPrices.add(priceId);
+  return true;
+}
+
 export async function POST(request: Request) {
   const body = await request.json().catch(() => null);
   const plan = PLANS.find((p) => p.id === body?.planId);
@@ -35,14 +54,10 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Plan not configured" }, { status: 503 });
   }
 
-  const supabase = await createClient();
+  const { supabase, user } = await getAuth();
   if (!supabase) {
     return NextResponse.json({ error: "Not configured" }, { status: 503 });
   }
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
   if (!user) {
     return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
   }
@@ -52,22 +67,15 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Stripe not configured" }, { status: 503 });
   }
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("stripe_customer_id")
-    .eq("id", user.id)
-    .single();
-
   const origin = new URL(request.url).origin;
 
   try {
-    // Never charge something other than what /tarifs shows: an env var
-    // still pointing at an old price (e.g. the former 60 €/an) is refused.
-    const price = await stripe.prices.retrieve(priceId);
-    if (price.unit_amount !== plan.amountCents || price.currency !== "eur" || billedMonths(price) !== plan.months) {
-      console.error(
-        `Stripe price ${priceId} doesn't match plan ${plan.id}: expected ${plan.amountCents} eur every ${plan.months} month(s), got ${price.unit_amount} ${price.currency} every ${billedMonths(price)} month(s)`
-      );
+    // Independent lookups: run them side by side instead of one after the other.
+    const [{ data: profile }, priceOk] = await Promise.all([
+      supabase.from("profiles").select("stripe_customer_id").eq("id", user.id).single(),
+      verifyPrice(stripe, priceId, plan),
+    ]);
+    if (!priceOk) {
       return NextResponse.json({ error: "Plan not configured" }, { status: 503 });
     }
 
@@ -86,7 +94,9 @@ export async function POST(request: Request) {
       client_reference_id: user.id,
       customer: profile?.stripe_customer_id ?? undefined,
       customer_email: profile?.stripe_customer_id ? undefined : (user.email ?? undefined),
-      success_url: `${origin}/espace?checkout=success`,
+      // Back through /api/checkout/confirm, which unlocks the account right
+      // away instead of waiting for the webhook to land.
+      success_url: `${origin}/api/checkout/confirm?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/tarifs`,
       metadata: { user_id: user.id, plan: plan.id },
     });

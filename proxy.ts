@@ -5,6 +5,17 @@ export async function proxy(request: NextRequest) {
   return await updateSession(request);
 }
 
+// Only where the server reads the session. The landing page, pricing and
+// legal pages are static and served straight from the CDN, and the Stripe
+// webhook has no session to refresh.
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)"],
+  matcher: [
+    "/espace/:path*",
+    "/admin/:path*",
+    "/acces",
+    "/connexion",
+    "/inscription",
+    "/auth/:path*",
+    "/api/((?!stripe/webhook).*)",
+  ],
 };

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { createClient } from "@/lib/supabase/server";
+import { getAuth } from "@/lib/supabase/auth";
 import { MarketingTab } from "@/components/espace/marketing-tab";
 
 export const metadata: Metadata = {
@@ -9,13 +9,8 @@ export const metadata: Metadata = {
 const HAS_SAAS_EXISTING = "J'ai déjà un SaaS en ligne";
 
 export default async function MarketingPage() {
-  const supabase = await createClient();
-  if (!supabase) return null;
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return null;
+  const { supabase, user } = await getAuth();
+  if (!supabase || !user) return null;
 
   const [onboardingRes, builderRes, marketingRes] = await Promise.all([
     supabase.from("onboarding_responses").select("answers").eq("user_id", user.id).maybeSingle(),

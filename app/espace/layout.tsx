@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { getAuth } from "@/lib/supabase/auth";
 import { EspaceShell } from "@/components/espace/espace-shell";
 
 export const metadata: Metadata = {
@@ -12,13 +12,8 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function EspaceLayout({ children }: { children: React.ReactNode }) {
-  const supabase = await createClient();
-  if (!supabase) redirect("/connexion");
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) redirect("/connexion");
+  const { supabase, user } = await getAuth();
+  if (!supabase || !user) redirect("/connexion");
 
   const { data: profile } = await supabase
     .from("profiles")

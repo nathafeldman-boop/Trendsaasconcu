@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
-import { createClient } from "@/lib/supabase/server";
+import { getAuth } from "@/lib/supabase/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getStripeMetrics } from "@/lib/stripe/metrics";
 
@@ -12,12 +12,7 @@ import { getStripeMetrics } from "@/lib/stripe/metrics";
 const KEY_PATTERN = /^(sk|rk)_(live|test)_[A-Za-z0-9]{10,}$/;
 
 async function signedInUser() {
-  const supabase = await createClient();
-  if (!supabase) return null;
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  return user;
+  return (await getAuth()).user;
 }
 
 export async function POST(request: Request) {

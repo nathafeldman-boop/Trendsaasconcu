@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { createClient } from "@/lib/supabase/server";
+import { getAuth } from "@/lib/supabase/auth";
 import { getStripeMetrics } from "@/lib/stripe/metrics";
 import { RevenueTab } from "@/components/espace/revenue-tab";
 
@@ -8,13 +8,8 @@ export const metadata: Metadata = {
 };
 
 export default async function RevenusPage() {
-  const supabase = await createClient();
-  if (!supabase) return null;
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return null;
+  const { supabase, user } = await getAuth();
+  if (!supabase || !user) return null;
 
   const [metrics, onboardingRes] = await Promise.all([
     getStripeMetrics(user.id),

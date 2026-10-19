@@ -187,7 +187,7 @@ export function OnboardingWizard() {
       case "commitment":
         return <CommitmentScreen shell={shell} onNext={next} />;
       case "plans":
-        return <PlansScreen shell={shell} answers={answers} signedIn={!!signedIn} />;
+        return <PlansScreen shell={shell} answers={answers} />;
     }
   }
 

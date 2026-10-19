@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import { createClient } from "@/lib/supabase/server";
+import { getAuth } from "@/lib/supabase/auth";
 import { AuthShell } from "@/components/auth/auth-shell";
 import { AccessCodeInline } from "@/components/access/access-code-inline";
 
@@ -13,14 +13,8 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function AccesPage() {
-  const supabase = await createClient();
-  let isAuthenticated = false;
-  if (supabase) {
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    isAuthenticated = !!user;
-  }
+  const { user } = await getAuth();
+  const isAuthenticated = !!user;
 
   return (
     <AuthShell

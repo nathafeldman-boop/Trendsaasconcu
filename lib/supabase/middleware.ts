@@ -24,8 +24,9 @@ export async function updateSession(request: NextRequest) {
   });
 
   // Refresh the session if it's expired — required for Server Components,
-  // which can't set cookies themselves.
-  await supabase.auth.getUser();
+  // which can't set cookies themselves. getClaims() only goes to the network
+  // when the token actually needs refreshing; a valid one is checked locally.
+  await supabase.auth.getClaims();
 
   return supabaseResponse;
 }

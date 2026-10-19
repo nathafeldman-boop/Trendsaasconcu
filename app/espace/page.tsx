@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { createClient } from "@/lib/supabase/server";
+import { getAuth } from "@/lib/supabase/auth";
 import { CreationTab } from "@/components/espace/creation-tab";
 import { IdeasSchema } from "@/lib/espace/ideas";
 
@@ -14,13 +14,8 @@ export default async function EspacePage({
 }: {
   searchParams: Promise<{ checkout?: string }>;
 }) {
-  const supabase = await createClient();
-  if (!supabase) return null;
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return null;
+  const { supabase, user } = await getAuth();
+  if (!supabase || !user) return null;
 
   const { checkout } = await searchParams;
 

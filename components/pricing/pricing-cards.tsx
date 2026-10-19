@@ -1,10 +1,12 @@
 "use client";
 
 import { useState } from "react";
+import { preconnect } from "react-dom";
 import { useRouter } from "next/navigation";
-import { Check, Sparkles } from "lucide-react";
+import { Check, Loader2, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PLANS, type PlanId } from "@/lib/stripe/plans";
+import { createClient } from "@/lib/supabase/client";
 
 const FEATURES = [
   "Ton idée de SaaS et ton prompt de démarrage",
@@ -13,39 +15,54 @@ const FEATURES = [
   "Dashboard de suivi de ton MRR",
 ];
 
-export function PricingCards({ isAuthenticated }: { isAuthenticated: boolean }) {
+export function PricingCards() {
+  // Open the connection to Stripe Checkout ahead of the click.
+  preconnect("https://checkout.stripe.com");
   const router = useRouter();
   const [loadingPlan, setLoadingPlan] = useState<PlanId | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   async function choose(planId: PlanId) {
-    if (!isAuthenticated) {
-      router.push(`/inscription?plan=${planId}`);
-      return;
-    }
+    if (loadingPlan) return;
     setError(null);
     setLoadingPlan(planId);
+    const toSignup = () => router.push(`/inscription?plan=${planId}`);
+
+    // Read locally from the session cookie: no round trip just to learn the
+    // visitor isn't signed in. The server re-checks the session anyway.
+    const supabase = createClient();
+    const { data } = supabase ? await supabase.auth.getSession() : { data: { session: null } };
+    if (!data.session) {
+      toSignup();
+      return;
+    }
+
     try {
       const res = await fetch("/api/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ planId }),
       });
-      const data = await res.json();
-      if (data.url) {
-        window.location.assign(data.url);
+      if (res.status === 401) {
+        toSignup();
+        return;
+      }
+      const result = await res.json();
+      if (result.url) {
+        // Keep "Redirection..." on screen while Stripe loads: resetting the
+        // button here made it look like nothing happened.
+        window.location.assign(result.url);
         return;
       }
       setError(
-        data.error === "Plan not configured"
+        result.error === "Plan not configured"
           ? "Cette formule n'est pas encore ouverte au paiement. Choisis-en une autre ou utilise un code d'accès."
           : "Le paiement n'est pas encore configuré. Réessaie plus tard ou utilise un code d'accès."
       );
     } catch {
-      setError("Une erreur est survenue.");
-    } finally {
-      setLoadingPlan(null);
+      setError("Connexion impossible, réessaie dans un instant.");
     }
+    setLoadingPlan(null);
   }
 
   return (
@@ -85,11 +102,17 @@ export function PricingCards({ isAuthenticated }: { isAuthenticated: boolean }) 
             <Button
               showArrow={false}
               variant={plan.recommended ? "primary" : "secondary"}
-              disabled={loadingPlan === plan.id}
+              disabled={loadingPlan !== null}
               onClick={() => choose(plan.id)}
               className="mt-6 w-full"
             >
-              {loadingPlan === plan.id ? "Redirection..." : "Choisir"}
+              {loadingPlan === plan.id ? (
+                <span className="flex items-center gap-2">
+                  <Loader2 className="size-4 animate-spin" /> Redirection vers le paiement...
+                </span>
+              ) : (
+                "Choisir"
+              )}
             </Button>
           </div>
         ))}

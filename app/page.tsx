@@ -11,22 +11,10 @@ import { FaqSection } from "@/components/landing/faq-section";
 import { FinalCta } from "@/components/landing/final-cta";
 import { Footer } from "@/components/landing/footer";
 import { FloatingParticles } from "@/components/landing/floating-particles";
-import { createClient } from "@/lib/supabase/server";
 
-// Reads the visitor's own session for the pricing section — never cache a
-// stale auth state.
-export const dynamic = "force-dynamic";
-
-export default async function Home() {
-  const supabase = await createClient();
-  let isAuthenticated = false;
-  if (supabase) {
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    isAuthenticated = !!user;
-  }
-
+// Fully static: served from the CDN closest to the visitor. The pricing
+// cards check the session in the browser when a plan is picked.
+export default function Home() {
   return (
     <>
       <Nav />
@@ -39,7 +27,7 @@ export default async function Home() {
         <StepsSection />
         <CaseStudy />
         <MarketingSection />
-        <PricingSection isAuthenticated={isAuthenticated} />
+        <PricingSection />
         <FaqSection />
         <FinalCta />
       </main>

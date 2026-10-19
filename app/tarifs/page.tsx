@@ -3,25 +3,13 @@ import Link from "next/link";
 import { Logo } from "@/components/ui/logo";
 import { PricingCards } from "@/components/pricing/pricing-cards";
 import { AccessCodeInline } from "@/components/access/access-code-inline";
-import { createClient } from "@/lib/supabase/server";
 
 export const metadata: Metadata = {
   title: "Tarifs — SaaSFounder",
 };
 
-// Reads the visitor's own session — never cache a stale auth state.
-export const dynamic = "force-dynamic";
-
-export default async function TarifsPage() {
-  const supabase = await createClient();
-  let isAuthenticated = false;
-  if (supabase) {
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    isAuthenticated = !!user;
-  }
-
+// Static: the pricing cards check the session in the browser on click.
+export default function TarifsPage() {
   return (
     <div className="min-h-screen">
       <header className="px-5 py-6 sm:px-8">
@@ -36,7 +24,7 @@ export default async function TarifsPage() {
           maintenant. Même contenu, même accompagnement, résiliable à tout moment.
         </p>
         <div className="mt-10">
-          <PricingCards isAuthenticated={isAuthenticated} />
+          <PricingCards />
           <AccessCodeInline />
         </div>
       </div>

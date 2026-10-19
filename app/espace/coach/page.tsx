@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { createClient } from "@/lib/supabase/server";
+import { getAuth } from "@/lib/supabase/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { budgetUsedPercent, monthlySpendUsd } from "@/lib/claude/guard";
 import { CHECKLIST_ITEMS, CODE_TOOLS } from "@/lib/espace/content";
@@ -10,13 +10,8 @@ export const metadata: Metadata = {
 };
 
 export default async function CoachPage({ searchParams }: { searchParams: Promise<{ q?: string }> }) {
-  const supabase = await createClient();
-  if (!supabase) return null;
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return null;
+  const { supabase, user } = await getAuth();
+  if (!supabase || !user) return null;
 
   const { q } = await searchParams;
   // stripe_connections has no client SELECT policy: only check it exists, server-side.

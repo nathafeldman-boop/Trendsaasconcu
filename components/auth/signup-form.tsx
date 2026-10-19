@@ -22,6 +22,7 @@ export function SignupForm({ onSuccess }: { onSuccess?: () => void }) {
   // instead. Otherwise, a brand-new account starts the onboarding wizard.
   async function complete() {
     if (onSuccess) {
+      setLoading(false);
       onSuccess();
       return;
     }
@@ -64,6 +65,7 @@ export function SignupForm({ onSuccess }: { onSuccess?: () => void }) {
     const password = String(form.get("password") ?? "");
 
     setLoading(true);
+    let navigating = false;
     try {
       const { data, error: signUpError } = await supabase.auth.signUp({
         email,
@@ -91,11 +93,14 @@ export function SignupForm({ onSuccess }: { onSuccess?: () => void }) {
         );
         return;
       }
-      complete();
+      navigating = true;
+      await complete();
     } catch {
       setError("Impossible de contacter le serveur. Vérifie ta connexion et réessaie.");
     } finally {
-      setLoading(false);
+      // Once heading to Stripe or the next page, the button stays in its
+      // loading state instead of flicking back while that page loads.
+      if (!navigating) setLoading(false);
     }
   }
 

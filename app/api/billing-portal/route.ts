@@ -1,16 +1,12 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { getAuth } from "@/lib/supabase/auth";
 import { createStripeClient } from "@/lib/stripe/client";
 
 export async function POST(request: Request) {
-  const supabase = await createClient();
+  const { supabase, user } = await getAuth();
   if (!supabase) {
     return NextResponse.json({ error: "Not configured" }, { status: 503 });
   }
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
   if (!user) {
     return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
   }

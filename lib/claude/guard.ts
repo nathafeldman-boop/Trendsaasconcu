@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import type { createClient } from "@/lib/supabase/server";
+import { getAuth } from "@/lib/supabase/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { costOf } from "@/lib/claude/client";
 
@@ -27,12 +28,8 @@ function currentMonth() {
  * send back as-is.
  */
 export async function openAiSession(): Promise<{ session: AiSession } | { response: NextResponse }> {
-  const supabase = await createClient();
+  const { supabase, user } = await getAuth();
   if (!supabase) return { response: NextResponse.json({ error: "Not configured" }, { status: 503 }) };
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
   if (!user) return { response: NextResponse.json({ error: "Not authenticated" }, { status: 401 }) };
 
   const { data: profile } = await supabase
