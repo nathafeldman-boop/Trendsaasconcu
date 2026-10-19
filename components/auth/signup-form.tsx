@@ -8,6 +8,13 @@ import { createClient } from "@/lib/supabase/client";
 import { translateAuthError } from "@/lib/supabase/auth-error";
 import { GoogleSignIn } from "@/components/auth/google-sign-in";
 
+const SIGNUP_ERRORS: Record<string, string> = {
+  exists: "Ce compte existe déjà. Connecte-toi plutôt.",
+  weak_password: "Mot de passe trop faible : utilise au moins 8 caractères.",
+  invalid_email: "Cet email n'a pas l'air valide. Vérifie-le.",
+  rate_limited: "Trop de tentatives en peu de temps. Réessaie dans quelques minutes.",
+};
+
 export function SignupForm({ onSuccess }: { onSuccess?: () => void }) {
   const searchParams = useSearchParams();
   const plan = searchParams.get("plan");
@@ -61,36 +68,27 @@ export function SignupForm({ onSuccess }: { onSuccess?: () => void }) {
 
     const form = new FormData(event.currentTarget);
     const firstName = String(form.get("firstName") ?? "");
-    const email = String(form.get("email") ?? "");
+    const email = String(form.get("email") ?? "").trim().toLowerCase();
     const password = String(form.get("password") ?? "");
 
     setLoading(true);
     let navigating = false;
     try {
-      const { data, error: signUpError } = await supabase.auth.signUp({
-        email,
-        password,
-        options: { data: { first_name: firstName } },
+      // Created server-side, already confirmed: no verification email.
+      const res = await fetch("/api/auth/signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ firstName, email, password }),
       });
-
-      if (signUpError) {
-        setError(translateAuthError(signUpError));
+      if (!res.ok) {
+        const result = await res.json().catch(() => ({}));
+        setError(SIGNUP_ERRORS[result.error as string] ?? "Impossible de créer ton compte pour l'instant. Réessaie dans un instant.");
         return;
       }
-      if (!data.session) {
-        // Supabase returns this same shape (a user object, no session, no
-        // error) for two very different cases, to avoid leaking which
-        // emails are registered: a brand-new signup awaiting confirmation,
-        // and a retry on an email that already has an account. `identities`
-        // is empty only in the second case — that's the documented way to
-        // tell them apart.
-        if (data.user?.identities?.length === 0) {
-          setError("Ce compte existe déjà. Connecte-toi plutôt.");
-          return;
-        }
-        setError(
-          "Ton compte est créé mais pas encore confirmé. Vérifie ta boîte mail (et les spams) pour activer ton accès."
-        );
+
+      const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
+      if (signInError) {
+        setError(translateAuthError(signInError));
         return;
       }
       navigating = true;
