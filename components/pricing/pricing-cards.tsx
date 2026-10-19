@@ -7,6 +7,7 @@ import { Check, Loader2, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PLANS, type PlanId } from "@/lib/stripe/plans";
 import { createClient } from "@/lib/supabase/client";
+import { InAppBrowserHint } from "@/components/pricing/in-app-browser-hint";
 
 const FEATURES = [
   "Ton idée de SaaS et ton prompt de démarrage",
@@ -67,6 +68,7 @@ export function PricingCards() {
 
   return (
     <div>
+      <InAppBrowserHint />
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-3">
         {PLANS.map((plan) => (
           <div
