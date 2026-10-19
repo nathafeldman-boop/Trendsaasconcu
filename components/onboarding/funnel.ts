@@ -1,13 +1,30 @@
 import type { LucideIcon } from "lucide-react";
-import { Sprout, Zap, Briefcase, Compass } from "lucide-react";
+import {
+  Briefcase,
+  Clapperboard,
+  Compass,
+  Dices,
+  Dumbbell,
+  GraduationCap,
+  Hammer,
+  HeartPulse,
+  House,
+  Laptop,
+  Scissors,
+  Sprout,
+  UtensilsCrossed,
+  Zap,
+} from "lucide-react";
 import type { Brand } from "@/components/ui/brand-logo";
 import type { IllustrationId } from "@/components/onboarding/illustrations";
+import { readFoundIdea } from "@/lib/onboarding/found-idea";
 
-// The onboarding funnel as data, in four acts: where you are, what you want,
-// your account, then what's in your way — ending on the plans. The order
-// follows the funnel that converts best in our market (account mid-way,
-// once the person has invested in their answers; a personalised note after
-// the answers that hurt; a projection before the pitch).
+// The onboarding funnel as data, in four acts: where you are, what you want
+// (ending on the idea we find for them, so they try the product before
+// signing up), your account, then what's in your way — ending on the plans.
+// The order follows the funnel that converts best in our market (account
+// mid-way, once the person has invested in their answers; a personalised
+// note after the answers that hurt; a projection before the pitch).
 //
 // Every note must describe something SaaSFounder actually delivers (idea,
 // build prompt, launch checklist, content ideas, AI coach, Stripe MRR
@@ -56,6 +73,7 @@ export type Step =
         | "saas101"
         | "analysis"
         | "loading"
+        | "idea"
         | "projection"
         | "barrier"
         | "account"
@@ -65,7 +83,11 @@ export type Step =
         | "plans";
     });
 
-/** Price used to turn a revenue goal into a number of customers. A division, not a promise. */
+/**
+ * Price used to turn a revenue goal into a number of customers, until the
+ * onboarding has found their idea (then its price is used). A division,
+ * not a promise.
+ */
 export const REFERENCE_PRICE = 49;
 
 export const REVENUE_TIERS = [
@@ -112,9 +134,9 @@ export const LEVERS = [
 export const LOADING_STEPS = [
   "Lecture de tes réponses",
   "Calcul du temps que tu peux y mettre",
-  "Choix du format d'idée le plus réaliste",
-  "Estimation des clients nécessaires",
-  "Préparation de ta projection",
+  "Repérage des problèmes de ton univers",
+  "Choix du prix pour ton objectif",
+  "Sélection de ton idée",
 ];
 
 export const JOURNEY = [
@@ -280,7 +302,41 @@ export const STEPS: Step[] = [
     stepBy: 500,
     initial: 3000,
   },
+  {
+    type: "single",
+    id: "domain",
+    kicker: "Ton terrain",
+    title: "Dans quel univers tu te sens le plus à l'aise ?",
+    help: "Ton métier, ta passion, ton entourage : c'est là que tu trouveras tes premiers clients le plus vite.",
+    grid: true,
+    free: { placeholder: "Ex : l'équitation, la musique, les animaux…" },
+    options: [
+      { id: "sport", label: "Sport et bien-être", detail: "coachs, salles, yoga", icon: Dumbbell },
+      { id: "beaute", label: "Beauté", detail: "instituts, coiffeurs, barbiers", icon: Scissors },
+      { id: "resto", label: "Restauration et commerce", detail: "restos, boutiques", icon: UtensilsCrossed },
+      { id: "immo", label: "Immobilier", detail: "agents, locations", icon: House },
+      { id: "education", label: "Éducation et coaching", detail: "profs, formateurs", icon: GraduationCap },
+      { id: "createurs", label: "Création de contenu", detail: "créateurs, influence", icon: Clapperboard },
+      { id: "freelance", label: "Freelances et agences", detail: "indépendants, studios", icon: Laptop },
+      { id: "sante", label: "Santé", detail: "praticiens, habitudes", icon: HeartPulse },
+      { id: "btp", label: "Artisans et BTP", detail: "chantiers, devis", icon: Hammer },
+      { id: "any", label: "Surprends-moi", detail: "je n'ai pas de préférence", icon: Dices },
+    ],
+  },
+  {
+    type: "single",
+    id: "market",
+    kicker: "Tes futurs clients",
+    title: "Tu préfères vendre à qui ?",
+    help: "Il n'y a pas de bonne réponse dans l'absolu. Il y a celle où tu tiendras six mois.",
+    notesVisible: true,
+    options: [
+      { id: "b2b", label: "Des professionnels", detail: "commerces, agences, PME", note: "Peu de clients qui paient bien : un pro paie volontiers pour gagner du temps. Quelques dizaines suffisent." },
+      { id: "b2c", label: "Des particuliers", detail: "gros volume, petits prix", note: "Des petits paiements en grand nombre : il en faut beaucoup, et c'est ton contenu qui les amène." },
+    ],
+  },
   { type: "loading", id: "loading" },
+  { type: "idea", id: "idea" },
   { type: "projection", id: "projection" },
   {
     type: "barrier",
@@ -294,15 +350,6 @@ export const STEPS: Step[] = [
     kicker: "Bienvenue",
     title: "Bienvenue dans SaaSFounder.",
     sub: "Notre but : que tu crées ton SaaS et que tu encaisses dès maintenant. Ton idée, le prompt exact pour la construire avec l'IA et le plan pour trouver tes premiers clients, au même endroit.",
-    cta: "Suivant",
-  },
-  {
-    type: "message",
-    id: "ideas",
-    illustration: "bulb",
-    kicker: "L'idée",
-    title: "Trouve l'idée qui a déjà des clients.",
-    sub: "On part de problèmes pour lesquels des gens paient déjà, et on garde l'idée qui colle à ton temps, ton budget et tes forces.",
     cta: "Suivant",
   },
   {
@@ -422,18 +469,6 @@ export const STEPS: Step[] = [
     ],
   },
   {
-    type: "single",
-    id: "market",
-    kicker: "Tes futurs clients",
-    title: "Tu préfères vendre à qui ?",
-    help: "Il n'y a pas de bonne réponse dans l'absolu. Il y a celle où tu tiendras six mois.",
-    notesVisible: true,
-    options: [
-      { id: "b2b", label: "Des professionnels", detail: "commerces, agences, PME", note: "Peu de clients qui paient bien : un pro paie volontiers pour gagner du temps. Quelques dizaines suffisent." },
-      { id: "b2c", label: "Des particuliers", detail: "gros volume, petits prix", note: "Des petits paiements en grand nombre : il en faut beaucoup, et c'est ton contenu qui les amène." },
-    ],
-  },
-  {
     type: "text",
     id: "phrase",
     kicker: "Tes mots",
@@ -479,11 +514,15 @@ export function projection(answers: Answers) {
   const round = (n: number) => Math.round(n / 50) * 50;
   const low = round(sources.reduce((n, s) => n + s.low, 0));
   const high = round(sources.reduce((n, s) => n + s.high, 0));
+  const idea = readFoundIdea(answers);
+  const price = idea?.price_per_month ?? REFERENCE_PRICE;
   return {
-    sources: sources.map((s) => ({ ...s, low: round(s.low), high: round(s.high) })),
+    sources: sources.map((s) => ({ ...s, label: idea && s.label === "Ton produit seul" ? idea.title : s.label, low: round(s.low), high: round(s.high) })),
     low,
     high,
-    customers: Math.ceil(high / REFERENCE_PRICE),
+    customers: Math.ceil(high / price),
+    price,
+    ideaTitle: idea?.title ?? null,
     goal,
   };
 }

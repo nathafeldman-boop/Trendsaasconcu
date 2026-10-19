@@ -107,9 +107,9 @@ export function SignupForm({ onSuccess }: { onSuccess?: () => void }) {
 
   return (
     <div>
-      {/* In the wizard (onSuccess), Google brings them back to /commencer,
-          which skips its signup step once they're signed in. */}
-      <GoogleSignIn next={onSuccess ? "/commencer" : plan ? "/tarifs" : next || "/commencer"} />
+      {/* With the redirect flow, Google brings wizard users back to
+          /commencer, which skips its signup step once they're signed in. */}
+      <GoogleSignIn next={onSuccess ? "/commencer" : plan ? "/tarifs" : next || "/commencer"} onSignedIn={complete} />
       <form onSubmit={handleSubmit} className="flex flex-col gap-5">
         <Input label="Ton prénom" name="firstName" placeholder="Camille" autoComplete="given-name" required />
         <Input label="Ton email" name="email" type="email" placeholder="camille@exemple.fr" autoComplete="email" required />

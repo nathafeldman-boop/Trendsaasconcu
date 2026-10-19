@@ -20,8 +20,9 @@ export default function TarifsPage() {
       <div className="mx-auto max-w-4xl px-5 pb-24 sm:px-8">
         <h1 className="font-display text-3xl font-semibold text-ink sm:text-4xl">Choisis ton rythme.</h1>
         <p className="mt-3 max-w-lg font-body text-[15px] leading-relaxed text-ink-muted">
-          Un seul objectif dans chaque formule : que tu crées ton SaaS et que tu encaisses dès
-          maintenant. Même contenu, même accompagnement, résiliable à tout moment.
+          Un seul objectif : que tu crées ton SaaS et que tu encaisses dès maintenant. Le
+          Trimestriel et l&apos;Annuel ajoutent un crédit IA doublé et jusqu&apos;à 67&nbsp;% d&apos;économie.
+          Résiliable à tout moment.
         </p>
         <div className="mt-10">
           <PricingCards />

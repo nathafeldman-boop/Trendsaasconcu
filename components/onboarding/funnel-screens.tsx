@@ -25,6 +25,8 @@ import {
   type Option,
   type Step,
 } from "@/components/onboarding/funnel";
+import { readFoundIdea } from "@/lib/onboarding/found-idea";
+import { requestIdea } from "@/lib/onboarding/idea-request";
 
 const EASE: [number, number, number, number] = [0.16, 1, 0.3, 1];
 const FREE_ID = "autre";
@@ -130,16 +132,19 @@ export function SingleScreen({ shell, step, answers, onAnswer, onNext }: ScreenP
           </motion.div>
         ))}
         {step.free ? (
-          <ChoiceOption
-            label="Autre chose"
-            detail="je l'écris avec mes mots"
-            icon={<PenLine className="size-5" strokeWidth={1.75} />}
-            selected={picked === FREE_ID}
-            onClick={() => {
-              onAnswer({ [step.id]: FREE_ID });
-              setWaiting(true);
-            }}
-          />
+          // Full width under a grid of tiles, like the other rows elsewhere.
+          <div className={step.grid ? "col-span-2" : undefined}>
+            <ChoiceOption
+              label="Autre chose"
+              detail="je l'écris avec mes mots"
+              icon={<PenLine className="size-5" strokeWidth={1.75} />}
+              selected={picked === FREE_ID}
+              onClick={() => {
+                onAnswer({ [step.id]: FREE_ID });
+                setWaiting(true);
+              }}
+            />
+          </div>
         ) : null}
       </div>
 
@@ -493,10 +498,15 @@ export function LoadingScreen({ shell, answers, onAnswer, onNext }: Omit<ScreenP
   // Going back mid-countdown must not fire the jump forward afterwards.
   useEffect(() => () => window.clearTimeout(doneTimer.current), []);
 
+  // Start looking for their idea now: it's ready when the ring ends.
+  useEffect(() => {
+    void requestIdea(latest.current.answers);
+  }, []);
+
   const doneSteps = Math.floor((progress / 100) * LOADING_STEPS.length);
 
   return (
-    <StepShell {...shell} center eyebrow="Calcul en cours" title="On assemble ta projection." subtitle="Encore deux questions pendant que ça tourne.">
+    <StepShell {...shell} center eyebrow="Recherche en cours" title="On cherche ton idée." subtitle="Encore deux questions pendant que ça tourne.">
       <div className="flex flex-col items-center">
         <div className="relative size-40">
           <svg viewBox="0 0 120 120" className="size-full -rotate-90" aria-hidden>
@@ -584,10 +594,15 @@ export function LoadingScreen({ shell, answers, onAnswer, onNext }: Omit<ScreenP
 const SEGMENT_COLORS = ["bg-accent", "bg-white/70", "bg-accent-deep"];
 
 export function ProjectionScreen({ shell, answers, onNext }: { shell: ShellProps; answers: Answers; onNext: () => void }) {
-  const { sources, low, high, customers, goal } = projection(answers);
+  const { sources, low, high, customers, price, ideaTitle, goal } = projection(answers);
   const total = sources.reduce((n, s) => n + (s.low + s.high) / 2, 0) || 1;
   return (
-    <StepShell {...shell} eyebrow="Ta projection" title="Voilà ce que ton SaaS pourrait rapporter." footer={<ContinueButton onClick={onNext} />}>
+    <StepShell
+      {...shell}
+      eyebrow="Ta projection"
+      title={ideaTitle ? `Voilà ce que ${ideaTitle} pourrait te rapporter.` : "Voilà ce que ton SaaS pourrait rapporter."}
+      footer={<ContinueButton onClick={onNext} />}
+    >
       <div className="glass-panel relative overflow-hidden rounded-[24px] p-6">
         <div aria-hidden className="absolute -right-16 -top-16 size-48 rounded-full bg-accent/15 blur-[60px]" />
         <p className="relative font-mono text-[11px] uppercase tracking-[0.2em] text-ink-faint">Ton potentiel</p>
@@ -618,7 +633,7 @@ export function ProjectionScreen({ shell, answers, onNext }: { shell: ShellProps
             <p className="font-body text-[12px] text-ink-faint">clients</p>
           </div>
           <div>
-            <p className="font-display text-xl font-medium text-ink">{REFERENCE_PRICE} €</p>
+            <p className="font-display text-xl font-medium text-ink">{price} €</p>
             <p className="font-body text-[12px] text-ink-faint">par mois</p>
           </div>
           <div>
@@ -640,7 +655,8 @@ export function ProjectionScreen({ shell, answers, onNext }: { shell: ShellProps
         ))}
       </div>
       <p className="mt-4 font-body text-[12px] leading-relaxed text-ink-faint">
-        Scénario, pas une promesse : calculé à partir de tes réponses, pour un abonnement à {REFERENCE_PRICE} € par mois.
+        Scénario, pas une promesse : calculé à partir de tes réponses, pour un abonnement à {price} € par mois
+        {ideaTitle ? ` (${ideaTitle})` : ""}.
       </p>
     </StepShell>
   );
@@ -668,13 +684,18 @@ export function BarrierScreen({ shell, onNext }: { shell: ShellProps; onNext: ()
   );
 }
 
-export function AccountScreen({ shell, onDone }: { shell: ShellProps; onDone: () => void }) {
+export function AccountScreen({ shell, answers, onDone }: { shell: ShellProps; answers: Answers; onDone: () => void }) {
+  const idea = readFoundIdea(answers);
   return (
     <StepShell
       {...shell}
       eyebrow="Ton dossier"
-      title="Crée ton compte pour garder tout ça."
-      subtitle="Tes réponses et ta projection restent liées à ton compte : tu retrouves tout quand tu reviens."
+      title={idea ? "Crée ton compte pour garder ton idée." : "Crée ton compte pour garder tout ça."}
+      subtitle={
+        idea
+          ? `${idea.title}, tes réponses et ta projection t'attendent dans ton espace : tu retrouves tout quand tu reviens.`
+          : "Tes réponses et ta projection restent liées à ton compte : tu retrouves tout quand tu reviens."
+      }
     >
       <SignupForm onSuccess={onDone} />
       <p className="mt-5 text-center font-body text-[13px] text-ink-faint">
@@ -790,9 +811,12 @@ const HOURS_LABEL: Record<string, string> = { low: "moins de 5 h / semaine", mid
 const DEADLINE_LABEL: Record<string, string> = { asap: "le plus vite possible", "2sem": "2 semaines", "1mois": "1 mois", "3mois": "3 mois" };
 
 export function PlansScreen({ shell, answers }: { shell: ShellProps; answers: Answers }) {
+  const idea = readFoundIdea(answers);
   const recap = [
+    idea
+      ? { label: "Ton idée", value: idea.title }
+      : { label: "Ton temps", value: HOURS_LABEL[String(answers.hours)] ?? "—" },
     { label: "Objectif", value: `${Math.round(Number(answers.revenueGoal ?? 3000)).toLocaleString("fr-FR")} € / mois` },
-    { label: "Ton temps", value: HOURS_LABEL[String(answers.hours)] ?? "—" },
     { label: "Échéance", value: DEADLINE_LABEL[String(answers.deadline)] ?? "—" },
   ];
   return (
@@ -805,7 +829,7 @@ export function PlansScreen({ shell, answers }: { shell: ShellProps; answers: An
           <span className="font-serif italic tracking-normal text-accent">choisis ta formule.</span>
         </>
       }
-      subtitle="Ton idée, ton prompt de build et ton plan marketing se débloquent dès le paiement. Résiliable à tout moment."
+      subtitle={`${idea ? `${idea.title}, ton` : "Ton idée, ton"} prompt de build et ton plan marketing se débloquent dès le paiement. Résiliable à tout moment.`}
     >
       <div className="glass-panel mb-8 grid grid-cols-3 divide-x divide-ink/10 rounded-[18px]">
         {recap.map((item) => (

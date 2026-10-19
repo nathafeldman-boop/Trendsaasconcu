@@ -7,7 +7,9 @@ const STEP_OVERRIDES: Record<string, string> = {
   saas101: "C'est quoi un SaaS ?",
   analysis: "Analyse de son site",
   revenueGoal: "Objectif de revenus",
-  loading: "Calcul du plan",
+  domain: "Son univers",
+  loading: "Recherche de l'idée",
+  idea: "Révélation de son idée",
   projection: "Projection de revenus",
   barrier: "Écran « barrière »",
   account: "Création du compte",
@@ -49,6 +51,10 @@ export function eventLabel(name: string, props: Props, path?: string | null) {
       return p.has_idea ? "Écrit son idée sur la page d'accueil" : "Clique sur « Commencer » (accueil)";
     case "onboarding_step":
       return `Questionnaire : ${stepLabel(text(p.step))}`;
+    case "idea_revealed":
+      return `${p.regenerate ? "Voit une 2e idée" : "Voit son idée"} dans le questionnaire${p.source === "library" ? " (bibliothèque)" : ""}`;
+    case "idea_kept":
+      return `Garde l'idée « ${text(p.title)} » à ${text(p.price)} €/mois`;
     case "signup_completed":
       return `Crée son compte${p.method === "google" ? " avec Google" : ""}`;
     case "login":
@@ -116,6 +122,8 @@ export function eventLabel(name: string, props: Props, path?: string | null) {
 /** Short names for the "actions" table (one row per event name). */
 export const ACTION_NAMES: Record<string, string> = {
   hero_submitted: "Commence depuis l'accueil",
+  idea_revealed: "Voit son idée (questionnaire)",
+  idea_kept: "Garde son idée (questionnaire)",
   signup_completed: "Crée son compte",
   login: "Se connecte",
   google_clicked: "Clique sur Google",

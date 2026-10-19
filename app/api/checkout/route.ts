@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import Stripe from "stripe";
 import { getAuth } from "@/lib/supabase/auth";
 import { createStripeClient } from "@/lib/stripe/client";
-import { euros, PLANS, type PlanId } from "@/lib/stripe/plans";
+import { PLANS, type PlanId } from "@/lib/stripe/plans";
 import { paymentMethodConfiguration } from "@/lib/stripe/payment-methods";
 
 type Plan = (typeof PLANS)[number];
@@ -42,9 +42,9 @@ function submitMessage(plan: Plan) {
   if (plan.months === 1) {
     return "Accès immédiat à tout ton espace : ton idée, ton prompt de build, ton coach IA et ton plan marketing. Sans engagement, résiliable à tout moment depuis ton espace.";
   }
-  const saved = euros(MONTHLY.amountCents * plan.months - plan.amountCents);
   const period = plan.months === 12 ? "sur l'année" : `tous les ${plan.months} mois`;
-  return `Soit ${plan.perMonth} par mois au lieu de ${MONTHLY.price} : ${saved} d'économie ${period}. Accès immédiat à tout ton espace, résiliable à tout moment.`;
+  const aiCredit = plan.aiCredit > 1 ? " et ton crédit IA doublé chaque mois" : "";
+  return `Soit ${plan.perMonth} par mois au lieu de ${MONTHLY.price} : ${plan.savings} d'économie ${period}${aiCredit}. Accès immédiat à tout ton espace, résiliable à tout moment.`;
 }
 
 function billedMonths(price: Stripe.Price) {

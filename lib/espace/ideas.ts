@@ -19,13 +19,5 @@ export const IdeasSchema = z.object({ ideas: z.array(IdeaSchema) });
 
 export type SaasIdea = z.infer<typeof IdeaSchema>;
 
-/** The idea as saved in idea_text, detailed enough for the build prompt. */
-export function ideaToText(idea: SaasIdea) {
-  return [
-    `${idea.title} : ${idea.pitch}`,
-    `Cible : ${idea.target}`,
-    `Problème résolu : ${idea.problem}`,
-    `Prix : ${idea.price_per_month} € par mois`,
-    `MVP : ${idea.mvp.join(" ; ")}`,
-  ].join("\n");
-}
+// Shared with the onboarding, which reveals a first idea before signup.
+export { ideaToText } from "@/lib/onboarding/found-idea";

@@ -96,7 +96,7 @@ export async function POST(request: Request) {
     return NextResponse.json({
       reply: reply ?? "Je n'ai pas réussi à répondre, réessaie dans un instant.",
       source: "claude",
-      budgetUsed: budgetUsedPercent(spent),
+      budgetUsed: budgetUsedPercent(spent, session.budgetUsd),
     });
   } catch (error) {
     console.error("chat: Claude call failed:", error instanceof Error ? error.message : error);

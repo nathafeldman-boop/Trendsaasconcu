@@ -81,7 +81,7 @@ export async function POST(request: Request) {
         .map((line) => line.replace(/^[-*\d.\s]+/, "").trim())
         .filter(Boolean)
         .slice(0, 3);
-      if (ideas.length) return NextResponse.json({ ideas, source: "claude", budgetUsed: budgetUsedPercent(spent) });
+      if (ideas.length) return NextResponse.json({ ideas, source: "claude", budgetUsed: budgetUsedPercent(spent, session.budgetUsd) });
     } catch (error) {
       console.error("prompt/content: failed:", error instanceof Error ? error.message : error);
     }
@@ -95,7 +95,7 @@ export async function POST(request: Request) {
   // Same idea + same tool = same prompt: serve the stored one instead of paying again.
   const key = `${tool?.id ?? "autre"}::${idea}`;
   if (builder?.build_prompt && builder.build_prompt_key === key && !body.regenerate) {
-    return NextResponse.json({ prompt: builder.build_prompt, source: "cache", budgetUsed: budgetUsedPercent(session.spentUsd) });
+    return NextResponse.json({ prompt: builder.build_prompt, source: "cache", budgetUsed: budgetUsedPercent(session.spentUsd, session.budgetUsd) });
   }
   if (isOverBudget(session)) {
     return NextResponse.json({ prompt: fallbackBuildPrompt(idea, toolName), source: "budget", message: OVER_BUDGET_MESSAGE });
@@ -124,7 +124,7 @@ export async function POST(request: Request) {
     await session.supabase
       .from("builder_progress")
       .upsert({ user_id: session.userId, build_prompt: prompt, build_prompt_key: key });
-    return NextResponse.json({ prompt, source: "claude", budgetUsed: budgetUsedPercent(spent) });
+    return NextResponse.json({ prompt, source: "claude", budgetUsed: budgetUsedPercent(spent, session.budgetUsd) });
   } catch (error) {
     console.error("prompt/build: failed:", error instanceof Error ? error.message : error);
     return NextResponse.json({ prompt: fallbackBuildPrompt(idea, toolName), source: "fallback" });

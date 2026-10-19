@@ -40,8 +40,9 @@ export default function ConfidentialitePage() {
         <ul>
           <li><strong>Supabase</strong> : hébergement de la base de données et de l&apos;authentification.</li>
           <li>
-            <strong>Anthropic (Claude)</strong> : ton idée de SaaS et tes messages à l&apos;assistant lui
-            sont transmis pour générer tes prompts et réponses.
+            <strong>Anthropic (Claude)</strong> : ton idée de SaaS, tes messages à l&apos;assistant et,
+            pendant le questionnaire, tes réponses (sans ton nom ni ton email) lui sont transmis pour
+            trouver ton idée et générer tes prompts et réponses.
           </li>
           <li>
             <strong>Stripe</strong> : traitement des paiements, si tu souscris un abonnement, ou lecture

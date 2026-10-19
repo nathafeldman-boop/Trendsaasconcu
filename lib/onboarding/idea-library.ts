@@ -1,0 +1,261 @@
+import type { FoundIdea } from "@/lib/onboarding/found-idea";
+
+// Hand-written ideas the onboarding falls back on when Claude isn't
+// available (no API key, daily cap reached, rate limit, error): one per
+// universe and kind of customer, so the reveal still fits the answers.
+// Same rules as the AI: a problem that already costs the target time or
+// money, a web app a beginner can build with AI, no invented figures.
+
+type Market = "b2b" | "b2c";
+
+const LIBRARY: Record<string, Record<Market, FoundIdea>> = {
+  sport: {
+    b2b: {
+      title: "CoachPlanning",
+      pitch: "Les réservations, rappels et forfaits des coachs sportifs, au même endroit.",
+      target: "Coachs sportifs indépendants et petites salles de sport",
+      problem: "Caler les séances par WhatsApp et gérer les annulations de dernière minute leur fait perdre des heures et des séances payées.",
+      price_per_month: 29,
+      mvp: ["Page de réservation en ligne", "Rappels automatiques avant chaque séance", "Suivi des séances restantes dans un forfait", "Paiement en ligne des séances"],
+      why_you: "Tu as choisi le sport : tu parles déjà la langue des coachs, et un pro paie volontiers pour récupérer ses soirées.",
+      build_time: "2 à 3 semaines",
+      first_customers: "Écris aux coachs de ta ville repérés sur Instagram et Google Maps, et propose-leur un mois offert contre un avis. Les petites salles de quartier sont souvent preneuses.",
+    },
+    b2c: {
+      title: "PlanRun",
+      pitch: "Un plan d'entraînement course à pied qui s'adapte quand tu rates une séance.",
+      target: "Coureurs amateurs qui préparent un 10 km ou un semi-marathon",
+      problem: "Les plans PDF génériques ne s'adaptent ni au niveau ni aux imprévus : on décroche dès la deuxième semaine.",
+      price_per_month: 7,
+      mvp: ["Questionnaire de niveau et d'objectif", "Plan semaine par semaine", "Réajustement quand une séance est ratée", "Suivi des progrès"],
+      why_you: "Tu as choisi le sport et les particuliers : un besoin que tu comprends, et des communautés faciles à trouver.",
+      build_time: "2 semaines",
+      first_customers: "Partage ton plan dans les groupes de course à pied sur Facebook et Strava, et publie tes propres séances en vidéo courte.",
+    },
+  },
+  beaute: {
+    b2b: {
+      title: "RappelBeauté",
+      pitch: "Moins de rendez-vous manqués et des clientes qui reviennent, sans y penser.",
+      target: "Instituts de beauté, ongleries et barbiers indépendants",
+      problem: "Les rendez-vous non honorés et les clientes qui ne reviennent pas font perdre du chiffre chaque semaine.",
+      price_per_month: 39,
+      mvp: ["Prise de rendez-vous en ligne avec acompte", "Rappel automatique la veille", "Relance des clientes absentes depuis 6 semaines", "Fiche cliente avec l'historique"],
+      why_you: "Tu as choisi la beauté et les pros : des commerces nombreux, faciles à contacter, et qui paient pour remplir leur agenda.",
+      build_time: "2 à 3 semaines",
+      first_customers: "Contacte les instituts de ton secteur sur Instagram et Google Maps, montre la démo sur ton téléphone et offre le premier mois.",
+    },
+    b2c: {
+      title: "Routine Peau",
+      pitch: "Une routine de soin simple, faite pour ta peau, avec des rappels.",
+      target: "Personnes qui veulent une routine de soin sans se ruiner en produits",
+      problem: "Entre les conseils contradictoires et les produits inutiles, on dépense beaucoup pour peu de résultat.",
+      price_per_month: 6,
+      mvp: ["Diagnostic en 10 questions", "Routine matin et soir personnalisée", "Rappels quotidiens", "Journal photo pour voir l'évolution"],
+      why_you: "Tu as choisi la beauté et les particuliers : un sujet qui marche très bien en vidéo courte, même sans montrer ton visage.",
+      build_time: "2 semaines",
+      first_customers: "Publie des vidéos courtes « routine du jour » en écran filmé, et partage le diagnostic gratuit dans les groupes skincare.",
+    },
+  },
+  resto: {
+    b2b: {
+      title: "ClickResto",
+      pitch: "La commande à emporter en ligne pour les restos, sans commission par commande.",
+      target: "Restaurants, snacks et boulangeries indépendants",
+      problem: "Les plateformes de livraison prennent une commission sur chaque commande, et le téléphone sonne en plein service.",
+      price_per_month: 49,
+      mvp: ["Menu en ligne avec QR code", "Commande et paiement à emporter", "Écran des commandes pour la cuisine", "Message au client quand c'est prêt"],
+      why_you: "Tu as choisi la restauration et les pros : un abonnement fixe face à une commission, l'argument se comprend en une phrase.",
+      build_time: "3 semaines",
+      first_customers: "Passe aux heures creuses dans les restos de ton quartier, montre la démo sur ton téléphone et propose de configurer leur menu gratuitement.",
+    },
+    b2c: {
+      title: "BatchMenu",
+      pitch: "Les menus de ta semaine et ta liste de courses, prêts en deux minutes.",
+      target: "Actifs et familles qui veulent mieux manger sans y passer leurs soirées",
+      problem: "Décider quoi manger chaque soir et faire des courses sans liste coûte du temps et de l'argent.",
+      price_per_month: 6,
+      mvp: ["Menus de la semaine selon goûts et budget", "Liste de courses générée automatiquement", "Recettes pas à pas", "Remplacement d'un plat en un clic"],
+      why_you: "Tu as choisi la food et les particuliers : un besoin de tous les jours, parfait pour du contenu court.",
+      build_time: "2 semaines",
+      first_customers: "Publie tes menus de la semaine en vidéo courte et partage l'outil dans les groupes Facebook de parents et d'étudiants.",
+    },
+  },
+  immo: {
+    b2b: {
+      title: "VisiteFacile",
+      pitch: "Les visites et les dossiers locataires organisés tout seuls.",
+      target: "Agents immobiliers indépendants et gestionnaires locatifs",
+      problem: "Des dizaines d'appels pour caler des visites, et des dossiers incomplets à relancer un par un.",
+      price_per_month: 59,
+      mvp: ["Créneaux de visite réservables en ligne", "Collecte des pièces du dossier", "Tri des dossiers complets", "Relances automatiques des pièces manquantes"],
+      why_you: "Tu as choisi l'immobilier et les pros : un métier où chaque heure gagnée compte, et qui paie bien pour ça.",
+      build_time: "3 à 4 semaines",
+      first_customers: "Écris aux agents indépendants de ta ville sur LinkedIn et propose de gérer gratuitement les visites de leur prochaine annonce.",
+    },
+    b2c: {
+      title: "DossierLoc",
+      pitch: "Un dossier de location complet et propre, partagé en un lien.",
+      target: "Étudiants et jeunes actifs qui cherchent un logement",
+      problem: "Les dossiers incomplets ou brouillons passent à la trappe face à des dizaines de candidats.",
+      price_per_month: 7,
+      mvp: ["Checklist des pièces à fournir", "Envoi et compression des documents", "Dossier partageable en un lien", "Lettre de présentation générée"],
+      why_you: "Tu as choisi l'immobilier et les particuliers : un problème urgent, que les gens cherchent à régler vite.",
+      build_time: "2 semaines",
+      first_customers: "Partage l'outil dans les groupes de logement étudiant et publie des vidéos « comment avoir un appart plus vite ».",
+    },
+  },
+  education: {
+    b2b: {
+      title: "SuiviCours",
+      pitch: "Le planning, les paiements et les comptes-rendus des profs particuliers.",
+      target: "Profs particuliers et petits centres de soutien scolaire",
+      problem: "Courir après les paiements et écrire les comptes-rendus aux parents à la main leur prend des heures chaque semaine.",
+      price_per_month: 25,
+      mvp: ["Agenda des cours", "Facturation et paiement en ligne", "Compte-rendu de séance envoyé aux parents", "Suivi des heures par élève"],
+      why_you: "Tu as choisi l'éducation et les pros : des indépendants faciles à trouver, qui paient pour gagner du temps.",
+      build_time: "2 à 3 semaines",
+      first_customers: "Contacte les profs qui publient des annonces de cours particuliers près de chez toi et offre-leur le premier mois.",
+    },
+    b2c: {
+      title: "RéviseMalin",
+      pitch: "Des quiz de révision créés à partir de tes propres cours.",
+      target: "Lycéens et étudiants qui préparent leurs examens",
+      problem: "Relire ses cours ne suffit pas, et faire ses fiches et quiz à la main prend un temps fou.",
+      price_per_month: 6,
+      mvp: ["Import des cours en photo ou en texte", "Quiz générés par l'IA", "Révisions espacées", "Suivi des notions à retravailler"],
+      why_you: "Tu as choisi l'éducation et les particuliers : un public très présent sur TikTok, qui partage ce qui marche.",
+      build_time: "2 semaines",
+      first_customers: "Publie des vidéos de révision en écran filmé et partage l'outil sur les serveurs Discord d'étudiants.",
+    },
+  },
+  createurs: {
+    b2b: {
+      title: "CollabDesk",
+      pitch: "Les partenariats des créateurs suivis du premier message au paiement.",
+      target: "Créateurs de contenu qui reçoivent des propositions de marques",
+      problem: "Les collaborations se perdent dans les messages privés, et les factures et relances se font à la main.",
+      price_per_month: 19,
+      mvp: ["Kit média et tarifs en ligne", "Suivi des collabs : proposée, signée, payée", "Factures générées", "Relances de paiement automatiques"],
+      why_you: "Tu as choisi la création de contenu : tu connais le milieu, et les créateurs se recommandent entre eux.",
+      build_time: "2 à 3 semaines",
+      first_customers: "Écris aux créateurs de ta niche qui affichent des partenariats, et propose-leur de suivre leur prochaine collab gratuitement.",
+    },
+    b2c: {
+      title: "HookLab",
+      pitch: "Des accroches et un calendrier de publication pour lancer ta chaîne.",
+      target: "Personnes qui débutent sur TikTok, Reels ou Shorts",
+      problem: "On abandonne après quelques vidéos sans vues, faute d'idées et de régularité.",
+      price_per_month: 9,
+      mvp: ["Générateur d'accroches par niche", "Calendrier de publication", "Suivi des vidéos qui marchent", "Rappels pour publier"],
+      why_you: "Tu as choisi la création de contenu : ta propre chaîne devient la vitrine de ton produit.",
+      build_time: "2 semaines",
+      first_customers: "Documente ta propre croissance en vidéo avec l'outil, et partage-le dans les groupes de créateurs débutants.",
+    },
+  },
+  freelance: {
+    b2b: {
+      title: "RelanceFacture",
+      pitch: "Les factures impayées relancées toutes seules, poliment puis fermement.",
+      target: "Freelances et petites agences",
+      problem: "Les retards de paiement plombent la trésorerie, et relancer un client est pénible.",
+      price_per_month: 19,
+      mvp: ["Ajout des factures en quelques clics", "Relances automatiques par email", "Lien de paiement en ligne", "Tableau des sommes en attente"],
+      why_you: "Tu as choisi les freelances et les pros : un problème que tout indépendant connaît, donc facile à expliquer.",
+      build_time: "2 semaines",
+      first_customers: "Partage l'outil dans les groupes de freelances sur LinkedIn et Facebook, avec un mois offert pour les premiers.",
+    },
+    b2c: {
+      title: "LanceToi",
+      pitch: "Tout pour lancer son activité de freelance : statut, prix, premiers clients.",
+      target: "Salariés et étudiants qui veulent se lancer en freelance",
+      problem: "On repousse le lancement faute de savoir par où commencer et combien facturer.",
+      price_per_month: 9,
+      mvp: ["Checklist de lancement pas à pas", "Calculateur de tarif journalier", "Modèles de devis et de facture", "Suivi des premiers prospects"],
+      why_you: "Tu as choisi l'univers freelance : tu sais ce qui bloque au démarrage, et c'est exactement ce que l'outil règle.",
+      build_time: "2 semaines",
+      first_customers: "Publie des conseils de lancement en vidéo courte et partage l'outil dans les groupes de reconversion.",
+    },
+  },
+  sante: {
+    b2b: {
+      title: "AgendaPraticien",
+      pitch: "Des agendas pleins pour les praticiens, sans les trous des annulations.",
+      target: "Ostéopathes, sophrologues et praticiens du bien-être indépendants",
+      problem: "Les annulations de dernière minute laissent des créneaux vides qui ne sont jamais remplis.",
+      price_per_month: 29,
+      mvp: ["Réservation en ligne", "Rappels avant le rendez-vous", "Liste d'attente qui remplit les créneaux libérés", "Acompte en ligne"],
+      why_you: "Tu as choisi la santé et les pros : des indépendants qui préfèrent soigner que gérer leur agenda.",
+      build_time: "2 à 3 semaines",
+      first_customers: "Contacte les praticiens de ta ville trouvés sur Google Maps et propose-leur de remplir leurs créneaux annulés pendant un mois offert.",
+    },
+    b2c: {
+      title: "Habitudes+",
+      pitch: "Sommeil, eau, marche : des petites habitudes suivies avec des défis.",
+      target: "Personnes qui veulent reprendre de bonnes habitudes",
+      problem: "Les bonnes résolutions tiennent rarement plus de deux semaines sans suivi.",
+      price_per_month: 5,
+      mvp: ["Choix des habitudes à suivre", "Suivi quotidien en un geste", "Défis de 30 jours", "Rappels et séries de jours réussis"],
+      why_you: "Tu as choisi la santé et les particuliers : un besoin universel, qui se partage bien en vidéo.",
+      build_time: "1 à 2 semaines",
+      first_customers: "Lance un défi de 30 jours en vidéo courte et invite tes abonnés à le suivre avec l'outil.",
+    },
+  },
+  btp: {
+    b2b: {
+      title: "DevisChantier",
+      pitch: "Des devis faits depuis le téléphone, signés en ligne et relancés tout seuls.",
+      target: "Artisans du bâtiment : plombiers, électriciens, peintres",
+      problem: "Les devis se font le soir et ne sont jamais relancés : des chantiers partent à la concurrence.",
+      price_per_month: 39,
+      mvp: ["Devis depuis le téléphone avec des modèles", "Signature en ligne par le client", "Relance automatique des devis non signés", "Transformation en facture"],
+      why_you: "Tu as choisi les artisans et les pros : un métier encore peu équipé, qui paie pour gagner des chantiers.",
+      build_time: "3 semaines",
+      first_customers: "Écris aux artisans de ta ville sur WhatsApp ou passe les voir, et propose de faire leurs trois prochains devis avec eux.",
+    },
+    b2c: {
+      title: "MonChantier",
+      pitch: "Le planning, le budget et les devis de tes travaux, suivis au même endroit.",
+      target: "Particuliers qui rénovent leur logement",
+      problem: "Entre les devis, les artisans et le budget qui dérape, une rénovation devient vite un casse-tête.",
+      price_per_month: 7,
+      mvp: ["Planning des travaux", "Suivi du budget poste par poste", "Comparaison des devis reçus", "Photos avant et après"],
+      why_you: "Tu as choisi le bâtiment et les particuliers : un projet stressant pour qui le vit, donc une aide qui se paie.",
+      build_time: "2 semaines",
+      first_customers: "Partage l'outil dans les groupes Facebook de rénovation et publie des avant-après en vidéo courte.",
+    },
+  },
+  any: {
+    b2b: {
+      title: "AvisBoost",
+      pitch: "Plus d'avis Google pour les commerces de quartier, sans rien demander à voix haute.",
+      target: "Commerces de proximité : coiffeurs, garages, boutiques",
+      problem: "Les clients satisfaits laissent rarement un avis, alors que c'est ce qui fait choisir un commerce plutôt qu'un autre.",
+      price_per_month: 29,
+      mvp: ["QR code et lien pour laisser un avis", "Message envoyé après chaque passage", "Tableau des avis reçus", "Réponses suggérées par l'IA"],
+      why_you: "Tu vises les pros : chaque commerce de ta rue est un client possible, et l'intérêt se voit en une semaine.",
+      build_time: "2 semaines",
+      first_customers: "Fais le tour des commerces de ta rue avec la démo sur ton téléphone, et offre le premier mois aux cinq premiers.",
+    },
+    b2c: {
+      title: "BudgetClair",
+      pitch: "Ton budget du mois en un coup d'œil, avec un objectif d'épargne qui avance.",
+      target: "Jeunes actifs qui veulent enfin mettre de l'argent de côté",
+      problem: "On ne sait pas où part l'argent, et l'épargne passe toujours après.",
+      price_per_month: 5,
+      mvp: ["Dépenses rangées par catégorie", "Objectif d'épargne avec progression", "Alerte avant de dépasser son budget", "Bilan du mois"],
+      why_you: "Tu vises les particuliers : un besoin que tout le monde a, et qui se partage bien en vidéo courte.",
+      build_time: "2 semaines",
+      first_customers: "Publie ton propre défi d'épargne en vidéo courte et partage l'outil dans les groupes d'entraide budget.",
+    },
+  },
+};
+
+/** An idea for this universe and kind of customer, other than `exclude` (a title). */
+export function libraryIdea(domain: unknown, market: unknown, exclude?: string): FoundIdea {
+  const key = typeof domain === "string" && domain in LIBRARY ? domain : "any";
+  const first: Market = market === "b2c" ? "b2c" : "b2b";
+  const other: Market = first === "b2b" ? "b2c" : "b2b";
+  const candidates = [LIBRARY[key][first], LIBRARY.any[first], LIBRARY[key][other], LIBRARY.any[other]];
+  return candidates.find((idea) => idea.title !== exclude) ?? candidates[0];
+}

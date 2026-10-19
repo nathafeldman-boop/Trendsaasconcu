@@ -24,6 +24,8 @@ import {
   TextScreen,
   UrlScreen,
 } from "@/components/onboarding/funnel-screens";
+import { IdeaRevealScreen } from "@/components/onboarding/idea-reveal";
+import { ideaToText, readFoundIdea } from "@/lib/onboarding/found-idea";
 
 // v2: the funnel was rebuilt (different questions and order), so answers and
 // positions saved by the previous version are deliberately not reused.
@@ -112,6 +114,28 @@ export function OnboardingWizard() {
     });
   }, [step.id, answers, index, sequence.length]);
 
+  // The idea revealed before signup becomes the member's idea once the
+  // account exists (signup here, or back from Google). Never overwrites an
+  // idea a returning member already has.
+  const ideaSaved = useRef(false);
+  const foundIdea = typeof answers.found_idea === "string" ? answers.found_idea : null;
+  useEffect(() => {
+    if (!signedIn || !foundIdea || ideaSaved.current) return;
+    const idea = readFoundIdea({ found_idea: foundIdea });
+    const supabase = createClient();
+    if (!idea || !supabase) return;
+    ideaSaved.current = true;
+    (async () => {
+      const { data } = await supabase.auth.getUser();
+      if (!data.user) return;
+      const { data: row } = await supabase.from("builder_progress").select("idea_text").eq("user_id", data.user.id).maybeSingle();
+      if (row?.idea_text) return;
+      await supabase
+        .from("builder_progress")
+        .upsert({ user_id: data.user.id, idea_text: ideaToText(idea), has_idea: false }, { onConflict: "user_id" });
+    })();
+  }, [signedIn, foundIdea]);
+
   // One onboarding_step per step reached, for the drop-off chart in /admin.
   const trackedStep = useRef<string | null>(null);
   useEffect(() => {
@@ -173,6 +197,8 @@ export function OnboardingWizard() {
         return <AnalysisScreen shell={shell} answers={answers} onNext={next} />;
       case "loading":
         return <LoadingScreen shell={shell} answers={answers} onAnswer={answer} onNext={goNext} />;
+      case "idea":
+        return <IdeaRevealScreen shell={shell} answers={answers} onAnswer={answer} onNext={goNext} />;
       case "projection":
         return <ProjectionScreen shell={shell} answers={answers} onNext={next} />;
       case "barrier":
@@ -181,6 +207,7 @@ export function OnboardingWizard() {
         return (
           <AccountScreen
             shell={shell}
+            answers={answers}
             onDone={() => {
               // Signed in now: the sequence drops this step, and resolveIndex
               // lands on the one right after it.

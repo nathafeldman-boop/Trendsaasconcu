@@ -35,7 +35,7 @@ export async function POST(request: Request) {
     .maybeSingle();
   const cached = IdeasSchema.safeParse(builder?.ai_ideas);
   if (cached.success && cached.data.ideas.length && !body.regenerate) {
-    return NextResponse.json({ ideas: cached.data.ideas, source: "cache", budgetUsed: budgetUsedPercent(session.spentUsd) });
+    return NextResponse.json({ ideas: cached.data.ideas, source: "cache", budgetUsed: budgetUsedPercent(session.spentUsd, session.budgetUsd) });
   }
 
   if (isOverBudget(session)) {
@@ -62,12 +62,12 @@ export async function POST(request: Request) {
     const parsed = IdeasSchema.safeParse(response.parsed_output);
     if (response.stop_reason === "refusal" || !parsed.success) {
       console.error("ideas: unusable response", response.stop_reason);
-      return NextResponse.json({ ideas: null, source: "fallback", budgetUsed: budgetUsedPercent(spent) });
+      return NextResponse.json({ ideas: null, source: "fallback", budgetUsed: budgetUsedPercent(spent, session.budgetUsd) });
     }
 
     const ideas = parsed.data.ideas.slice(0, 3);
     await session.supabase.from("builder_progress").upsert({ user_id: session.userId, ai_ideas: { ideas } });
-    return NextResponse.json({ ideas, source: "claude", budgetUsed: budgetUsedPercent(spent) });
+    return NextResponse.json({ ideas, source: "claude", budgetUsed: budgetUsedPercent(spent, session.budgetUsd) });
   } catch (error) {
     console.error("ideas: generation failed:", error instanceof Error ? error.message : error);
     return NextResponse.json({ ideas: null, source: "fallback" });

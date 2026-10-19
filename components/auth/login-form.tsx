@@ -91,7 +91,7 @@ export function LoginForm({ onSuccess }: { onSuccess?: () => void }) {
 
   return (
     <div>
-      <GoogleSignIn next={plan ? "/tarifs" : next || "/espace"} />
+      <GoogleSignIn next={plan ? "/tarifs" : next || "/espace"} onSignedIn={complete} />
       <form onSubmit={handleSubmit} className="flex flex-col gap-5">
         <Input label="Ton email" name="email" type="email" placeholder="camille@exemple.fr" autoComplete="email" required />
         <div className="flex flex-col gap-2">

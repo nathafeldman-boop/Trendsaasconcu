@@ -9,8 +9,9 @@ export function PricingSection() {
         Choisis ton <span className="font-serif italic tracking-normal text-accent">rythme.</span>
       </h2>
       <p className="mt-3 max-w-lg font-body text-[15px] leading-relaxed text-ink-muted">
-        Un seul objectif dans chaque formule : que tu crées ton SaaS et que tu encaisses dès
-        maintenant. Même contenu, même accompagnement, résiliable à tout moment.
+        Un seul objectif : que tu crées ton SaaS et que tu encaisses dès maintenant. Le
+        Trimestriel et l&apos;Annuel ajoutent un crédit IA doublé et jusqu&apos;à 67&nbsp;% d&apos;économie.
+        Résiliable à tout moment.
       </p>
       <div className="mt-10">
         <PricingCards />

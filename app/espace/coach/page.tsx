@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { getAuth } from "@/lib/supabase/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { budgetUsedPercent, monthlySpendUsd } from "@/lib/claude/guard";
+import { budgetUsedPercent, monthlyBudgetUsd, monthlySpendUsd } from "@/lib/claude/guard";
 import { CHECKLIST_ITEMS, CODE_TOOLS } from "@/lib/espace/content";
 import { CoachChatLoader } from "@/components/espace/coach-chat-loader";
 
@@ -18,7 +18,7 @@ export default async function CoachPage({ searchParams }: { searchParams: Promis
   const admin = createAdminClient();
 
   const [profileRes, builderRes, marketingRes, spent, stripeRes] = await Promise.all([
-    supabase.from("profiles").select("first_name").eq("id", user.id).single(),
+    supabase.from("profiles").select("first_name, plan").eq("id", user.id).single(),
     supabase.from("builder_progress").select("idea_text, chosen_tool, checklist, mvp_launched").eq("user_id", user.id).maybeSingle(),
     supabase.from("marketing_progress").select("chosen_channel").eq("user_id", user.id).maybeSingle(),
     monthlySpendUsd(supabase, user.id),
@@ -46,7 +46,7 @@ export default async function CoachPage({ searchParams }: { searchParams: Promis
       userId={user.id}
       firstName={profileRes.data?.first_name ?? null}
       initialQuestion={typeof q === "string" ? q.slice(0, 600) : ""}
-      initialBudgetUsed={budgetUsedPercent(spent)}
+      initialBudgetUsed={budgetUsedPercent(spent, monthlyBudgetUsd(profileRes.data?.plan))}
       facts={facts}
     />
   );

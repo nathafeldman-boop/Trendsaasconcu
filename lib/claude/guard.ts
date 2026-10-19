@@ -3,11 +3,17 @@ import type { createClient } from "@/lib/supabase/server";
 import { getAuth } from "@/lib/supabase/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { costOf } from "@/lib/claude/client";
+import { PLANS } from "@/lib/stripe/plans";
 
 // Hard ceiling on what one customer can cost in Claude calls per calendar
 // month (UTC). At 16,99 €/mois the margin stays large even for the heaviest
 // user; typical usage is a fraction of this.
-export const MONTHLY_BUDGET_USD = Number(process.env.AI_MONTHLY_BUDGET_USD) || 1.5;
+const BASE_BUDGET_USD = Number(process.env.AI_MONTHLY_BUDGET_USD) || 1.5;
+
+/** The monthly ceiling for a plan: quarterly and annual get double, as sold on the pricing cards. */
+export function monthlyBudgetUsd(plan: string | null | undefined) {
+  return BASE_BUDGET_USD * (PLANS.find((p) => p.id === plan)?.aiCredit ?? 1);
+}
 
 type ServerSupabase = NonNullable<Awaited<ReturnType<typeof createClient>>>;
 
@@ -16,6 +22,7 @@ export type AiSession = {
   userId: string;
   firstName: string | null;
   spentUsd: number;
+  budgetUsd: number;
 };
 
 function currentMonth() {
@@ -34,7 +41,7 @@ export async function openAiSession(): Promise<{ session: AiSession } | { respon
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("first_name, has_access, is_admin")
+    .select("first_name, has_access, is_admin, plan")
     .eq("id", user.id)
     .single();
   // The AI is part of the paid plan: free accounts never spend API credit.
@@ -48,6 +55,7 @@ export async function openAiSession(): Promise<{ session: AiSession } | { respon
       userId: user.id,
       firstName: profile?.first_name ?? null,
       spentUsd: await monthlySpendUsd(supabase, user.id),
+      budgetUsd: monthlyBudgetUsd(profile?.plan),
     },
   };
 }
@@ -64,12 +72,12 @@ export async function monthlySpendUsd(supabase: ServerSupabase, userId: string) 
 }
 
 export function isOverBudget(session: AiSession) {
-  return session.spentUsd >= MONTHLY_BUDGET_USD;
+  return session.spentUsd >= session.budgetUsd;
 }
 
 /** Share of this month's budget used, 0–100, for the UI. */
-export function budgetUsedPercent(spentUsd: number) {
-  return Math.min(100, Math.round((spentUsd / MONTHLY_BUDGET_USD) * 100));
+export function budgetUsedPercent(spentUsd: number, budgetUsd: number) {
+  return Math.min(100, Math.round((spentUsd / budgetUsd) * 100));
 }
 
 export const OVER_BUDGET_MESSAGE =
