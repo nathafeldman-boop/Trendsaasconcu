@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import Stripe from "stripe";
 import { getAuth } from "@/lib/supabase/auth";
 import { createStripeClient } from "@/lib/stripe/client";
-import { PLANS, type PlanId } from "@/lib/stripe/plans";
+import { euros, PLANS, type PlanId } from "@/lib/stripe/plans";
 
 type Plan = (typeof PLANS)[number];
 
@@ -29,8 +29,21 @@ function branding(origin: string): Stripe.Checkout.SessionCreateParams.BrandingS
     background_color: "#09090a",
     button_color: "#0fb5b1",
     border_style: "rounded",
+    font_family: "inter",
     icon: { type: "url", url: `${origin}/brand/stripe-icon.png` },
   };
+}
+
+const MONTHLY = PLANS.find((p) => p.id === "monthly")!;
+
+/** Next to the pay button: what they get, and for longer plans what they save. */
+function submitMessage(plan: Plan) {
+  if (plan.months === 1) {
+    return "Accès immédiat à tout ton espace : ton idée, ton prompt de build, ton coach IA et ton plan marketing. Sans engagement, résiliable à tout moment depuis ton espace.";
+  }
+  const saved = euros(MONTHLY.amountCents * plan.months - plan.amountCents);
+  const period = plan.months === 12 ? "sur l'année" : `tous les ${plan.months} mois`;
+  return `Soit ${plan.perMonth} par mois au lieu de ${MONTHLY.price} : ${saved} d'économie ${period}. Accès immédiat à tout ton espace, résiliable à tout moment.`;
 }
 
 function billedMonths(price: Stripe.Price) {
@@ -121,10 +134,16 @@ export async function POST(request: Request) {
       // Promo codes are created in the Stripe dashboard; this just shows the field.
       allow_promotion_codes: true,
       custom_text: {
-        submit: {
+        submit: { message: submitMessage(plan) },
+        after_submit: {
           message:
-            "Accès immédiat à ton espace après le paiement : ton idée, ton prompt de build, ta checklist et ton plan marketing. Résiliable à tout moment depuis ton espace.",
+            "Paiement sécurisé par Stripe : SaaSFounder ne voit jamais les données de ta carte. Dès le paiement validé, tu arrives directement dans ton espace.",
         },
+      },
+      // Shown in the customer portal and on invoices.
+      subscription_data: {
+        description: `Abonnement SaaSFounder · ${plan.label}`,
+        metadata: { user_id: user.id, plan: plan.id },
       },
       client_reference_id: user.id,
       customer: profile?.stripe_customer_id ?? undefined,

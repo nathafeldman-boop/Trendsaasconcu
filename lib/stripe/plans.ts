@@ -4,7 +4,7 @@
 //
 // `amountCents` / `months` are also what checkout checks the Stripe price
 // against, so the amount shown here is always the amount actually charged.
-function euros(cents: number) {
+export function euros(cents: number) {
   return `${(cents / 100).toLocaleString("fr-FR", { minimumFractionDigits: 2 })} €`;
 }
 
