@@ -35,6 +35,7 @@ import {
 } from "@/lib/espace/content";
 import { ideaToText, type SaasIdea } from "@/lib/espace/ideas";
 import { creationRecommendations } from "@/lib/espace/recommendations";
+import { WelcomeTour } from "@/components/vsl/welcome-tour";
 import { Recommendations } from "@/components/espace/recommendations";
 import { PromptBlock, scrollToSection, StatusChip, Steps, TabHeader } from "@/components/espace/kit";
 import { cn } from "@/lib/utils";
@@ -123,7 +124,10 @@ export function CreationTab({
         title={firstName ? `${firstName}, on construit ton SaaS.` : "On construit ton SaaS."}
         sub="De l'idée à la mise en ligne, une étape à la fois. Chaque étape a son guide et son prompt prêt à coller."
       >
-        <ProgressRing value={progress} />
+        <div className="flex flex-col items-start gap-3 sm:items-end">
+          <ProgressRing value={progress} />
+          <WelcomeTour openOnArrival={checkoutSuccess} />
+        </div>
       </TabHeader>
 
       {checkoutSuccess && (

@@ -27,6 +27,8 @@ import {
 } from "@/components/onboarding/funnel";
 import { readFoundIdea } from "@/lib/onboarding/found-idea";
 import { requestIdea } from "@/lib/onboarding/idea-request";
+import { VslPlayer } from "@/components/vsl/vsl-player";
+import { JOURNEY_FILM } from "@/lib/vsl/scenes";
 
 const EASE: [number, number, number, number] = [0.16, 1, 0.3, 1];
 const FREE_ID = "autre";
@@ -753,6 +755,10 @@ export function JourneyScreen({ shell, firstName, onNext }: { shell: ShellProps;
       }
       footer={<ContinueButton onClick={onNext} />}
     >
+      <div className="mb-8 sm:-mx-16">
+        <VslPlayer film={JOURNEY_FILM} autoPlay="in-view" />
+        <p className="mt-3 text-center font-body text-[12px] text-ink-faint">Les vrais écrans de ton espace, avec un projet de démonstration.</p>
+      </div>
       <ol className="relative flex flex-col gap-5">
         <motion.span
           aria-hidden

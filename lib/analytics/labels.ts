@@ -114,6 +114,14 @@ export function eventLabel(name: string, props: Props, path?: string | null) {
       return `Ouvre une recommandation (${text(p.id)})`;
     case "billing_portal_opened":
       return "Ouvre la gestion de son abonnement";
+    case "vsl_played":
+      return `Lance la vidéo de démo (${text(p.film)})`;
+    case "vsl_completed":
+      return `Regarde la vidéo de démo jusqu'au bout (${text(p.film)})`;
+    case "vsl_cta_clicked":
+      return `Clique sur « ${text(p.label)} » à la fin de la vidéo`;
+    case "welcome_tour_opened":
+      return p.auto ? "Voit la visite guidée après son paiement" : "Ouvre la visite guidée";
     case "connect_clicked":
       return `Clique sur « Se connecter avec ${text(p.provider)} »`;
     case "account_connected":
@@ -171,6 +179,9 @@ export const ACTION_NAMES: Record<string, string> = {
   views_logged: "Note ses vues",
   recommendation_opened: "Ouvre une recommandation",
   billing_portal_opened: "Gère son abonnement",
+  vsl_played: "Lance la vidéo de démo",
+  vsl_completed: "Finit la vidéo de démo",
+  vsl_cta_clicked: "Clique à la fin de la vidéo",
   account_connected: "Connecte un compte (pilote auto)",
   repo_created: "Dépôt GitHub créé",
   database_ready: "Base Supabase prête",

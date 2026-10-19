@@ -1,5 +1,6 @@
 import { Nav } from "@/components/landing/nav";
 import { Hero } from "@/components/landing/hero";
+import { VslSection } from "@/components/landing/vsl-section";
 import { ToolsMarquee } from "@/components/landing/tools-marquee";
 import { ShowcaseSection } from "@/components/landing/showcase-section";
 import { ComparisonSection } from "@/components/landing/comparison-section";
@@ -21,6 +22,7 @@ export default function Home() {
       <main className="relative">
         <FloatingParticles />
         <Hero />
+        <VslSection />
         <ToolsMarquee />
         <ShowcaseSection />
         <ComparisonSection />

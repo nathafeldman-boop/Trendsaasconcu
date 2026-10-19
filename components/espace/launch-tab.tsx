@@ -95,7 +95,7 @@ export function LaunchTab({ ideaTitle, ideaText, connections, initialState, avai
   }, [notice.connected, notice.error, router]);
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="mx-auto flex max-w-[940px] flex-col gap-6 px-5 py-8 sm:px-8 lg:px-12 lg:py-12">
       <TabHeader
         eyebrow="Pilote automatique"
         title="On met tout en place pour toi."

@@ -27,14 +27,18 @@ export function EspaceShell({
   firstName,
   hasStripeSubscription,
   isAdmin,
+  activePath,
   children,
 }: {
   firstName: string | null;
   hasStripeSubscription: boolean;
   isAdmin: boolean;
+  /** Highlights this tab instead of the current URL's (the VSL screenshot captures). */
+  activePath?: string;
   children: React.ReactNode;
 }) {
-  const pathname = usePathname();
+  const currentPath = usePathname();
+  const pathname = activePath ?? currentPath;
 
   return (
     <div className="lg:flex">
