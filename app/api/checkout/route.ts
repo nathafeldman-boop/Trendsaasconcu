@@ -131,6 +131,11 @@ export async function POST(request: Request) {
       mode: "subscription",
       locale: "fr",
       line_items: [{ price: priceId, quantity: 1 }],
+      // Card only: Apple Pay and Google Pay come with it and show up as
+      // one-tap buttons on the devices that support them. No Link (its
+      // pre-ticked "save with Link" box and phone field), Klarna or Amazon Pay.
+      payment_method_types: ["card"],
+      wallet_options: { link: { display: "never" } },
       // Promo codes are created in the Stripe dashboard; this just shows the field.
       allow_promotion_codes: true,
       custom_text: {
