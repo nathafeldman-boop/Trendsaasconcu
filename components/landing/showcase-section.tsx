@@ -2,19 +2,34 @@
 
 import Image from "next/image";
 import { motion, type Variants } from "framer-motion";
-import { Check, CreditCard, TrendingUp, UserPlus } from "lucide-react";
+import { Check, TrendingUp } from "lucide-react";
 import { Eyebrow } from "@/components/ui/eyebrow";
 import { CountUp } from "@/components/ui/count-up";
+import { BrandLogo } from "@/components/ui/brand-logo";
 
 const EASE: [number, number, number, number] = [0.16, 1, 0.3, 1];
 
 const BARS = [22, 30, 26, 38, 34, 46, 52, 48, 61, 70, 66, 84];
 
-const NOTIFICATIONS = [
-  { icon: CreditCard, title: "Paiement reçu", detail: "29,00 € · Plan mensuel", when: "maintenant" },
-  { icon: UserPlus, title: "Nouvel abonné", detail: "lea.m••••@gmail.com", when: "il y a 4 min" },
-  { icon: CreditCard, title: "Paiement reçu", detail: "249,00 € · Plan annuel", when: "il y a 12 min" },
+// Lock-screen pushes as the Stripe and Whop apps send them when a sale lands.
+const NOTIFICATIONS: { app: "stripe" | "whop"; title: string; detail: string; when: string }[] = [
+  { app: "stripe", title: "Stripe", detail: "Paiement réussi : 29,00 € · Abonnement mensuel", when: "maintenant" },
+  { app: "whop", title: "Whop", detail: "Nouvelle vente 🎉 49,00 € encaissés", when: "il y a 4 min" },
+  { app: "stripe", title: "Stripe", detail: "Paiement réussi : 249,00 € · Abonnement annuel", when: "il y a 12 min" },
 ];
+
+function AppIcon({ app }: { app: "stripe" | "whop" }) {
+  if (app === "whop") {
+    return (
+      <Image src="/brand/whop-icon.png" alt="Whop" width={32} height={32} className="size-8 shrink-0 rounded-[8px]" />
+    );
+  }
+  return (
+    <span className="flex size-8 shrink-0 items-center justify-center rounded-[8px] bg-[#635BFF]">
+      <BrandLogo brand="stripe" monochrome className="size-[18px] text-white" />
+    </span>
+  );
+}
 
 const JOURNEY = ["Idée trouvée", "Site en ligne", "Premier post publié", "Premier paiement reçu"];
 
@@ -123,15 +138,13 @@ function PhoneCard() {
               variants={notifIn}
               className="flex items-center gap-2.5 rounded-[18px] border border-white/10 bg-black/45 p-2.5 backdrop-blur-xl"
             >
-              <span className="flex size-8 shrink-0 items-center justify-center rounded-[10px] bg-accent text-canvas">
-                <notif.icon className="size-4" strokeWidth={2.25} />
-              </span>
+              <AppIcon app={notif.app} />
               <div className="min-w-0 flex-1 text-left">
                 <div className="flex items-center justify-between gap-2">
                   <p className="font-body text-[12px] font-semibold text-ink">{notif.title}</p>
                   <p className="shrink-0 font-body text-[10px] text-ink-faint">{notif.when}</p>
                 </div>
-                <p className="truncate font-body text-[11px] text-ink-muted">{notif.detail}</p>
+                <p className="font-body text-[11px] leading-snug text-ink/80">{notif.detail}</p>
               </div>
             </motion.div>
           ))}
