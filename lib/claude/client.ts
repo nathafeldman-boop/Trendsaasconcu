@@ -1,13 +1,12 @@
 import Anthropic from "@anthropic-ai/sdk";
 
-// Two models, split by how often they run:
-// - GENERATION: the few big, one-off deliverables (3 ideas, the build
-//   prompt). Quality matters most and each user triggers them a handful of
-//   times, so the strongest model stays cheap overall.
-// - CHAT: the coach, called on every message. Haiku keeps a heavy user well
-//   under the monthly budget (see lib/claude/budget.ts).
-// Both can be swapped from Vercel without a code change.
-export const GENERATION_MODEL = process.env.CLAUDE_GENERATION_MODEL || "claude-opus-5-5";
+// Everything runs on Haiku by default: SaaSFounder directs (ideas, build
+// prompts, coaching) while the user's own coding tool does the building, so
+// the cheapest model is enough and keeps every user far under budget.
+// - GENERATION: the few one-off deliverables (3 ideas, the build prompt).
+// - CHAT: the coach and the onboarding idea, called far more often.
+// Either can be switched from Vercel without a code change.
+export const GENERATION_MODEL = process.env.CLAUDE_GENERATION_MODEL || "claude-haiku-5-5";
 export const CHAT_MODEL = process.env.CLAUDE_CHAT_MODEL || "claude-haiku-5-5";
 
 // USD per million tokens (platform.claude.com/docs/en/about-claude/pricing,

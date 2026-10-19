@@ -1,7 +1,7 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { GENERATION_MODEL, getClaude } from "@/lib/claude/client";
 
-// One-off generations on the strongest model. Server-side fallbacks are on:
+// One-off generations (GENERATION_MODEL). Server-side fallbacks are on:
 // if the model declines a request, the API re-runs it on another model in
 // the same call instead of returning nothing. Should the API ever reject the
 // fallback parameter, the request is retried once without it.

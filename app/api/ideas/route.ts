@@ -5,7 +5,7 @@ import { isOverBudget, openAiSession, OVER_BUDGET_MESSAGE, recordUsage, budgetUs
 import { buildProjectContext } from "@/lib/claude/project-context";
 import { IdeasSchema } from "@/lib/espace/ideas";
 
-// Opus can take a while on three detailed ideas.
+// Three detailed ideas can take a while.
 export const maxDuration = 60;
 
 const SYSTEM = `Tu es l'expert idées de SaaSFounder. Tu proposes à un débutant 3 idées de SaaS faites pour son profil, qu'il pourra construire avec un outil de codage IA (Claude Code, Replit, Lovable) et vendre par abonnement.

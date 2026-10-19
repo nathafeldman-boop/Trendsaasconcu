@@ -5,7 +5,7 @@ import { budgetUsedPercent, isOverBudget, openAiSession, OVER_BUDGET_MESSAGE, re
 import { buildProjectContext } from "@/lib/claude/project-context";
 import { CODE_TOOLS } from "@/lib/espace/content";
 
-// The build prompt runs on Opus and can take a while.
+// The build prompt is long and can take a while.
 export const maxDuration = 60;
 
 function fallbackBuildPrompt(idea: string, tool: string) {
