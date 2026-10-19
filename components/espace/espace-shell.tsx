@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
-import { Hammer, LineChart, Megaphone, Sparkles, type LucideIcon } from "lucide-react";
+import { Hammer, LineChart, Megaphone, ShieldCheck, Sparkles, type LucideIcon } from "lucide-react";
 import { Logo } from "@/components/ui/logo";
 import { cn } from "@/lib/utils";
 
@@ -24,10 +24,12 @@ function isActive(pathname: string, href: string) {
 export function EspaceShell({
   firstName,
   hasStripeSubscription,
+  isAdmin,
   children,
 }: {
   firstName: string | null;
   hasStripeSubscription: boolean;
+  isAdmin: boolean;
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
@@ -81,6 +83,14 @@ export function EspaceShell({
           })}
         </nav>
         <div className="mt-auto flex flex-col gap-2 px-2">
+          {isAdmin && (
+            <Link
+              href="/admin"
+              className="flex items-center gap-1.5 font-body text-[12px] text-ink-muted transition-colors hover:text-ink"
+            >
+              <ShieldCheck className="size-3.5 text-accent" /> Dashboard admin
+            </Link>
+          )}
           {hasStripeSubscription && <ManageSubscriptionLink />}
           <Link href="/acces" className="font-body text-[12px] text-ink-faint transition-colors hover:text-ink-muted">
             J&apos;ai un code d&apos;accès
@@ -94,7 +104,14 @@ export function EspaceShell({
           <Link href="/espace">
             <Logo />
           </Link>
-          {hasStripeSubscription && <ManageSubscriptionLink compact />}
+          <div className="flex items-center gap-2">
+            {isAdmin && (
+              <Link href="/admin" className="rounded-full border border-ink/15 px-3 py-1.5 font-body text-[12px] text-ink-muted">
+                Admin
+              </Link>
+            )}
+            {hasStripeSubscription && <ManageSubscriptionLink compact />}
+          </div>
         </header>
         {children}
       </main>

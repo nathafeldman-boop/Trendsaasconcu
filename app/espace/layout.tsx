@@ -24,7 +24,11 @@ export default async function EspaceLayout({ children }: { children: React.React
   if (!profile?.has_access && !profile?.is_admin) redirect("/tarifs");
 
   return (
-    <EspaceShell firstName={profile?.first_name ?? null} hasStripeSubscription={!!profile?.stripe_customer_id}>
+    <EspaceShell
+      firstName={profile?.first_name ?? null}
+      hasStripeSubscription={!!profile?.stripe_customer_id}
+      isAdmin={!!profile?.is_admin}
+    >
       {children}
     </EspaceShell>
   );

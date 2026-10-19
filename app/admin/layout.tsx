@@ -15,9 +15,15 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
   return (
     <>
-      <header className="px-5 py-6 sm:px-8">
+      <header className="flex items-center justify-between px-5 py-6 sm:px-8">
         <Link href="/admin" className="inline-flex">
           <Logo />
+        </Link>
+        <Link
+          href="/espace"
+          className="rounded-full border border-ink/15 px-4 py-2 font-body text-[13px] text-ink-muted transition-colors hover:border-accent/40 hover:text-ink"
+        >
+          Ouvrir l&apos;application
         </Link>
       </header>
       {children}

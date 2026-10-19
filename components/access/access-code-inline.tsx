@@ -45,16 +45,12 @@ export function AccessCodeInline({ alwaysOpen = false }: { alwaysOpen?: boolean 
         return;
       }
 
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("is_admin")
-        .eq("id", user.id)
-        .single();
-
       // Hard navigation: this account's permissions just changed, and a
-      // cached render of /admin or /espace from before could still reflect
-      // the old, access-less state.
-      window.location.assign(profile?.is_admin ? "/admin" : "/espace");
+      // cached render of /espace from before could still reflect the old,
+      // access-less state. Admin codes also land in the premium app: the
+      // admin dashboard is one click away from its sidebar.
+      // eslint-disable-next-line @next/next/no-location-assign-relative-destination
+      window.location.assign("/espace");
     } catch (err) {
       setError(
         "Erreur inattendue : " + (err instanceof Error ? err.message : "réessaie dans un instant.")
