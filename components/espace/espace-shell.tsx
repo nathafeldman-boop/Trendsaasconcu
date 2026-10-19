@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
-import { Hammer, LineChart, Megaphone, ShieldCheck, Sparkles, type LucideIcon } from "lucide-react";
+import { Hammer, LineChart, Megaphone, Rocket, ShieldCheck, Sparkles, type LucideIcon } from "lucide-react";
 import { Logo } from "@/components/ui/logo";
 import { cn } from "@/lib/utils";
 import { track } from "@/lib/analytics/track";
@@ -13,6 +13,7 @@ type Tab = { href: string; label: string; hint: string; icon: LucideIcon };
 
 export const TABS: Tab[] = [
   { href: "/espace", label: "Création de SaaS", hint: "Idée, code, hébergement, données", icon: Hammer },
+  { href: "/espace/lancement", label: "Pilote auto", hint: "On connecte tes comptes et on crée tout", icon: Rocket },
   { href: "/espace/coach", label: "Coach IA", hint: "Il connaît tout ton projet", icon: Sparkles },
   { href: "/espace/revenus", label: "Revenus", hint: "Stripe, MRR et prix", icon: LineChart },
   { href: "/espace/marketing", label: "Marketing", hint: "Contenu et premiers clients", icon: Megaphone },
@@ -118,7 +119,7 @@ export function EspaceShell({
       </main>
 
       {/* Mobile: app-style bottom tab bar. */}
-      <nav className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-4 border-t border-ink/10 bg-canvas/90 px-2 pb-[max(env(safe-area-inset-bottom),0.5rem)] pt-2 backdrop-blur-xl lg:hidden">
+      <nav className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-5 border-t border-ink/10 bg-canvas/90 px-2 pb-[max(env(safe-area-inset-bottom),0.5rem)] pt-2 backdrop-blur-xl lg:hidden">
         {TABS.map((tab) => {
           const active = isActive(pathname, tab.href);
           return (

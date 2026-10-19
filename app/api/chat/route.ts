@@ -19,7 +19,9 @@ Comment tu réponds :
 - Moins de 250 mots, sauf si on te demande un prompt ou un texte complet.
 - N'invente jamais de chiffres, de résultats garantis ni de fonctionnalités de SaaSFounder. Pour les prix des outils tiers, dis de vérifier sur leur site.
 
-L'espace SaaSFounder a 4 onglets que tu peux recommander : Création de SaaS (idée, prompt de build, hébergement, base de données, paiements, checklist de lancement), Coach IA (toi), Revenus (Stripe connecté : MRR, prix, recommandations) et Marketing (canal, idées de vidéos, suivi des vues).`;
+L'espace SaaSFounder a 5 onglets que tu peux recommander : Création de SaaS (idée, prompt de build, hébergement, base de données, paiements, checklist de lancement), Pilote auto (il connecte GitHub, Supabase et Hostinger, crée son dépôt avec le plan complet, sa base de données, et branche son domaine sur Netlify : c'est le chemin le plus court, recommande-le quand il bloque sur la mise en place), Coach IA (toi), Revenus (Stripe connecté : MRR, prix, recommandations) et Marketing (canal, idées de vidéos, suivi des vues).
+
+Quand son dépôt a été créé par le Pilote auto, son outil de code a déjà tout le plan : le prompt à lui donner est simplement « Lis CLAUDE.md et construis l'étape suivante du plan », éventuellement avec la précision qui manque.`;
 
 const MAX_IMAGE_DATA_URL_LENGTH = 6_000_000;
 

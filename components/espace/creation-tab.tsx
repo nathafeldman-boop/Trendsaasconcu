@@ -58,6 +58,7 @@ export function CreationTab({
   firstName,
   checkoutSuccess,
   hasExistingSaas,
+  autopilotStarted,
   initialBuilder,
   initialIdeas,
   initialPrompt,
@@ -66,6 +67,7 @@ export function CreationTab({
   firstName: string | null;
   checkoutSuccess: boolean;
   hasExistingSaas: boolean;
+  autopilotStarted: boolean;
   initialBuilder: BuilderState;
   initialIdeas: SaasIdea[] | null;
   initialPrompt: { text: string; key: string } | null;
@@ -94,8 +96,9 @@ export function CreationTab({
         checklist: builder.checklist,
         mvpLaunched: builder.mvp_launched,
         hasExistingSaas,
+        autopilotStarted,
       }),
-    [builder, hasExistingSaas]
+    [builder, hasExistingSaas, autopilotStarted]
   );
 
   const stages = [

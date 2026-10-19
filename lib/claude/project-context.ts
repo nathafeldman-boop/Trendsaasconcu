@@ -36,7 +36,7 @@ export function describeAnswers(answers: Answers) {
 
 export async function buildProjectContext(session: AiSession, options: { stripe?: boolean } = {}) {
   const { supabase, userId, firstName } = session;
-  const [onboarding, builder, marketing, stripe] = await Promise.all([
+  const [onboarding, builder, marketing, launch, stripe] = await Promise.all([
     supabase.from("onboarding_responses").select("answers").eq("user_id", userId).maybeSingle(),
     supabase
       .from("builder_progress")
@@ -46,6 +46,11 @@ export async function buildProjectContext(session: AiSession, options: { stripe?
     supabase
       .from("marketing_progress")
       .select("chosen_channel, tiktok_url, self_reported_views")
+      .eq("user_id", userId)
+      .maybeSingle(),
+    supabase
+      .from("launch_state")
+      .select("repo_full_name, supabase_ref, supabase_publishable_key, supabase_schema_applied, site_url, domain, domain_connected_at")
       .eq("user_id", userId)
       .maybeSingle(),
     options.stripe ? getStripeMetrics(userId) : Promise.resolve(null),
@@ -72,6 +77,18 @@ export async function buildProjectContext(session: AiSession, options: { stripe?
       `- Lancement : ${done.length}/${CHECKLIST_ITEMS.length} étapes faites${done.length ? ` (${done.join(" ; ")})` : ""}`,
       next ? `- Prochaine étape : ${next}` : "- Checklist de lancement terminée",
       `- MVP en ligne : ${b?.mvp_launched ? "oui" : "pas encore"}`,
+    ].join("\n")
+  );
+
+  const l = launch.data;
+  const databaseReady = Boolean(l?.supabase_publishable_key && l?.supabase_schema_applied);
+  sections.push(
+    [
+      "Pilote auto (ce que SaaSFounder a créé pour lui) :",
+      `- Dépôt GitHub : ${l?.repo_full_name ? `${l.repo_full_name} (plan complet dans CLAUDE.md, lu par Claude Code ; replit.md pour Replit)` : "pas encore créé"}`,
+      `- Base Supabase : ${databaseReady ? "prête (table profiles créée, clés publiques dans le dépôt, .env.example et netlify.toml)" : l?.supabase_ref ? "en cours de démarrage" : "pas encore créée"}`,
+      `- Site Netlify : ${l?.site_url ?? "pas encore en ligne"}`,
+      `- Domaine : ${l?.domain_connected_at && l.domain ? `${l.domain} pointé vers Netlify (à ajouter dans Netlify > Domain management s'il ne l'a pas fait)` : "pas encore branché"}`,
     ].join("\n")
   );
 

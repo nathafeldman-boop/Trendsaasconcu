@@ -114,6 +114,26 @@ export function eventLabel(name: string, props: Props, path?: string | null) {
       return `Ouvre une recommandation (${text(p.id)})`;
     case "billing_portal_opened":
       return "Ouvre la gestion de son abonnement";
+    case "connect_clicked":
+      return `Clique sur « Se connecter avec ${text(p.provider)} »`;
+    case "account_connected":
+      return `Connecte son compte ${text(p.provider)}`;
+    case "account_disconnected":
+      return `Déconnecte son compte ${text(p.provider)}`;
+    case "repo_created":
+      return p.repo ? `Pilote auto : dépôt GitHub créé (${text(p.repo)})` : "Pilote auto : crée son dépôt GitHub";
+    case "database_created":
+      return "Pilote auto : lance la création de sa base Supabase";
+    case "database_ready":
+      return "Pilote auto : sa base Supabase est prête";
+    case "build_tool_opened":
+      return `Pilote auto : ouvre ${text(p.tool)} pour construire`;
+    case "netlify_opened":
+      return "Pilote auto : ouvre Netlify";
+    case "site_saved":
+      return `Pilote auto : site en ligne (${text(p.host)})`;
+    case "domain_connected":
+      return `Pilote auto : branche son domaine ${text(p.domain)}`;
     default:
       return name;
   }
@@ -151,6 +171,12 @@ export const ACTION_NAMES: Record<string, string> = {
   views_logged: "Note ses vues",
   recommendation_opened: "Ouvre une recommandation",
   billing_portal_opened: "Gère son abonnement",
+  account_connected: "Connecte un compte (pilote auto)",
+  repo_created: "Dépôt GitHub créé",
+  database_ready: "Base Supabase prête",
+  build_tool_opened: "Ouvre son outil de code",
+  site_saved: "Site en ligne (Netlify)",
+  domain_connected: "Domaine branché",
 };
 
 export const SOURCE_LABELS: Record<string, string> = {

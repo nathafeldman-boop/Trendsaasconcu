@@ -52,6 +52,8 @@ export type CreationState = {
   checklist: Record<string, boolean>;
   mvpLaunched: boolean;
   hasExistingSaas: boolean;
+  /** The Pilote auto tab has created their repository or database. */
+  autopilotStarted: boolean;
 };
 
 const supabase = DATA_OPTIONS.find((d) => d.id === "supabase")!;
@@ -147,6 +149,24 @@ export function creationRecommendations(s: CreationState): Recommendation[] {
       link: { label: "Aller à l'étape Idée", href: "#idee" },
     });
     return rank(recs);
+  }
+
+  if (!s.autopilotStarted && !s.mvpLaunched && !s.hasExistingSaas) {
+    recs.push({
+      id: "autopilot",
+      impact: "fort",
+      title: "Laisse le Pilote auto tout mettre en place",
+      summary: "Connecte GitHub et Supabase : on crée ton dépôt avec tout le plan, et ta base de données.",
+      why: "La mise en place (dépôt, base de données, clés, réglages d'hébergement) est là où la plupart des débutants abandonnent. Le Pilote auto la fait pour toi : ton outil de code n'a plus qu'à lire le plan et construire, une étape à la fois.",
+      steps: [
+        "Ouvre l'onglet Pilote auto.",
+        "Clique sur « Se connecter avec GitHub » : ton dépôt se crée avec le cahier des charges complet.",
+        "Clique sur « Se connecter avec Supabase » : ta base de données se crée et ses clés sont rangées dans ton dépôt.",
+        "Ouvre Claude Code, Replit ou Lovable depuis le Pilote auto et dis-lui de construire l'étape 1.",
+      ],
+      coachQuestion: "Comment marche le Pilote auto, et par quoi je commence ?",
+      link: { label: "Ouvrir le Pilote auto", href: "/espace/lancement" },
+    });
   }
 
   if (!tool) {

@@ -19,7 +19,7 @@ export default async function EspacePage({
 
   const { checkout } = await searchParams;
 
-  const [profileRes, onboardingRes, builderRes] = await Promise.all([
+  const [profileRes, onboardingRes, builderRes, launchRes] = await Promise.all([
     supabase.from("profiles").select("first_name").eq("id", user.id).single(),
     supabase.from("onboarding_responses").select("answers").eq("user_id", user.id).maybeSingle(),
     supabase
@@ -27,6 +27,7 @@ export default async function EspacePage({
       .select("has_idea, idea_text, chosen_tool, checklist, mvp_launched, ai_ideas, build_prompt, build_prompt_key")
       .eq("user_id", user.id)
       .maybeSingle(),
+    supabase.from("launch_state").select("repo_full_name, supabase_ref").eq("user_id", user.id).maybeSingle(),
   ]);
 
   // `site` comes from the current questionnaire; `hasSaas` from the previous
@@ -43,6 +44,7 @@ export default async function EspacePage({
       firstName={profileRes.data?.first_name ?? null}
       checkoutSuccess={checkout === "success"}
       hasExistingSaas={hasExistingSaas}
+      autopilotStarted={Boolean(launchRes.data?.repo_full_name || launchRes.data?.supabase_ref)}
       initialBuilder={{
         has_idea: b?.has_idea ?? null,
         idea_text: b?.idea_text ?? "",
