@@ -136,7 +136,6 @@ export async function POST(request: Request) {
       // Card, Apple Pay and Google Pay only: no Link (its pre-ticked "save
       // with Link" box and phone field), Klarna or Amazon Pay.
       ...(methodsConfig ? { payment_method_configuration: methodsConfig } : { payment_method_types: ["card"] }),
-      wallet_options: { link: { display: "never" } },
       // Promo codes are created in the Stripe dashboard; this just shows the field.
       allow_promotion_codes: true,
       custom_text: {
