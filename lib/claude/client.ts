@@ -1,67 +1,67 @@
-const CLAUDE_API_URL = "https://api.anthropic.com/v1/messages";
-const CLAUDE_MODEL = "claude-sonnet-5";
-const ANTHROPIC_VERSION = "2023-06-01";
+import Anthropic from "@anthropic-ai/sdk";
 
-type ContentBlock =
-  | { type: "text"; text: string }
-  | { type: "image"; source: { type: "base64"; media_type: string; data: string } };
-type ClaudeMessage = { role: "user" | "assistant"; content: string | ContentBlock[] };
+// Two models, split by how often they run:
+// - GENERATION: the few big, one-off deliverables (3 ideas, the build
+//   prompt). Quality matters most and each user triggers them a handful of
+//   times, so the strongest model stays cheap overall.
+// - CHAT: the coach, called on every message. Haiku keeps a heavy user well
+//   under the monthly budget (see lib/claude/budget.ts).
+// Both can be swapped from Vercel without a code change.
+export const GENERATION_MODEL = process.env.CLAUDE_GENERATION_MODEL || "claude-opus-5-5";
+export const CHAT_MODEL = process.env.CLAUDE_CHAT_MODEL || "claude-haiku-5-5";
 
-/**
- * Returns `null` when ANTHROPIC_API_KEY isn't set, or on any API error —
- * callers fall back to a static template so the feature still works before
- * a key is added. `system` is Claude's dedicated top-level field, not a
- * message in `messages` — the Messages API rejects a system-role message.
- */
-export async function claudeComplete(
-  system: string,
-  messages: ClaudeMessage[],
-  maxTokens = 1024
-): Promise<string | null> {
-  const apiKey = process.env.ANTHROPIC_API_KEY;
-  if (!apiKey) {
-    console.warn("claudeComplete: ANTHROPIC_API_KEY is not set");
-    return null;
-  }
-  if (messages.length === 0 || messages[0].role !== "user") {
-    console.error("claudeComplete: messages must start with a user turn");
-    return null;
-  }
+// USD per million tokens (platform.claude.com/docs/en/about-claude/pricing,
+// checked 2026-10-18). Haiku 5.5 is the ≤100K-token rate, which every
+// request here stays under. Unknown models are billed at the Opus rate so
+// the budget errs on the safe side.
+const PRICES: Record<string, { input: number; output: number; cacheWrite: number; cacheRead: number }> = {
+  "claude-opus-5-5": { input: 4, output: 20, cacheWrite: 5, cacheRead: 0.2 },
+  "claude-haiku-5-5": { input: 0.1, output: 0.5, cacheWrite: 0.125, cacheRead: 0.01 },
+};
 
-  try {
-    const res = await fetch(CLAUDE_API_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-api-key": apiKey,
-        "anthropic-version": ANTHROPIC_VERSION,
-      },
-      body: JSON.stringify({
-        model: CLAUDE_MODEL,
-        max_tokens: maxTokens,
-        system,
-        messages,
-      }),
-    });
-    if (!res.ok) {
-      console.error(`claudeComplete: Claude API returned ${res.status}: ${await res.text()}`);
-      return null;
-    }
-    const data = await res.json();
-    const block = (data.content as Array<{ type: string; text?: string }> | undefined)?.find(
-      (b) => b.type === "text"
-    );
-    return typeof block?.text === "string" ? block.text : null;
-  } catch (err) {
-    console.error("claudeComplete: request failed", err);
-    return null;
+let client: Anthropic | null = null;
+
+/** `null` when ANTHROPIC_API_KEY isn't set — callers fall back to static content. */
+export function getClaude(): Anthropic | null {
+  if (!process.env.ANTHROPIC_API_KEY) return null;
+  client ??= new Anthropic();
+  return client;
+}
+
+type Usage = {
+  input_tokens: number;
+  output_tokens: number;
+  cache_creation_input_tokens?: number | null;
+  cache_read_input_tokens?: number | null;
+};
+
+/** Cost of one response in USD. Thinking tokens are already part of output_tokens. */
+export function costOf(model: string, usage: Usage) {
+  const price = PRICES[model] ?? PRICES["claude-opus-5-5"];
+  return (
+    (usage.input_tokens * price.input +
+      usage.output_tokens * price.output +
+      (usage.cache_creation_input_tokens ?? 0) * price.cacheWrite +
+      (usage.cache_read_input_tokens ?? 0) * price.cacheRead) /
+    1_000_000
+  );
+}
+
+/** First text block of a response, or null. */
+export function textOf(content: Array<{ type: string }>) {
+  for (const block of content) {
+    if (block.type === "text" && "text" in block && typeof block.text === "string") return block.text;
   }
+  return null;
 }
 
 // Turns a `data:image/...;base64,...` URL (what the browser's FileReader
-// produces) into the content block Claude's vision input expects.
-export function imageBlockFromDataUrl(dataUrl: string): ContentBlock | null {
-  const match = /^data:(image\/[a-zA-Z0-9+.-]+);base64,(.+)$/.exec(dataUrl);
+// produces) into the image block Claude's vision input expects.
+export function imageBlockFromDataUrl(dataUrl: string): Anthropic.ImageBlockParam | null {
+  const match = /^data:(image\/(?:png|jpeg|gif|webp));base64,(.+)$/.exec(dataUrl);
   if (!match) return null;
-  return { type: "image", source: { type: "base64", media_type: match[1], data: match[2] } };
+  return {
+    type: "image",
+    source: { type: "base64", media_type: match[1] as "image/png" | "image/jpeg" | "image/gif" | "image/webp", data: match[2] },
+  };
 }

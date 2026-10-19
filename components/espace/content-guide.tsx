@@ -54,7 +54,7 @@ export function ContentGuide() {
   const [openSection, setOpenSection] = useState<number | null>(0);
 
   return (
-    <div className="rounded-xl border border-ink/12 bg-ink/[0.02] p-6">
+    <div className="glass-panel rounded-[26px] p-6 sm:p-8">
       <FloatingIcon className="size-10">
         <GraduationCap className="size-4" strokeWidth={1.75} />
       </FloatingIcon>

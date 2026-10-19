@@ -23,7 +23,7 @@ export function SiteAnalysis({ url }: { url: string }) {
   }, [url]);
 
   return (
-    <div className="rounded-xl border border-ink/12 bg-ink/[0.02] p-6">
+    <div className="glass-panel rounded-[26px] p-6 sm:p-8">
       <FloatingIcon className="size-10">
         <Globe className="size-4" strokeWidth={1.75} />
       </FloatingIcon>
