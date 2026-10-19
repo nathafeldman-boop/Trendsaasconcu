@@ -1,18 +1,37 @@
 import { NextResponse } from "next/server";
-import type Stripe from "stripe";
+import Stripe from "stripe";
 import { getAuth } from "@/lib/supabase/auth";
 import { createStripeClient } from "@/lib/stripe/client";
 import { PLANS, type PlanId } from "@/lib/stripe/plans";
 
-// Server-only: which Stripe Price object each plan maps to. Env vars let
-// this point at test-mode prices (alongside a test STRIPE_SECRET_KEY)
-// without touching code. Only the monthly plan has a live price created
-// already; the others stay unavailable until their env var is set.
-const PRICE_IDS: Record<PlanId, string | undefined> = {
-  monthly: process.env.STRIPE_PRICE_MONTHLY || "price_1UGlIkRd6r34OMU6NG4M3tTK",
-  quarterly: process.env.STRIPE_PRICE_QUARTERLY,
-  annual: process.env.STRIPE_PRICE_ANNUAL,
+type Plan = (typeof PLANS)[number];
+
+// Server-only: which Stripe Price object each plan maps to. The env vars win
+// when they point at a price that exists and matches the plan; otherwise the
+// live prices of the « SaaSFounder — Lance ton SaaS avec l'IA » products are
+// used, so a mistyped env var can't take checkout down.
+const ENV_PRICE_IDS: Record<PlanId, string | undefined> = {
+  monthly: process.env.STRIPE_PRICE_MONTHLY?.trim(),
+  quarterly: process.env.STRIPE_PRICE_QUARTERLY?.trim(),
+  annual: process.env.STRIPE_PRICE_ANNUAL?.trim(),
 };
+const KNOWN_PRICE_IDS: Record<PlanId, string> = {
+  monthly: "price_1US2a9Rd6r34OMU6nW5QxKJc",
+  quarterly: "price_1USDsMRd6r34OMU6Qu96X804",
+  annual: "price_1USDvxRd6r34OMU6jVVz0K0j",
+};
+
+// The Stripe account is shared with other projects: without this, Checkout
+// shows the account's business name instead of SaaSFounder.
+function branding(origin: string): Stripe.Checkout.SessionCreateParams.BrandingSettings {
+  return {
+    display_name: "SaaSFounder",
+    background_color: "#09090a",
+    button_color: "#0fb5b1",
+    border_style: "rounded",
+    icon: { type: "url", url: `${origin}/brand/stripe-icon.png` },
+  };
+}
 
 function billedMonths(price: Stripe.Price) {
   const recurring = price.recurring;
@@ -23,23 +42,44 @@ function billedMonths(price: Stripe.Price) {
   return null;
 }
 
-// A price that passed the check stays valid for this server instance's
-// lifetime (prices are immutable in Stripe), so warm requests skip the call.
-const verifiedPrices = new Set<string>();
-
-async function verifyPrice(stripe: Stripe, priceId: string, plan: (typeof PLANS)[number]) {
-  if (verifiedPrices.has(priceId)) return true;
-  const price = await stripe.prices.retrieve(priceId);
-  // Never charge something other than what /tarifs shows: an env var still
-  // pointing at an old price (e.g. the former 60 €/an) is refused.
-  if (price.unit_amount !== plan.amountCents || price.currency !== "eur" || billedMonths(price) !== plan.months) {
-    console.error(
-      `Stripe price ${priceId} doesn't match plan ${plan.id}: expected ${plan.amountCents} eur every ${plan.months} month(s), got ${price.unit_amount} ${price.currency} every ${billedMonths(price)} month(s)`
-    );
-    return false;
+async function priceMatches(stripe: Stripe, priceId: string, plan: Plan) {
+  let price: Stripe.Price;
+  try {
+    price = await stripe.prices.retrieve(priceId);
+  } catch (err) {
+    if (err instanceof Stripe.errors.StripeInvalidRequestError && err.code === "resource_missing") {
+      console.error(`Stripe price ${priceId} (plan ${plan.id}) doesn't exist in this Stripe account: fix its env var.`);
+      return false;
+    }
+    throw err;
   }
-  verifiedPrices.add(priceId);
-  return true;
+  // Never charge something other than what /tarifs shows: a price for
+  // another amount or billing period is refused.
+  const ok =
+    price.active && price.unit_amount === plan.amountCents && price.currency === "eur" && billedMonths(price) === plan.months;
+  if (!ok) {
+    console.error(
+      `Stripe price ${priceId} doesn't match plan ${plan.id}: expected ${plan.amountCents} eur every ${plan.months} month(s), got ${price.unit_amount} ${price.currency} every ${billedMonths(price)} month(s)${price.active ? "" : " (archived)"}`
+    );
+  }
+  return ok;
+}
+
+// Prices are immutable in Stripe: once resolved, a plan's price stays valid
+// for this server instance's lifetime and warm requests skip the lookup.
+const resolvedPrices = new Map<PlanId, string>();
+
+async function resolvePrice(stripe: Stripe, plan: Plan) {
+  const cached = resolvedPrices.get(plan.id);
+  if (cached) return cached;
+  const candidates = [...new Set([ENV_PRICE_IDS[plan.id], KNOWN_PRICE_IDS[plan.id]].filter(Boolean))] as string[];
+  for (const priceId of candidates) {
+    if (await priceMatches(stripe, priceId, plan)) {
+      resolvedPrices.set(plan.id, priceId);
+      return priceId;
+    }
+  }
+  return null;
 }
 
 export async function POST(request: Request) {
@@ -47,11 +87,6 @@ export async function POST(request: Request) {
   const plan = PLANS.find((p) => p.id === body?.planId);
   if (!plan) {
     return NextResponse.json({ error: "Invalid plan" }, { status: 400 });
-  }
-
-  const priceId = PRICE_IDS[plan.id];
-  if (!priceId) {
-    return NextResponse.json({ error: "Plan not configured" }, { status: 503 });
   }
 
   const { supabase, user } = await getAuth();
@@ -71,15 +106,15 @@ export async function POST(request: Request) {
 
   try {
     // Independent lookups: run them side by side instead of one after the other.
-    const [{ data: profile }, priceOk] = await Promise.all([
+    const [{ data: profile }, priceId] = await Promise.all([
       supabase.from("profiles").select("stripe_customer_id").eq("id", user.id).single(),
-      verifyPrice(stripe, priceId, plan),
+      resolvePrice(stripe, plan),
     ]);
-    if (!priceOk) {
+    if (!priceId) {
       return NextResponse.json({ error: "Plan not configured" }, { status: 503 });
     }
 
-    const session = await stripe.checkout.sessions.create({
+    const params: Stripe.Checkout.SessionCreateParams = {
       mode: "subscription",
       locale: "fr",
       line_items: [{ price: priceId, quantity: 1 }],
@@ -99,13 +134,22 @@ export async function POST(request: Request) {
       success_url: `${origin}/api/checkout/confirm?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/tarifs`,
       metadata: { user_id: user.id, plan: plan.id },
-    });
+    };
+
+    let session: Stripe.Checkout.Session;
+    try {
+      session = await stripe.checkout.sessions.create({ ...params, branding_settings: branding(origin) });
+    } catch (err) {
+      // Branding is cosmetic: if Stripe ever refuses it, take the payment anyway.
+      if (!(err instanceof Stripe.errors.StripeInvalidRequestError)) throw err;
+      console.error("Checkout branding refused, retrying without it:", err.message);
+      session = await stripe.checkout.sessions.create(params);
+    }
 
     return NextResponse.json({ url: session.url });
   } catch (err) {
-    // A bad price ID (test/live mode mismatch) or any other Stripe-side
-    // failure would otherwise surface as a raw 500 with no JSON body,
-    // breaking the client's res.json() with an unhelpful generic error.
+    // Any Stripe-side failure would otherwise surface as a raw 500 with no
+    // JSON body, breaking the client's res.json() with an unhelpful error.
     console.error("Stripe checkout session creation failed:", err);
     return NextResponse.json({ error: "Checkout failed" }, { status: 502 });
   }
