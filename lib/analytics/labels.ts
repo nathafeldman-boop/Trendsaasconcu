@@ -64,7 +64,11 @@ export function eventLabel(name: string, props: Props, path?: string | null) {
     case "pricing_viewed":
       return "Voit les prix";
     case "checkout_clicked":
-      return `Choisit la formule ${PLAN_LABELS[text(p.plan)] ?? text(p.plan)}`;
+      return `Choisit la formule ${PLAN_LABELS[text(p.plan)] ?? text(p.plan)}${p.tier === "standard" ? " (prix +60\u00a0%)" : p.tier === "launch" ? " (prix de lancement)" : ""}`;
+    case "offer_started":
+      return "Voit les prix : le compte à rebours de 10 min démarre";
+    case "offer_expired":
+      return "Laisse expirer l'offre de lancement (prix +60\u00a0%)";
     case "payment_completed": {
       const amount = Number(p.amount);
       const shown = Number.isFinite(amount) ? amount.toLocaleString("fr-FR", { minimumFractionDigits: 2 }) : text(p.amount);

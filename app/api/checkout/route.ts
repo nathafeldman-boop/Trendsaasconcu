@@ -2,24 +2,41 @@ import { NextResponse } from "next/server";
 import Stripe from "stripe";
 import { getAuth } from "@/lib/supabase/auth";
 import { createStripeClient } from "@/lib/stripe/client";
-import { PLANS, type PlanId } from "@/lib/stripe/plans";
+import { PLAN_TIERS, type PlanId, type PriceTier } from "@/lib/stripe/plans";
+import { offerDeadline, priceTier } from "@/lib/stripe/offer";
 import { paymentMethodConfiguration } from "@/lib/stripe/payment-methods";
 
-type Plan = (typeof PLANS)[number];
+type Plan = (typeof PLAN_TIERS.launch)[number];
 
-// Server-only: which Stripe Price object each plan maps to. The env vars win
-// when they point at a price that exists and matches the plan; otherwise the
-// live prices of the « SaaSFounder — Lance ton SaaS avec l'IA » products are
-// used, so a mistyped env var can't take checkout down.
-const ENV_PRICE_IDS: Record<PlanId, string | undefined> = {
-  monthly: process.env.STRIPE_PRICE_MONTHLY?.trim(),
-  quarterly: process.env.STRIPE_PRICE_QUARTERLY?.trim(),
-  annual: process.env.STRIPE_PRICE_ANNUAL?.trim(),
+// Server-only: which Stripe Price object each plan maps to, for the launch
+// prices and the standard ones (+60 %, once the member's launch offer has
+// expired). The env vars win when they point at a price that exists and
+// matches the plan; otherwise the live prices of the « SaaSFounder — Lance
+// ton SaaS avec l'IA » products are used, so a mistyped env var can't take
+// checkout down.
+const ENV_PRICE_IDS: Record<PriceTier, Record<PlanId, string | undefined>> = {
+  launch: {
+    monthly: process.env.STRIPE_PRICE_MONTHLY?.trim(),
+    quarterly: process.env.STRIPE_PRICE_QUARTERLY?.trim(),
+    annual: process.env.STRIPE_PRICE_ANNUAL?.trim(),
+  },
+  standard: {
+    monthly: process.env.STRIPE_PRICE_MONTHLY_STANDARD?.trim(),
+    quarterly: process.env.STRIPE_PRICE_QUARTERLY_STANDARD?.trim(),
+    annual: process.env.STRIPE_PRICE_ANNUAL_STANDARD?.trim(),
+  },
 };
-const KNOWN_PRICE_IDS: Record<PlanId, string> = {
-  monthly: "price_1US2a9Rd6r34OMU6nW5QxKJc",
-  quarterly: "price_1USDsMRd6r34OMU6Qu96X804",
-  annual: "price_1USDvxRd6r34OMU6jVVz0K0j",
+const KNOWN_PRICE_IDS: Record<PriceTier, Record<PlanId, string>> = {
+  launch: {
+    monthly: "price_1US2a9Rd6r34OMU6nW5QxKJc",
+    quarterly: "price_1USDsMRd6r34OMU6Qu96X804",
+    annual: "price_1USDvxRd6r34OMU6jVVz0K0j",
+  },
+  standard: {
+    monthly: "price_1USc3zRd6r34OMU6z6rmNXP4",
+    quarterly: "price_1USc47Rd6r34OMU6P2P8afeD",
+    annual: "price_1USc4KRd6r34OMU6mOoBBswV",
+  },
 };
 
 // The Stripe account is shared with other projects: without this, Checkout
@@ -35,16 +52,15 @@ function branding(origin: string): Stripe.Checkout.SessionCreateParams.BrandingS
   };
 }
 
-const MONTHLY = PLANS.find((p) => p.id === "monthly")!;
-
 /** Next to the pay button: what they get, and for longer plans what they save. */
-function submitMessage(plan: Plan) {
+function submitMessage(plan: Plan, tier: PriceTier) {
+  const monthly = PLAN_TIERS[tier][0];
   if (plan.months === 1) {
     return "Accès immédiat à tout ton espace : ton idée, ton prompt de build, ton coach IA et ton plan marketing. Sans engagement, résiliable à tout moment depuis ton espace.";
   }
   const period = plan.months === 12 ? "sur l'année" : `tous les ${plan.months} mois`;
   const aiCredit = plan.aiCredit > 1 ? " et ton crédit IA doublé chaque mois" : "";
-  return `Soit ${plan.perMonth} par mois au lieu de ${MONTHLY.price} : ${plan.savings} d'économie ${period}${aiCredit}. Accès immédiat à tout ton espace, résiliable à tout moment.`;
+  return `Soit ${plan.perMonth} par mois au lieu de ${monthly.price} : ${plan.savings} d'économie ${period}${aiCredit}. Accès immédiat à tout ton espace, résiliable à tout moment.`;
 }
 
 function billedMonths(price: Stripe.Price) {
@@ -81,15 +97,18 @@ async function priceMatches(stripe: Stripe, priceId: string, plan: Plan) {
 
 // Prices are immutable in Stripe: once resolved, a plan's price stays valid
 // for this server instance's lifetime and warm requests skip the lookup.
-const resolvedPrices = new Map<PlanId, string>();
+const resolvedPrices = new Map<string, string>();
 
-async function resolvePrice(stripe: Stripe, plan: Plan) {
-  const cached = resolvedPrices.get(plan.id);
+async function resolvePrice(stripe: Stripe, plan: Plan, tier: PriceTier) {
+  const key = `${tier}:${plan.id}`;
+  const cached = resolvedPrices.get(key);
   if (cached) return cached;
-  const candidates = [...new Set([ENV_PRICE_IDS[plan.id], KNOWN_PRICE_IDS[plan.id]].filter(Boolean))] as string[];
+  const candidates = [
+    ...new Set([ENV_PRICE_IDS[tier][plan.id], KNOWN_PRICE_IDS[tier][plan.id]].filter(Boolean)),
+  ] as string[];
   for (const priceId of candidates) {
     if (await priceMatches(stripe, priceId, plan)) {
-      resolvedPrices.set(plan.id, priceId);
+      resolvedPrices.set(key, priceId);
       return priceId;
     }
   }
@@ -98,8 +117,8 @@ async function resolvePrice(stripe: Stripe, plan: Plan) {
 
 export async function POST(request: Request) {
   const body = await request.json().catch(() => null);
-  const plan = PLANS.find((p) => p.id === body?.planId);
-  if (!plan) {
+  const planId = body?.planId as PlanId | undefined;
+  if (!PLAN_TIERS.launch.some((p) => p.id === planId)) {
     return NextResponse.json({ error: "Invalid plan" }, { status: 400 });
   }
 
@@ -119,12 +138,26 @@ export async function POST(request: Request) {
   const origin = new URL(request.url).origin;
 
   try {
-    // Independent lookups: run them side by side instead of one after the other.
-    const [{ data: profile }, priceId, methodsConfig] = await Promise.all([
+    // Independent lookups: run them side by side instead of one after the
+    // other. Both tiers' prices are looked up (once per server instance)
+    // while the launch offer's deadline is read.
+    const launchPlan = PLAN_TIERS.launch.find((p) => p.id === planId)!;
+    const standardPlan = PLAN_TIERS.standard.find((p) => p.id === planId)!;
+    const [{ data: profile }, deadline, launchPrice, standardPrice, methodsConfig] = await Promise.all([
       supabase.from("profiles").select("stripe_customer_id").eq("id", user.id).single(),
-      resolvePrice(stripe, plan),
+      // The account takes over the countdown their browser ran, if any. None
+      // at all (paying straight from the landing page, where it doesn't
+      // start): launch prices, the countdown was never shown.
+      offerDeadline(user.id, {
+        remainingMs: typeof body?.offerRemainingMs === "number" ? body.offerRemainingMs : null,
+      }),
+      resolvePrice(stripe, launchPlan, "launch"),
+      resolvePrice(stripe, standardPlan, "standard"),
       paymentMethodConfiguration(stripe),
     ]);
+    const tier = priceTier(deadline);
+    const plan = tier === "launch" ? launchPlan : standardPlan;
+    const priceId = tier === "launch" ? launchPrice : standardPrice;
     if (!priceId) {
       return NextResponse.json({ error: "Plan not configured" }, { status: 503 });
     }
@@ -139,7 +172,7 @@ export async function POST(request: Request) {
       // Promo codes are created in the Stripe dashboard; this just shows the field.
       allow_promotion_codes: true,
       custom_text: {
-        submit: { message: submitMessage(plan) },
+        submit: { message: submitMessage(plan, tier) },
         after_submit: {
           message:
             "Paiement sécurisé par Stripe : SaaSFounder ne voit jamais les données de ta carte. Dès le paiement validé, tu arrives directement dans ton espace.",
@@ -148,7 +181,7 @@ export async function POST(request: Request) {
       // Shown in the customer portal and on invoices.
       subscription_data: {
         description: `Abonnement SaaSFounder · ${plan.label}`,
-        metadata: { user_id: user.id, plan: plan.id },
+        metadata: { user_id: user.id, plan: plan.id, price_tier: tier },
       },
       client_reference_id: user.id,
       customer: profile?.stripe_customer_id ?? undefined,
@@ -157,7 +190,7 @@ export async function POST(request: Request) {
       // away instead of waiting for the webhook to land.
       success_url: `${origin}/api/checkout/confirm?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/tarifs`,
-      metadata: { user_id: user.id, plan: plan.id },
+      metadata: { user_id: user.id, plan: plan.id, price_tier: tier },
     };
 
     let session: Stripe.Checkout.Session;
@@ -175,7 +208,7 @@ export async function POST(request: Request) {
       });
     }
 
-    return NextResponse.json({ url: session.url });
+    return NextResponse.json({ url: session.url, tier });
   } catch (err) {
     // Any Stripe-side failure would otherwise surface as a raw 500 with no
     // JSON body, breaking the client's res.json() with an unhelpful error.

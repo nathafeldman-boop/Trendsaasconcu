@@ -3,9 +3,10 @@
 import { useEffect, useRef, useState } from "react";
 import { preconnect } from "react-dom";
 import { useRouter } from "next/navigation";
-import { Check, Loader2, Lock, Plus, Sparkles } from "lucide-react";
+import { Check, Loader2, Lock, Plus, Sparkles, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { PLANS, type PlanId } from "@/lib/stripe/plans";
+import { OFFER_INCREASE_PERCENT, OFFER_MS, PLAN_TIERS, type PlanId, type PriceTier } from "@/lib/stripe/plans";
+import { offerRemainingMs, startOffer, syncOffer, useNow, useOfferDeadline } from "@/lib/offer";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
 import { InAppBrowserHint } from "@/components/pricing/in-app-browser-hint";
@@ -19,9 +20,10 @@ const FEATURES = [
   "Dashboard de suivi de ton MRR",
 ];
 
-type Plan = (typeof PLANS)[number];
+type Plan = (typeof PLAN_TIERS.launch)[number];
 
-const BEST_DISCOUNT = Math.max(...PLANS.map((p) => p.discountPercent ?? 0));
+// Same ratios in both tiers: −45 % and −67 %.
+const BEST_DISCOUNT = Math.max(...PLAN_TIERS.launch.map((p) => p.discountPercent ?? 0));
 
 // What the longer plans add. The monthly card lists them too, locked, so
 // the difference is visible where the choice is made.
@@ -35,7 +37,83 @@ function extras(plan: Plan) {
   ];
 }
 
-export function PricingCards() {
+function formatCountdown(ms: number) {
+  const seconds = Math.max(0, Math.ceil(ms / 1000));
+  return `${String(Math.floor(seconds / 60)).padStart(2, "0")}:${String(seconds % 60).padStart(2, "0")}`;
+}
+
+async function signedIn() {
+  // Read locally from the session cookie: no round trip just to learn the
+  // visitor isn't signed in. The server re-checks the session anyway.
+  const supabase = createClient();
+  const { data } = supabase ? await supabase.auth.getSession() : { data: { session: null } };
+  return !!data.session;
+}
+
+async function syncIfSignedIn(start: boolean) {
+  if (await signedIn()) await syncOffer(start);
+}
+
+function OfferBanner({ remaining }: { remaining: number }) {
+  const [launchMonthly, standardMonthly] = [PLAN_TIERS.launch[0], PLAN_TIERS.standard[0]];
+  if (remaining <= 0) {
+    return (
+      <div className="mb-8 rounded-xl border border-ink/12 bg-ink/[0.03] px-5 py-4 text-center font-body text-[13px] leading-relaxed text-ink-muted">
+        <span className="font-medium text-ink">Ton offre de lancement a expiré.</span> Les prix ont augmenté de{" "}
+        {OFFER_INCREASE_PERCENT}&nbsp;% : ce sont désormais les tarifs en vigueur pour toi.
+      </div>
+    );
+  }
+  const lastMinute = remaining <= 60_000;
+  return (
+    <div
+      className={cn(
+        "mb-8 overflow-hidden rounded-xl border bg-accent/[0.06]",
+        lastMinute ? "border-red-400/50" : "border-accent/40"
+      )}
+    >
+      <div className="flex flex-col items-center gap-3 px-5 py-4 text-center sm:flex-row sm:justify-between sm:gap-6 sm:text-left">
+        <div>
+          <p className="flex items-center justify-center gap-2 font-display text-[15px] font-semibold text-ink sm:justify-start">
+            <span className="relative flex size-2">
+              <span className="absolute inline-flex size-full animate-ping rounded-full bg-accent opacity-75" />
+              <span className="relative inline-flex size-2 rounded-full bg-accent" />
+            </span>
+            Prix de lancement · il te reste
+          </p>
+          <p className="mt-1 font-body text-[13px] leading-relaxed text-ink-muted">
+            Ensuite, toutes les formules augmentent de {OFFER_INCREASE_PERCENT}&nbsp;% : le Mensuel passe de{" "}
+            {launchMonthly.price} à {standardMonthly.price}.
+          </p>
+        </div>
+        <p
+          role="timer"
+          aria-label="Temps restant avant la hausse des prix"
+          className={cn(
+            "shrink-0 font-mono text-[36px] font-semibold leading-none tabular-nums",
+            lastMinute ? "text-red-400" : "text-accent"
+          )}
+        >
+          {formatCountdown(remaining)}
+        </p>
+      </div>
+      <div className="h-1 bg-ink/10">
+        <div
+          className={cn("h-full transition-[width] duration-1000 ease-linear", lastMinute ? "bg-red-400" : "bg-accent")}
+          style={{ width: `${Math.min(100, (remaining / OFFER_MS) * 100)}%` }}
+        />
+      </div>
+    </div>
+  );
+}
+
+/**
+ * The plans, with the launch offer: launch prices for 10 minutes from the
+ * first time the cards are seen, then +60 % (enforced by checkout).
+ * `startsCountdown={false}` shows the countdown only if it's already running
+ * (the landing page: the questionnaire that follows takes longer than that).
+ */
+export function PricingCards({ startsCountdown = true }: { startsCountdown?: boolean }) {
   // Open the connection to Stripe Checkout ahead of the click.
   preconnect("https://checkout.stripe.com");
   const router = useRouter();
@@ -43,19 +121,47 @@ export function PricingCards() {
   const [error, setError] = useState<string | null>(null);
   const rootRef = useRef<HTMLDivElement>(null);
 
+  const deadline = useOfferDeadline();
+  const now = useNow();
+  const remaining = deadline !== null && now !== null ? deadline - now : null;
+  const running = remaining !== null && remaining > 0;
+  const expired = remaining !== null && remaining <= 0;
+  const tier: PriceTier = expired ? "standard" : "launch";
+  const plans = PLAN_TIERS[tier];
+
+  // Signed in: the account's deadline is the one checkout enforces.
+  useEffect(() => {
+    syncIfSignedIn(false);
+  }, []);
+
   // "Voit les prix" in the admin funnel: the cards actually came on screen.
+  // That's also when the countdown starts.
   useEffect(() => {
     const node = rootRef.current;
     if (!node || typeof IntersectionObserver === "undefined") return;
     const observer = new IntersectionObserver((entries) => {
       if (entries.some((entry) => entry.isIntersecting)) {
         track("pricing_viewed");
+        if (startsCountdown && startOffer()) {
+          track("offer_started");
+          syncIfSignedIn(true);
+        }
         observer.disconnect();
       }
     }, { threshold: 0.3 });
     observer.observe(node);
     return () => observer.disconnect();
-  }, []);
+  }, [startsCountdown]);
+
+  // Counted when it runs out on screen, not on every later visit.
+  const sawRunning = useRef(false);
+  useEffect(() => {
+    if (running) sawRunning.current = true;
+    else if (expired && sawRunning.current) {
+      sawRunning.current = false;
+      track("offer_expired");
+    }
+  }, [running, expired]);
 
   async function choose(planId: PlanId) {
     if (loadingPlan) return;
@@ -63,12 +169,9 @@ export function PricingCards() {
     setLoadingPlan(planId);
     const toSignup = () => router.push(`/inscription?plan=${planId}`);
 
-    // Read locally from the session cookie: no round trip just to learn the
-    // visitor isn't signed in. The server re-checks the session anyway.
-    const supabase = createClient();
-    const { data } = supabase ? await supabase.auth.getSession() : { data: { session: null } };
-    track("checkout_clicked", { plan: planId, signed_in: !!data.session });
-    if (!data.session) {
+    const isSignedIn = await signedIn();
+    track("checkout_clicked", { plan: planId, signed_in: isSignedIn, tier });
+    if (!isSignedIn) {
       toSignup();
       return;
     }
@@ -77,7 +180,7 @@ export function PricingCards() {
       const res = await fetch("/api/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ planId }),
+        body: JSON.stringify({ planId, offerRemainingMs: offerRemainingMs() }),
       });
       if (res.status === 401) {
         toSignup();
@@ -104,8 +207,9 @@ export function PricingCards() {
   return (
     <div ref={rootRef}>
       <InAppBrowserHint />
+      {remaining !== null && <OfferBanner remaining={remaining} />}
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-3">
-        {PLANS.map((plan) => (
+        {plans.map((plan, index) => (
           <div
             key={plan.id}
             className={cn(
@@ -145,13 +249,22 @@ export function PricingCards() {
                 <>
                   soit {plan.perMonth}/mois{" "}
                   <span className="text-ink-faint">
-                    au lieu de <span className="line-through">{PLANS[0].price}</span>
+                    au lieu de <span className="line-through">{plans[0].price}</span>
                   </span>
                 </>
               ) : (
                 <span className="text-ink-faint">Facturé chaque mois</span>
               )}
             </p>
+            {running && (
+              <p className="mt-2 flex items-center gap-1.5 font-body text-[12px] text-ink-faint">
+                <TrendingUp className="size-3.5 shrink-0" />
+                Après le chrono :{" "}
+                <span className="whitespace-nowrap">
+                  {PLAN_TIERS.standard[index].price} /{plan.interval}
+                </span>
+              </p>
+            )}
             <ul className="mt-5 flex flex-col gap-2.5">
               {FEATURES.map((feature) => (
                 <li key={feature} className="flex items-start gap-2 font-body text-[13px] text-ink-muted">

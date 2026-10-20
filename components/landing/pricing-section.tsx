@@ -14,7 +14,7 @@ export function PricingSection() {
         Résiliable à tout moment.
       </p>
       <div className="mt-10">
-        <PricingCards />
+        <PricingCards startsCountdown={false} />
       </div>
     </section>
   );
