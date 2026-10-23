@@ -2,45 +2,14 @@ import { NextResponse } from "next/server";
 import Stripe from "stripe";
 import { getAuth } from "@/lib/supabase/auth";
 import { createStripeClient } from "@/lib/stripe/client";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { PLAN_TIERS, type PlanId, type PriceTier } from "@/lib/stripe/plans";
 import { offerDeadline, priceTier } from "@/lib/stripe/offer";
 import { paymentMethodConfiguration } from "@/lib/stripe/payment-methods";
+import { resolvePrice, type Plan } from "@/lib/stripe/prices";
 
-type Plan = (typeof PLAN_TIERS.launch)[number];
-
-// Server-only: which Stripe Price object each plan maps to, for the launch
-// prices and the standard ones (+60 %, once the member's launch offer has
-// expired). The env vars win when they point at a price that exists and
-// matches the plan; otherwise the live prices of the « SaaSFounder — Lance
-// ton SaaS avec l'IA » products are used, so a mistyped env var can't take
-// checkout down.
-const ENV_PRICE_IDS: Record<PriceTier, Record<PlanId, string | undefined>> = {
-  launch: {
-    monthly: process.env.STRIPE_PRICE_MONTHLY?.trim(),
-    quarterly: process.env.STRIPE_PRICE_QUARTERLY?.trim(),
-    annual: process.env.STRIPE_PRICE_ANNUAL?.trim(),
-  },
-  standard: {
-    monthly: process.env.STRIPE_PRICE_MONTHLY_STANDARD?.trim(),
-    quarterly: process.env.STRIPE_PRICE_QUARTERLY_STANDARD?.trim(),
-    annual: process.env.STRIPE_PRICE_ANNUAL_STANDARD?.trim(),
-  },
-};
-const KNOWN_PRICE_IDS: Record<PriceTier, Record<PlanId, string>> = {
-  launch: {
-    monthly: "price_1US2a9Rd6r34OMU6nW5QxKJc",
-    quarterly: "price_1USDsMRd6r34OMU6Qu96X804",
-    annual: "price_1USDvxRd6r34OMU6jVVz0K0j",
-  },
-  standard: {
-    monthly: "price_1USc3zRd6r34OMU6z6rmNXP4",
-    quarterly: "price_1USc47Rd6r34OMU6P2P8afeD",
-    annual: "price_1USc4KRd6r34OMU6mOoBBswV",
-  },
-};
-
-// The Stripe account is shared with other projects: without this, Checkout
-// shows the account's business name instead of SaaSFounder.
+// While the Stripe account is shared with other projects: without this,
+// Checkout shows the account's business name instead of SaaSFounder.
 function branding(origin: string): Stripe.Checkout.SessionCreateParams.BrandingSettings {
   return {
     display_name: "SaaSFounder",
@@ -61,58 +30,6 @@ function submitMessage(plan: Plan, tier: PriceTier) {
   const period = plan.months === 12 ? "sur l'année" : `tous les ${plan.months} mois`;
   const aiCredit = plan.aiCredit > 1 ? " et ton crédit IA doublé chaque mois" : "";
   return `Soit ${plan.perMonth} par mois au lieu de ${monthly.price} : ${plan.savings} d'économie ${period}${aiCredit}. Accès immédiat à tout ton espace, résiliable à tout moment.`;
-}
-
-function billedMonths(price: Stripe.Price) {
-  const recurring = price.recurring;
-  if (!recurring) return null;
-  const count = recurring.interval_count || 1;
-  if (recurring.interval === "month") return count;
-  if (recurring.interval === "year") return 12 * count;
-  return null;
-}
-
-async function priceMatches(stripe: Stripe, priceId: string, plan: Plan) {
-  let price: Stripe.Price;
-  try {
-    price = await stripe.prices.retrieve(priceId);
-  } catch (err) {
-    if (err instanceof Stripe.errors.StripeInvalidRequestError && err.code === "resource_missing") {
-      console.error(`Stripe price ${priceId} (plan ${plan.id}) doesn't exist in this Stripe account: fix its env var.`);
-      return false;
-    }
-    throw err;
-  }
-  // Never charge something other than what /tarifs shows: a price for
-  // another amount or billing period is refused.
-  const ok =
-    price.active && price.unit_amount === plan.amountCents && price.currency === "eur" && billedMonths(price) === plan.months;
-  if (!ok) {
-    console.error(
-      `Stripe price ${priceId} doesn't match plan ${plan.id}: expected ${plan.amountCents} eur every ${plan.months} month(s), got ${price.unit_amount} ${price.currency} every ${billedMonths(price)} month(s)${price.active ? "" : " (archived)"}`
-    );
-  }
-  return ok;
-}
-
-// Prices are immutable in Stripe: once resolved, a plan's price stays valid
-// for this server instance's lifetime and warm requests skip the lookup.
-const resolvedPrices = new Map<string, string>();
-
-async function resolvePrice(stripe: Stripe, plan: Plan, tier: PriceTier) {
-  const key = `${tier}:${plan.id}`;
-  const cached = resolvedPrices.get(key);
-  if (cached) return cached;
-  const candidates = [
-    ...new Set([ENV_PRICE_IDS[tier][plan.id], KNOWN_PRICE_IDS[tier][plan.id]].filter(Boolean)),
-  ] as string[];
-  for (const priceId of candidates) {
-    if (await priceMatches(stripe, priceId, plan)) {
-      resolvedPrices.set(key, priceId);
-      return priceId;
-    }
-  }
-  return null;
 }
 
 export async function POST(request: Request) {
@@ -151,15 +68,24 @@ export async function POST(request: Request) {
       offerDeadline(user.id, {
         remainingMs: typeof body?.offerRemainingMs === "number" ? body.offerRemainingMs : null,
       }),
-      resolvePrice(stripe, launchPlan, "launch"),
-      resolvePrice(stripe, standardPlan, "standard"),
+      resolvePrice(stripe, launchPlan, "launch", origin),
+      resolvePrice(stripe, standardPlan, "standard", origin),
       paymentMethodConfiguration(stripe),
     ]);
     const tier = priceTier(deadline);
     const plan = tier === "launch" ? launchPlan : standardPlan;
     const priceId = tier === "launch" ? launchPrice : standardPrice;
-    if (!priceId) {
-      return NextResponse.json({ error: "Plan not configured" }, { status: 503 });
+    // They asked for one reminder if they leave without paying (checkbox on
+    // the pricing cards). Their consent is recorded with its date; the
+    // session then expires after an hour with a link that picks it back up,
+    // and the webhook emails it (lib/email/checkout-reminder.ts).
+    const reminder = body?.reminder === true;
+    if (reminder) {
+      await createAdminClient()
+        ?.from("profiles")
+        .update({ checkout_reminder_consent_at: new Date().toISOString() })
+        .eq("id", user.id)
+        .is("checkout_reminder_consent_at", null);
     }
 
     const params: Stripe.Checkout.SessionCreateParams = {
@@ -190,7 +116,13 @@ export async function POST(request: Request) {
       // away instead of waiting for the webhook to land.
       success_url: `${origin}/api/checkout/confirm?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/tarifs`,
-      metadata: { user_id: user.id, plan: plan.id, price_tier: tier },
+      metadata: { user_id: user.id, plan: plan.id, price_tier: tier, ...(reminder ? { reminder_consent: "yes" } : {}) },
+      ...(reminder
+        ? {
+            expires_at: Math.floor(Date.now() / 1000) + 60 * 60,
+            after_expiration: { recovery: { enabled: true, allow_promotion_codes: true } },
+          }
+        : {}),
     };
 
     let session: Stripe.Checkout.Session;
@@ -198,13 +130,17 @@ export async function POST(request: Request) {
       session = await stripe.checkout.sessions.create({ ...params, branding_settings: branding(origin) });
     } catch (err) {
       // Branding and the methods configuration are extras: if Stripe ever
-      // refuses them, take the payment with a plain card-only session.
+      // refuses them, take the payment with a plain card-only session. A
+      // customer saved from another Stripe account (after switching to
+      // SaaSFounder's own) is dropped too: Checkout creates a new one.
       if (!(err instanceof Stripe.errors.StripeInvalidRequestError)) throw err;
       console.error("Checkout session refused, retrying card-only without branding:", err.message);
+      const unknownCustomer = err.param === "customer";
       session = await stripe.checkout.sessions.create({
         ...params,
         payment_method_configuration: undefined,
         payment_method_types: ["card"],
+        ...(unknownCustomer ? { customer: undefined, customer_email: user.email ?? undefined } : {}),
       });
     }
 

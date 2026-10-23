@@ -65,6 +65,8 @@ export function eventLabel(name: string, props: Props, path?: string | null) {
       return "Voit les prix";
     case "checkout_clicked":
       return `Choisit la formule ${PLAN_LABELS[text(p.plan)] ?? text(p.plan)}${p.tier === "standard" ? " (prix +60\u00a0%)" : p.tier === "launch" ? " (prix de lancement)" : ""}`;
+    case "checkout_reminder_sent":
+      return "Reçoit l'email de rappel (paiement pas terminé)";
     case "offer_started":
       return "Voit les prix : le compte à rebours de 10 min démarre";
     case "offer_expired":
@@ -72,7 +74,7 @@ export function eventLabel(name: string, props: Props, path?: string | null) {
     case "payment_completed": {
       const amount = Number(p.amount);
       const shown = Number.isFinite(amount) ? amount.toLocaleString("fr-FR", { minimumFractionDigits: 2 }) : text(p.amount);
-      return `Paie ${shown} € (formule ${PLAN_LABELS[text(p.plan)] ?? text(p.plan)})`;
+      return `Paie ${shown} € (formule ${PLAN_LABELS[text(p.plan)] ?? text(p.plan)})${p.recovered ? " via l'email de rappel" : ""}`;
     }
     case "subscription_canceled":
       return "Résilie son abonnement";
@@ -161,6 +163,9 @@ export const ACTION_NAMES: Record<string, string> = {
   google_clicked: "Clique sur Google",
   pricing_viewed: "Voit les prix",
   checkout_clicked: "Clique sur une formule",
+  offer_started: "Démarre le chrono de l'offre",
+  offer_expired: "Laisse expirer l'offre",
+  checkout_reminder_sent: "Reçoit le rappel de paiement",
   payment_completed: "Paie",
   subscription_canceled: "Résilie",
   in_app_hint_shown: "Voit le message Safari",

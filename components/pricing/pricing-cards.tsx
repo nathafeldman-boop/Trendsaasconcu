@@ -7,6 +7,7 @@ import { Check, Loader2, Lock, Plus, Sparkles, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { OFFER_INCREASE_PERCENT, OFFER_MS, PLAN_TIERS, type PlanId, type PriceTier } from "@/lib/stripe/plans";
 import { offerRemainingMs, startOffer, syncOffer, useNow, useOfferDeadline } from "@/lib/offer";
+import { reminderConsent, setReminderConsent, useReminderConsent } from "@/lib/checkout-reminder";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
 import { InAppBrowserHint } from "@/components/pricing/in-app-browser-hint";
@@ -121,6 +122,7 @@ export function PricingCards({ startsCountdown = true }: { startsCountdown?: boo
   const [error, setError] = useState<string | null>(null);
   const rootRef = useRef<HTMLDivElement>(null);
 
+  const reminder = useReminderConsent();
   const deadline = useOfferDeadline();
   const now = useNow();
   const remaining = deadline !== null && now !== null ? deadline - now : null;
@@ -170,7 +172,7 @@ export function PricingCards({ startsCountdown = true }: { startsCountdown?: boo
     const toSignup = () => router.push(`/inscription?plan=${planId}`);
 
     const isSignedIn = await signedIn();
-    track("checkout_clicked", { plan: planId, signed_in: isSignedIn, tier });
+    track("checkout_clicked", { plan: planId, signed_in: isSignedIn, tier, reminder });
     if (!isSignedIn) {
       toSignup();
       return;
@@ -180,7 +182,7 @@ export function PricingCards({ startsCountdown = true }: { startsCountdown?: boo
       const res = await fetch("/api/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ planId, offerRemainingMs: offerRemainingMs() }),
+        body: JSON.stringify({ planId, offerRemainingMs: offerRemainingMs(), reminder: reminderConsent() }),
       });
       if (res.status === 401) {
         toSignup();
@@ -208,6 +210,15 @@ export function PricingCards({ startsCountdown = true }: { startsCountdown?: boo
     <div ref={rootRef}>
       <InAppBrowserHint />
       {remaining !== null && <OfferBanner remaining={remaining} />}
+      <label className="mb-6 flex cursor-pointer items-start justify-center gap-2.5 text-left font-body text-[13px] leading-relaxed text-ink-muted">
+        <input
+          type="checkbox"
+          checked={reminder}
+          onChange={(e) => setReminderConsent(e.target.checked)}
+          className="mt-0.5 size-4 shrink-0 cursor-pointer accent-[var(--color-accent)]"
+        />
+        <span>Si je ne termine pas mon paiement, envoie-moi un rappel par email (un seul).</span>
+      </label>
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-3">
         {plans.map((plan, index) => (
           <div

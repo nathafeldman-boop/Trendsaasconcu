@@ -4,6 +4,7 @@ import { createStripeClient } from "@/lib/stripe/client";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { grantAccessFromCheckout } from "@/lib/stripe/grant-access";
 import { logEvent } from "@/lib/analytics/server";
+import { sendCheckoutReminder } from "@/lib/email/checkout-reminder";
 
 export async function POST(request: Request) {
   const stripe = createStripeClient();
@@ -46,8 +47,19 @@ export async function POST(request: Request) {
         amount: (session.amount_total ?? 0) / 100,
         currency: session.currency,
         discount: (session.total_details?.amount_discount ?? 0) / 100,
+        // Paid through the link of a reminder email.
+        recovered: !!session.recovered_from,
       },
     });
+  }
+
+  // Left Checkout without paying. A failed email isn't worth Stripe's
+  // retries: it's logged, and the event acknowledged.
+  if (event.type === "checkout.session.expired") {
+    const session = event.data.object as Stripe.Checkout.Session;
+    await sendCheckoutReminder(admin, session, new URL(request.url).origin).catch((err) =>
+      console.error("Checkout reminder failed:", err)
+    );
   }
 
   if (event.type === "customer.subscription.updated" || event.type === "customer.subscription.deleted") {

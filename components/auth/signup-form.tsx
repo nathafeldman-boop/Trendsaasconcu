@@ -9,6 +9,7 @@ import { translateAuthError } from "@/lib/supabase/auth-error";
 import { GoogleSignIn } from "@/components/auth/google-sign-in";
 import { track } from "@/lib/analytics/track";
 import { offerRemainingMs } from "@/lib/offer";
+import { reminderConsent } from "@/lib/checkout-reminder";
 
 const SIGNUP_ERRORS: Record<string, string> = {
   exists: "Ce compte existe déjà. Connecte-toi plutôt.",
@@ -42,7 +43,7 @@ export function SignupForm({ onSuccess }: { onSuccess?: () => void }) {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           // The launch offer's countdown carries over to the new account.
-          body: JSON.stringify({ planId: plan, offerRemainingMs: offerRemainingMs() }),
+          body: JSON.stringify({ planId: plan, offerRemainingMs: offerRemainingMs(), reminder: reminderConsent() }),
         });
         const data = await res.json();
         if (data.url) {
