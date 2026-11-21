@@ -1,44 +1,25 @@
-"use client";
-
-import { motion } from "framer-motion";
-import { Eyebrow } from "@/components/ui/eyebrow";
-import { Button } from "@/components/ui/button";
-import { LightRays } from "@/components/landing/light-rays";
-import { CircuitLines } from "@/components/landing/circuit-lines";
+import Link from "next/link";
+import { CtaButton, TwoTone } from "@/components/landing/cta-button";
 
 export function FinalCta() {
   return (
-    <section className="relative overflow-hidden border-t border-ink/8 bg-gradient-to-b from-canvas-raised to-canvas">
-      <LightRays className="absolute inset-0 opacity-70" />
-      <CircuitLines className="absolute inset-0 hidden h-full w-full opacity-60 md:block" />
-      <motion.div
-        initial={{ opacity: 0, y: 24 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, margin: "-15%" }}
-        transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-        className="relative mx-auto max-w-3xl px-5 py-24 text-center sm:px-8 sm:py-32"
-      >
-        <div className="flex justify-center">
-          <Eyebrow tone="accent">Notre but</Eyebrow>
-        </div>
-        <h2 className="mt-6 font-display text-[36px] font-normal leading-[1.06] tracking-[-0.05em] sm:text-[54px]">
-          <span className="text-chrome">Ton SaaS en ligne,</span>
-          <br />
-          <span className="text-chrome">et qui</span>{" "}
-          <span className="font-serif italic tracking-normal text-accent [text-shadow:0_0_32px_rgba(51,244,239,0.45)]">
-            encaisse.
-          </span>
+    <section className="mx-auto max-w-6xl px-5 pb-24 sm:px-8">
+      <div className="rounded-[20px] border border-ink/10 bg-ink/[0.025] px-6 py-16 text-center sm:py-20">
+        <p className="font-mono text-[11px] uppercase tracking-[0.25em] text-ink-muted">Prêt ?</p>
+        <h2 className="mx-auto mt-4 max-w-2xl font-display text-[36px] font-semibold leading-[1.05] tracking-[-0.04em] text-ink sm:text-[52px]">
+          <TwoTone strong="Ton idée t'attend" soft="à la fin du questionnaire." />
         </h2>
-        <p className="mx-auto mt-5 max-w-md font-body text-[15px] leading-relaxed text-ink-muted">
-          Pas une formation à regarder : tout ton espace est pensé pour une seule chose, que ton SaaS
-          encaisse ses premiers paiements dès maintenant.
+        <p className="mx-auto mt-5 max-w-md font-body text-[16px] leading-relaxed text-ink-muted">
+          Réponds aux questions, découvre l&apos;idée faite pour toi, et décide ensuite.
         </p>
-        <div className="mt-9 flex justify-center">
-          <Button href="/commencer" size="default">
-            Créer mon SaaS
-          </Button>
-        </div>
-      </motion.div>
+        <CtaButton from="final" className="mt-8" />
+        <p className="mt-6 font-body text-[13px] text-ink-faint">
+          <span className="font-semibold text-ink-muted">Garantie 48 h</span> · Pas de vente ? On te rembourse intégralement.{" "}
+          <Link href="/remboursement" className="text-ink-muted underline underline-offset-2 hover:text-ink">
+            Sous conditions
+          </Link>
+        </p>
+      </div>
     </section>
   );
 }

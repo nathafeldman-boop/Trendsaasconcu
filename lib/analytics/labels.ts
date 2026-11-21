@@ -63,7 +63,7 @@ export function eventLabel(name: string, props: Props, path?: string | null) {
     case "page_view":
       return `Visite ${path ?? "une page"}`;
     case "hero_submitted":
-      return p.has_idea ? "Écrit son idée sur la page d'accueil" : "Clique sur « Commencer » (accueil)";
+      return p.has_idea ? "Écrit son idée sur la page d'accueil" : `Clique sur « Créer mon business » (accueil${p.from ? `, ${text(p.from)}` : ""})`;
     case "onboarding_step":
       return `Questionnaire : ${stepLabel(text(p.step))}`;
     case "idea_revealed":

@@ -1,49 +1,58 @@
-import { Eyebrow } from "@/components/ui/eyebrow";
-import { Accordion, type AccordionItemData } from "@/components/ui/accordion";
+import Link from "next/link";
+import { TwoTone } from "@/components/landing/cta-button";
 
-const FAQ_ITEMS: AccordionItemData[] = [
+const FAQ = [
   {
-    question: "Je ne sais pas coder, ça marche quand même ?",
-    answer:
-      "Oui. Le prompt est pensé pour piloter un outil d'IA qui écrit le code à ta place. Ton travail, c'est de suivre le plan et de prendre les décisions produit.",
+    q: "Les idées ne sont pas « prises » si tout le monde les voit ?",
+    a: "Très peu de gens passent à l'action, et personne ne l'exécute pareil. Ton idée part de tes réponses : ton temps, ton niveau, ta cible et ton objectif de revenus.",
   },
   {
-    question: "Pourquoi me demander de créer un compte ?",
-    answer:
-      "Pour sauvegarder ton idée, ton prompt et ton plan quelque part, et te les renvoyer par email plutôt que de les perdre en fermant l'onglet.",
+    q: "Je ne sais pas coder. Le prompt me sert à quoi ?",
+    a: "Pas besoin de savoir coder. Le prompt demande à Claude de tout construire et de t'expliquer chaque étape : tu suis, et tu lui poses tes questions quand tu bloques.",
   },
   {
-    question: "Combien de temps avant d'avoir un résultat ?",
-    answer:
-      "Le plan est calibré sur 30 jours, avec une action concrète à chaque étape. Certains vont plus vite, d'autres prennent plus de temps — l'objectif est d'avancer, pas de sprinter.",
+    q: "Pourquoi autant de questions ? C'est long.",
+    a: "Ton temps, ton niveau et ce que tu refuses de faire écartent les idées qui ne te vont pas. Avec trois questions, on ne pourrait rien te dire de neuf.",
   },
   {
-    question: "Les chiffres du dashboard, ils viennent d'où ?",
-    answer:
-      "Ceux affichés en exemple sur cette page sont fictifs, pour montrer à quoi ressemble l'interface. Une fois lancé, tu connectes ta propre clé Stripe en lecture seule et c'est ton volume, ton MRR et tes paiements réels qui s'affichent.",
+    q: "Combien ça coûte ?",
+    a: "Le questionnaire et ton idée sont gratuits. Les formules (1 mois, 3 mois ou à vie) s'affichent à la fin, avec un prix de bienvenue pendant 10 minutes. Résiliable à tout moment.",
   },
   {
-    question: "Est-ce que mon idée est aussi donnée à d'autres ?",
-    answer:
-      "Non. Les idées sont sélectionnées selon tes réponses, pas distribuées au hasard de la même façon à tout le monde.",
+    q: "Et si je ne fais aucune vente ?",
+    a: "Garantie 48 h : publie au moins 3 vidéos par jour pendant les deux jours qui suivent ton achat pour faire connaître ton SaaS. Aucune vente ? On te rembourse ton premier paiement en entier.",
+    link: { href: "/remboursement", label: "Voir les conditions" },
   },
   {
-    question: "Ça coûte combien ?",
-    answer:
-      "La méthode est gratuite pour commencer. Tu verras clairement ce qui est inclus avant de payer quoi que ce soit.",
+    q: "Pourquoi me demander de créer un compte ?",
+    a: "Pour retrouver ton idée, ton prompt et ton plan quand tu reviens. Prénom, email et mot de passe (ou Google), rien d'autre. Aucune donnée revendue.",
   },
 ];
 
 export function FaqSection() {
   return (
-    <section className="mx-auto max-w-3xl px-5 py-20 sm:px-8 sm:py-28">
-      <Eyebrow>Objections</Eyebrow>
-      <h2 className="mt-5 font-display text-[34px] font-normal leading-[1.08] tracking-[-0.045em] text-chrome sm:text-[46px]">
-        Les questions qu&apos;on nous pose{" "}
-        <span className="font-serif italic tracking-normal text-accent">souvent.</span>
+    <section id="questions" className="mx-auto max-w-6xl scroll-mt-28 px-5 py-20 sm:px-8 sm:py-24">
+      <p className="font-mono text-[11px] uppercase tracking-[0.25em] text-ink-muted">Questions fréquentes</p>
+      <h2 className="mt-4 max-w-2xl font-display text-[36px] font-semibold leading-[1.05] tracking-[-0.04em] text-ink sm:text-[48px]">
+        <TwoTone strong="Les questions qu'on nous pose" soft="souvent." />
       </h2>
-      <div className="mt-10">
-        <Accordion items={FAQ_ITEMS} />
+      <div className="mt-12 flex flex-col gap-3">
+        {FAQ.map((item) => (
+          <div key={item.q} className="rounded-[14px] border border-ink/10 bg-ink/[0.025] px-5 py-4">
+            <h3 className="font-body text-[15px] font-semibold text-ink">{item.q}</h3>
+            <p className="mt-2 font-body text-[14.5px] leading-relaxed text-ink-muted">
+              {item.a}
+              {item.link && (
+                <>
+                  {" "}
+                  <Link href={item.link.href} className="underline underline-offset-2 hover:text-ink">
+                    {item.link.label}
+                  </Link>
+                </>
+              )}
+            </p>
+          </div>
+        ))}
       </div>
     </section>
   );

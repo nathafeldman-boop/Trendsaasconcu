@@ -1,65 +1,35 @@
 import Link from "next/link";
 import { Logo } from "@/components/ui/logo";
+import { whatsappLink } from "@/lib/legal";
 
 const LINKS = [
-  {
-    title: "Produit",
-    items: [
-      { label: "La méthode", href: "/#methode" },
-      { label: "Marketing", href: "/#marketing" },
-      { label: "Tarifs", href: "/tarifs" },
-      { label: "J'ai un code d'accès", href: "/acces" },
-    ],
-  },
-  {
-    title: "Compte",
-    items: [
-      { label: "Créer mon compte", href: "/commencer" },
-      { label: "Se connecter", href: "/connexion" },
-    ],
-  },
-  {
-    title: "Légal",
-    items: [
-      { label: "Conditions générales de vente", href: "/conditions" },
-      { label: "Remboursement", href: "/remboursement" },
-      { label: "Confidentialité", href: "/confidentialite" },
-    ],
-  },
+  { label: "CGV", href: "/conditions" },
+  { label: "Conditions de remboursement", href: "/remboursement" },
+  { label: "Confidentialité", href: "/confidentialite" },
+  { label: "Se connecter", href: "/connexion" },
 ];
 
 export function Footer() {
+  const whatsapp = whatsappLink("Salut, j'ai une question sur SaaSFounder :");
   return (
     <footer className="border-t border-ink/8">
-      <div className="mx-auto grid max-w-6xl grid-cols-2 gap-10 px-5 py-14 sm:px-8 md:grid-cols-[1.4fr_1fr_1fr_1fr]">
-        <div className="col-span-2 md:col-span-1">
+      <div className="mx-auto flex max-w-6xl flex-col gap-5 px-5 py-10 sm:flex-row sm:items-center sm:gap-8 sm:px-8">
+        <div className="flex items-center gap-4">
           <Logo />
-          <p className="mt-4 max-w-[28ch] font-body text-[13px] leading-relaxed text-ink-faint">
-            Crée ton SaaS avec l&apos;IA, et encaisse dès maintenant.
-          </p>
+          <span className="font-body text-[13px] text-ink-faint">Lance ton premier SaaS.</span>
         </div>
-        {LINKS.map((group) => (
-          <div key={group.title}>
-            <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-ink-muted">{group.title}</p>
-            <ul className="mt-4 flex flex-col gap-2.5">
-              {group.items.map((item) => (
-                <li key={item.href}>
-                  <Link
-                    href={item.href}
-                    className="font-body text-[13px] text-ink-faint transition-colors hover:text-accent"
-                  >
-                    {item.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-        ))}
-      </div>
-      <div className="border-t border-ink/8">
-        <p className="mx-auto max-w-6xl px-5 py-6 font-mono text-[11px] uppercase tracking-wider text-ink-faint sm:px-8">
-          © {new Date().getFullYear()} SaaSFounder · Tous droits réservés
-        </p>
+        <nav className="flex flex-wrap gap-x-6 gap-y-2 font-body text-[13px] text-ink-muted sm:ml-auto">
+          {LINKS.map((link) => (
+            <Link key={link.href} href={link.href} className="transition-colors hover:text-ink">
+              {link.label}
+            </Link>
+          ))}
+          {whatsapp && (
+            <a href={whatsapp} target="_blank" rel="noopener noreferrer" className="transition-colors hover:text-ink">
+              Écris-moi sur WhatsApp
+            </a>
+          )}
+        </nav>
       </div>
     </footer>
   );

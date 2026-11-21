@@ -1,13 +1,13 @@
 import { BrandLogo, brandTitle, type Brand } from "@/components/ui/brand-logo";
 
-const TOOLS: Brand[] = ["claude", "supabase", "github", "stripe", "vercel", "tiktok", "instagram", "replit", "hostinger"];
+const TOOLS: Brand[] = ["claude", "supabase", "github", "stripe", "netlify", "tiktok", "instagram", "paypal", "revolut"];
 
 export function ToolsMarquee() {
   const loop = [...TOOLS, ...TOOLS];
 
   return (
-    <div className="border-y border-ink/8 bg-ink/[0.015] py-8">
-      <p className="mb-6 text-center font-mono text-[11px] uppercase tracking-[0.22em] text-ink-faint">
+    <div className="py-8">
+      <p className="mb-7 px-5 text-center font-mono text-[11px] uppercase tracking-[0.16em] text-ink-muted sm:tracking-[0.25em]">
         Les outils sur lesquels tu vas construire
       </p>
       <div className="relative overflow-hidden">
@@ -17,9 +17,9 @@ export function ToolsMarquee() {
           {loop.map((tool, i) => (
             <span
               key={i}
-              className="flex items-center gap-3 whitespace-nowrap font-display text-xl font-medium tracking-[-0.02em] text-ink-muted sm:text-2xl"
+              className="flex items-center gap-2.5 whitespace-nowrap font-display text-xl font-semibold tracking-[-0.02em] text-ink-muted sm:text-[22px]"
             >
-              <BrandLogo brand={tool} className="size-6 sm:size-7" />
+              <BrandLogo brand={tool} monochrome className="size-6" />
               {brandTitle(tool)}
             </span>
           ))}
