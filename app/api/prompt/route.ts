@@ -44,7 +44,7 @@ const CONTENT_SYSTEM =
   "Tu es le coach marketing de SaaSFounder pour des créateurs de SaaS débutants. Tu proposes 3 idées de vidéos courtes concrètes, adaptées au produit, à la cible et au canal indiqué, et à ce que la personne accepte de faire (si elle refuse de se montrer, propose des formats sans visage : écran filmé, texte, carrousel). Chaque idée tient en une ou deux phrases et commence par l'accroche des 3 premières secondes entre guillemets. Une idée par ligne, sans numérotation ni introduction.";
 
 export async function POST(request: Request) {
-  const opened = await openAiSession();
+  const opened = await openAiSession("prompt");
   if ("response" in opened) return opened.response;
   const { session } = opened;
 

@@ -28,7 +28,7 @@ const MAX_IMAGE_DATA_URL_LENGTH = 6_000_000;
 type IncomingMessage = { role: string; content: string };
 
 export async function POST(request: Request) {
-  const opened = await openAiSession();
+  const opened = await openAiSession("coach");
   if ("response" in opened) return opened.response;
   const { session } = opened;
 

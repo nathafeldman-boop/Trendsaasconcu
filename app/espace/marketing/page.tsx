@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { getAuth } from "@/lib/supabase/auth";
+import { lacksFeature } from "@/lib/espace/access";
+import { PlanLock } from "@/components/espace/plan-lock";
 import { MarketingTab } from "@/components/espace/marketing-tab";
 
 export const metadata: Metadata = {
@@ -11,6 +13,7 @@ const HAS_SAAS_EXISTING = "J'ai déjà un SaaS en ligne";
 export default async function MarketingPage() {
   const { supabase, user } = await getAuth();
   if (!supabase || !user) return null;
+  if (await lacksFeature(supabase, user.id, "marketing")) return <PlanLock feature="marketing" />;
 
   const [onboardingRes, builderRes, marketingRes] = await Promise.all([
     supabase.from("onboarding_responses").select("answers").eq("user_id", user.id).maybeSingle(),

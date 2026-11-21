@@ -21,7 +21,8 @@ const LINKS = [
   {
     title: "Légal",
     items: [
-      { label: "Conditions d'utilisation", href: "/conditions" },
+      { label: "Conditions générales de vente", href: "/conditions" },
+      { label: "Remboursement", href: "/remboursement" },
       { label: "Confidentialité", href: "/confidentialite" },
     ],
   },

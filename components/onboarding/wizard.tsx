@@ -25,6 +25,7 @@ import {
   UrlScreen,
 } from "@/components/onboarding/funnel-screens";
 import { IdeaRevealScreen } from "@/components/onboarding/idea-reveal";
+import { BuildScreen, GuaranteeScreen } from "@/components/onboarding/build-screen";
 import { ideaToText, readFoundIdea } from "@/lib/onboarding/found-idea";
 
 // v2: the funnel was rebuilt (different questions and order), so answers and
@@ -222,6 +223,10 @@ export function OnboardingWizard() {
         return <JourneyScreen shell={shell} firstName={firstName} onNext={next} />;
       case "commitment":
         return <CommitmentScreen shell={shell} onNext={next} />;
+      case "build":
+        return <BuildScreen shell={shell} answers={answers} onNext={next} />;
+      case "guarantee":
+        return <GuaranteeScreen shell={shell} onNext={next} />;
       case "plans":
         return <PlansScreen shell={shell} answers={answers} />;
     }

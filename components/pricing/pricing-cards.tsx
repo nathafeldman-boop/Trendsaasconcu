@@ -1,42 +1,34 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { preconnect } from "react-dom";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Check, Loader2, Lock, Plus, Sparkles, TrendingUp } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
+import { Check, CreditCard, Loader2, Lock, ShieldCheck, Smartphone, Sparkles, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { OFFER_INCREASE_PERCENT, OFFER_MS, PLAN_TIERS, type PlanId, type PriceTier } from "@/lib/stripe/plans";
-import { offerRemainingMs, startOffer, syncOffer, useNow, useOfferDeadline } from "@/lib/offer";
-import { reminderConsent, setReminderConsent, useReminderConsent } from "@/lib/checkout-reminder";
+import {
+  DEFAULT_PLAN,
+  EXIT_OFFER_CENTS,
+  OFFER_MS,
+  PLAN_TIERS,
+  UNLOCKS,
+  availability,
+  euros,
+  planFor,
+  type PlanId,
+  type PriceTier,
+} from "@/lib/stripe/plans";
+import { startOffer, syncOffer, useNow, useOfferDeadline } from "@/lib/offer";
+import { checkoutExtras, setChoice, useChoice } from "@/lib/checkout-choices";
+import { whatsappLink } from "@/lib/legal";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
 import { InAppBrowserHint } from "@/components/pricing/in-app-browser-hint";
 import { track } from "@/lib/analytics/track";
 
-// In every plan.
-const FEATURES = [
-  "Ton idée de SaaS et ton prompt de démarrage",
-  "Checklist de lancement guidée",
-  "Coach IA, conseils marketing et idées de contenu",
-  "Dashboard de suivi de ton MRR",
-];
-
-type Plan = (typeof PLAN_TIERS.launch)[number];
-
-// Same ratios in both tiers: −45 % and −67 %.
-const BEST_DISCOUNT = Math.max(...PLAN_TIERS.launch.map((p) => p.discountPercent ?? 0));
-
-// What the longer plans add. The monthly card lists them too, locked, so
-// the difference is visible where the choice is made.
-function extras(plan: Plan) {
-  return [
-    { label: "Crédit IA doublé chaque mois", included: plan.aiCredit > 1 },
-    {
-      label: plan.savings ? `${plan.savings} économisés vs le mensuel` : `Jusqu'à −${BEST_DISCOUNT}\u00a0% sur le prix`,
-      included: !!plan.savings,
-    },
-  ];
-}
+const EXIT_SEEN_KEY = "sf_exit_offer_seen";
+const WEEKLY = planFor("weekly");
 
 function formatCountdown(ms: number) {
   const seconds = Math.max(0, Math.ceil(ms / 1000));
@@ -55,52 +47,44 @@ async function syncIfSignedIn(start: boolean) {
   if (await signedIn()) await syncOffer(start);
 }
 
+// Back from Stripe without paying (the cancel URL adds ?paiement=annule).
+const noSubscribe = () => () => {};
+function useCancelledPayment() {
+  return useSyncExternalStore(
+    noSubscribe,
+    () => new URLSearchParams(window.location.search).get("paiement") === "annule",
+    () => false
+  );
+}
+
 function OfferBanner({ remaining }: { remaining: number }) {
-  const [launchMonthly, standardMonthly] = [PLAN_TIERS.launch[0], PLAN_TIERS.standard[0]];
   if (remaining <= 0) {
     return (
-      <div className="mb-8 rounded-xl border border-ink/12 bg-ink/[0.03] px-5 py-4 text-center font-body text-[13px] leading-relaxed text-ink-muted">
-        <span className="font-medium text-ink">Ton offre de lancement a expiré.</span> Les prix ont augmenté de{" "}
-        {OFFER_INCREASE_PERCENT}&nbsp;% : ce sont désormais les tarifs en vigueur pour toi.
+      <div className="rounded-xl border border-ink/12 bg-ink/[0.03] px-4 py-3 text-center font-body text-[13px] leading-relaxed text-ink-muted">
+        <span className="font-medium text-ink">Ton prix de bienvenue a expiré.</span> Ce sont maintenant les tarifs en vigueur pour toi.
       </div>
     );
   }
   const lastMinute = remaining <= 60_000;
+  const tone = lastMinute ? "text-red-400" : "text-amber-300";
   return (
-    <div
-      className={cn(
-        "mb-8 overflow-hidden rounded-xl border bg-accent/[0.06]",
-        lastMinute ? "border-red-400/50" : "border-accent/40"
-      )}
-    >
-      <div className="flex flex-col items-center gap-3 px-5 py-4 text-center sm:flex-row sm:justify-between sm:gap-6 sm:text-left">
-        <div>
-          <p className="flex items-center justify-center gap-2 font-display text-[15px] font-semibold text-ink sm:justify-start">
-            <span className="relative flex size-2">
-              <span className="absolute inline-flex size-full animate-ping rounded-full bg-accent opacity-75" />
-              <span className="relative inline-flex size-2 rounded-full bg-accent" />
-            </span>
-            Prix de lancement · il te reste
-          </p>
-          <p className="mt-1 font-body text-[13px] leading-relaxed text-ink-muted">
-            Ensuite, toutes les formules augmentent de {OFFER_INCREASE_PERCENT}&nbsp;% : le Mensuel passe de{" "}
-            {launchMonthly.price} à {standardMonthly.price}.
-          </p>
+    <div className={cn("overflow-hidden rounded-xl border bg-amber-400/[0.07]", lastMinute ? "border-red-400/50" : "border-amber-400/40")}>
+      <div className="flex items-center gap-4 px-4 py-3.5">
+        <div className="flex flex-1 flex-col sm:flex-row sm:items-baseline sm:gap-3">
+          <p className={cn("font-display text-[19px] font-semibold leading-tight", tone)}>Prix de bienvenue</p>
+          <p className="font-body text-[13px] leading-snug text-ink-muted">réservé 10 minutes</p>
         </div>
         <p
           role="timer"
-          aria-label="Temps restant avant la hausse des prix"
-          className={cn(
-            "shrink-0 font-mono text-[36px] font-semibold leading-none tabular-nums",
-            lastMinute ? "text-red-400" : "text-accent"
-          )}
+          aria-label="Temps restant avant la fin du prix de bienvenue"
+          className={cn("font-mono text-[22px] font-semibold tabular-nums", tone)}
         >
           {formatCountdown(remaining)}
         </p>
       </div>
-      <div className="h-1 bg-ink/10">
+      <div className="h-0.5 bg-ink/10">
         <div
-          className={cn("h-full transition-[width] duration-1000 ease-linear", lastMinute ? "bg-red-400" : "bg-accent")}
+          className={cn("h-full transition-[width] duration-1000 ease-linear", lastMinute ? "bg-red-400" : "bg-amber-300")}
           style={{ width: `${Math.min(100, (remaining / OFFER_MS) * 100)}%` }}
         />
       </div>
@@ -108,21 +92,100 @@ function OfferBanner({ remaining }: { remaining: number }) {
   );
 }
 
+function Guarantee() {
+  return (
+    <div className="flex gap-4 rounded-xl border border-success/40 bg-success/[0.06] p-4">
+      <ShieldCheck className="mt-0.5 size-9 shrink-0 text-success" strokeWidth={1.75} />
+      <div>
+        <p className="font-display text-[17px] font-semibold leading-snug text-success">Pas de vente ? On te rembourse intégralement.</p>
+        <span className="mt-1.5 inline-block rounded-full bg-success/15 px-2.5 py-0.5 font-mono text-[11px] font-medium text-success">
+          Garantie 48 h
+        </span>
+        <p className="mt-1.5 font-body text-[13px] leading-relaxed text-ink-muted">
+          Applique la méthode 48 h. Aucune vente : tu es remboursé.{" "}
+          <Link href="/remboursement" className="underline underline-offset-2 hover:text-ink">
+            Conditions
+          </Link>
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function ConsentBoxes({ highlight }: { highlight: boolean }) {
+  const terms = useChoice("terms");
+  const reminder = useChoice("reminder");
+  return (
+    <div className="flex flex-col gap-3">
+      <label
+        id="consent-terms"
+        className={cn(
+          "flex cursor-pointer items-start gap-2.5 font-body text-[13px] leading-relaxed text-ink-muted transition-colors",
+          highlight && !terms && "text-red-300"
+        )}
+      >
+        <input
+          type="checkbox"
+          checked={terms}
+          onChange={(e) => setChoice("terms", e.target.checked)}
+          className="mt-0.5 size-4 shrink-0 cursor-pointer accent-[var(--color-accent)]"
+        />
+        <span>
+          J&apos;ai 16 ans ou plus, j&apos;accepte les{" "}
+          <Link href="/conditions" className="underline underline-offset-2 hover:text-ink">
+            CGV
+          </Link>{" "}
+          et je demande l&apos;accès immédiat à mon espace : je renonce à mon délai de rétractation de 14 jours.
+        </span>
+      </label>
+      <label className="flex cursor-pointer items-start gap-2.5 font-body text-[13px] leading-relaxed text-ink-faint">
+        <input
+          type="checkbox"
+          checked={reminder}
+          onChange={(e) => setChoice("reminder", e.target.checked)}
+          className="mt-0.5 size-4 shrink-0 cursor-pointer accent-[var(--color-accent)]"
+        />
+        <span>Si je ne termine pas mon paiement, envoie-moi un rappel par email (un seul).</span>
+      </label>
+    </div>
+  );
+}
+
+const FAQ = [
+  {
+    q: "Je peux arrêter quand je veux ?",
+    a: "Oui. Les formules 1 mois et 3 mois se résilient en un clic depuis ton espace, sans frais : tu gardes l'accès jusqu'à la fin de la période payée. La formule À vie est un paiement unique, sans renouvellement.",
+  },
+  {
+    q: "Et si je ne fais aucune vente ?",
+    a: "Tu es couvert par la garantie 48 h : publie au moins 3 vidéos par jour pendant les deux jours qui suivent ton achat pour promouvoir ton SaaS, et si aucune vente n'arrive, écris-nous dans les 48 heures : on te rembourse ton premier paiement en entier.",
+  },
+];
+
 /**
- * The plans, with the launch offer: launch prices for 10 minutes from the
- * first time the cards are seen, then +60 % (enforced by checkout).
+ * The pricing page: three plans at their welcome price for 10 minutes from
+ * the first time it's seen, then the standard price (enforced by checkout).
+ * Someone about to leave gets the lifetime plan for less, once; someone back
+ * from an unfinished payment can start with the weekly plan.
  * `startsCountdown={false}` shows the countdown only if it's already running
  * (the landing page: the questionnaire that follows takes longer than that).
  */
-export function PricingCards({ startsCountdown = true }: { startsCountdown?: boolean }) {
+export function PricingCards({ startsCountdown = true, goal }: { startsCountdown?: boolean; goal?: number | null }) {
   // Open the connection to Stripe Checkout ahead of the click.
   preconnect("https://checkout.stripe.com");
   const router = useRouter();
-  const [loadingPlan, setLoadingPlan] = useState<PlanId | null>(null);
+  const [selected, setSelected] = useState<PlanId>(DEFAULT_PLAN);
+  const [loading, setLoading] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [highlightTerms, setHighlightTerms] = useState(false);
+  const [exitOpen, setExitOpen] = useState(false);
+  const [ctaVisible, setCtaVisible] = useState(true);
   const rootRef = useRef<HTMLDivElement>(null);
+  const ctaRef = useRef<HTMLDivElement>(null);
+  const terms = useChoice("terms");
+  const reminder = useChoice("reminder");
+  const cancelled = useCancelledPayment();
 
-  const reminder = useReminderConsent();
   const deadline = useOfferDeadline();
   const now = useNow();
   const remaining = deadline !== null && now !== null ? deadline - now : null;
@@ -130,30 +193,45 @@ export function PricingCards({ startsCountdown = true }: { startsCountdown?: boo
   const expired = remaining !== null && remaining <= 0;
   const tier: PriceTier = expired ? "standard" : "launch";
   const plans = PLAN_TIERS[tier];
+  const current = plans.find((p) => p.id === selected) ?? plans[1];
+  const lifetime = plans.find((p) => p.id === "lifetime")!;
+  const question = whatsappLink("Salut, j'ai une question sur SaaSFounder :");
 
   // Signed in: the account's deadline is the one checkout enforces.
   useEffect(() => {
     syncIfSignedIn(false);
   }, []);
 
-  // "Voit les prix" in the admin funnel: the cards actually came on screen.
+  // "Voit les prix" in the admin funnel: the page actually came on screen.
   // That's also when the countdown starts.
   useEffect(() => {
     const node = rootRef.current;
     if (!node || typeof IntersectionObserver === "undefined") return;
-    const observer = new IntersectionObserver((entries) => {
-      if (entries.some((entry) => entry.isIntersecting)) {
-        track("pricing_viewed");
-        if (startsCountdown && startOffer()) {
-          track("offer_started");
-          syncIfSignedIn(true);
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((entry) => entry.isIntersecting)) {
+          track("pricing_viewed");
+          if (startsCountdown && startOffer()) {
+            track("offer_started");
+            syncIfSignedIn(true);
+          }
+          observer.disconnect();
         }
-        observer.disconnect();
-      }
-    }, { threshold: 0.3 });
+      },
+      { threshold: 0.2 }
+    );
     observer.observe(node);
     return () => observer.disconnect();
   }, [startsCountdown]);
+
+  // The sticky bar shows while the main button is off screen.
+  useEffect(() => {
+    const node = ctaRef.current;
+    if (!node || typeof IntersectionObserver === "undefined") return;
+    const observer = new IntersectionObserver((entries) => setCtaVisible(entries.some((e) => e.isIntersecting)));
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, []);
 
   // Counted when it runs out on screen, not on every later visit.
   const sawRunning = useRef(false);
@@ -165,14 +243,46 @@ export function PricingCards({ startsCountdown = true }: { startsCountdown?: boo
     }
   }, [running, expired]);
 
-  async function choose(planId: PlanId) {
-    if (loadingPlan) return;
+  // About to leave (the pointer heads for the tab bar): the lifetime offer, once.
+  useEffect(() => {
+    if (!startsCountdown) return;
+    const onOut = (event: MouseEvent) => {
+      if (event.relatedTarget || event.clientY > 0) return;
+      try {
+        if (window.localStorage.getItem(EXIT_SEEN_KEY)) return;
+        window.localStorage.setItem(EXIT_SEEN_KEY, "1");
+      } catch {
+        return;
+      }
+      track("exit_offer_shown");
+      setExitOpen(true);
+    };
+    document.addEventListener("mouseout", onOut);
+    return () => document.removeEventListener("mouseout", onOut);
+  }, [startsCountdown]);
+
+  useEffect(() => {
+    if (cancelled) track("weekly_offer_shown");
+  }, [cancelled]);
+
+  async function choose(planId: PlanId, offer?: "exit") {
+    if (loading) return;
     setError(null);
-    setLoadingPlan(planId);
-    const toSignup = () => router.push(`/inscription?plan=${planId}`);
+    if (!terms) {
+      setHighlightTerms(true);
+      setError("Coche la case des CGV pour continuer.");
+      track("terms_missing", { plan: planId });
+      document.getElementById("consent-terms")?.scrollIntoView({ behavior: "smooth", block: "center" });
+      return;
+    }
+    const key = offer ? `${planId}:${offer}` : planId;
+    setLoading(key);
+    const toSignup = () => router.push(`/inscription?plan=${planId}${offer ? `&offer=${offer}` : ""}`);
 
     const isSignedIn = await signedIn();
-    track("checkout_clicked", { plan: planId, signed_in: isSignedIn, tier, reminder });
+    track("checkout_clicked", { plan: planId, signed_in: isSignedIn, tier: offer ?? (planId === "weekly" ? "weekly" : tier), reminder });
+    if (offer) track("exit_offer_chosen");
+    if (planId === "weekly") track("weekly_offer_chosen");
     if (!isSignedIn) {
       toSignup();
       return;
@@ -182,7 +292,7 @@ export function PricingCards({ startsCountdown = true }: { startsCountdown?: boo
       const res = await fetch("/api/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ planId, offerRemainingMs: offerRemainingMs(), reminder: reminderConsent() }),
+        body: JSON.stringify({ planId, offer, ...checkoutExtras() }),
       });
       if (res.status === 401) {
         toSignup();
@@ -190,140 +300,264 @@ export function PricingCards({ startsCountdown = true }: { startsCountdown?: boo
       }
       const result = await res.json();
       if (result.url) {
-        // Keep "Redirection..." on screen while Stripe loads: resetting the
-        // button here made it look like nothing happened.
+        // Keep "Redirection..." on screen while Stripe loads.
         window.location.assign(result.url);
         return;
       }
-      setError(
-        result.error === "Plan not configured"
-          ? "Cette formule n'est pas encore ouverte au paiement. Choisis-en une autre ou utilise un code d'accès."
-          : "Le paiement n'est pas encore configuré. Réessaie plus tard ou utilise un code d'accès."
-      );
+      setError("Le paiement n'a pas pu démarrer. Réessaie dans un instant ou utilise un code d'accès.");
     } catch {
       setError("Connexion impossible, réessaie dans un instant.");
     }
-    setLoadingPlan(null);
+    setLoading(null);
   }
 
+  const busy = (key: string) => loading === key;
+  const redirecting = (
+    <span className="flex items-center gap-2">
+      <Loader2 className="size-4 animate-spin" /> Redirection vers le paiement...
+    </span>
+  );
+
   return (
-    <div ref={rootRef}>
+    <div ref={rootRef} className="mx-auto w-full max-w-[560px]">
       <InAppBrowserHint />
-      {remaining !== null && <OfferBanner remaining={remaining} />}
-      <label className="mb-6 flex cursor-pointer items-start justify-center gap-2.5 text-left font-body text-[13px] leading-relaxed text-ink-muted">
-        <input
-          type="checkbox"
-          checked={reminder}
-          onChange={(e) => setReminderConsent(e.target.checked)}
-          className="mt-0.5 size-4 shrink-0 cursor-pointer accent-[var(--color-accent)]"
-        />
-        <span>Si je ne termine pas mon paiement, envoie-moi un rappel par email (un seul).</span>
-      </label>
-      <div className="grid grid-cols-1 gap-5 sm:grid-cols-3">
-        {plans.map((plan, index) => (
-          <div
-            key={plan.id}
-            className={cn(
-              "relative flex flex-col rounded-xl border p-6",
-              plan.recommended
-                ? "border-accent/50 bg-accent/[0.06] shadow-[0_0_40px_-15px_var(--color-accent)]"
-                : "border-ink/12 bg-ink/[0.02]",
-              // On a phone the recommended plan comes first and the monthly one last.
-              plan.recommended && "order-first sm:order-none",
-              plan.months === 1 && "order-last sm:order-none"
-            )}
-          >
-            {plan.recommended ? (
-              <span className="absolute -top-3 left-6 flex items-center gap-1 rounded-full bg-accent px-3 py-1 font-mono text-[10px] font-medium uppercase tracking-wider text-canvas">
-                <Sparkles className="size-3" />
-                Recommandé
-              </span>
-            ) : plan.discountPercent === BEST_DISCOUNT ? (
-              <span className="absolute -top-3 left-6 rounded-full border border-success/40 bg-canvas px-3 py-1 font-mono text-[10px] font-medium uppercase tracking-wider text-success">
-                Meilleur prix
-              </span>
-            ) : null}
-            <div className="flex h-6 items-center justify-between gap-2">
-              <p className="font-mono text-[11px] uppercase tracking-wider text-ink-faint">{plan.label}</p>
-              {plan.discountPercent ? (
-                <span className="rounded-full bg-success/12 px-2 py-0.5 font-mono text-[11px] font-medium text-success">
-                  −{plan.discountPercent}&nbsp;%
-                </span>
-              ) : null}
-            </div>
-            <p className="mt-3 font-display text-3xl font-semibold text-ink">
-              {plan.price}
-              <span className="font-body text-[14px] font-normal text-ink-faint"> /{plan.interval}</span>
+      <div className="flex flex-col gap-5">
+        {remaining !== null && <OfferBanner remaining={remaining} />}
+
+        {cancelled && (
+          <div className="rounded-xl border border-ink/12 bg-ink/[0.03] p-4">
+            <p className="font-body text-[14px] font-medium text-ink">
+              Ton paiement n&apos;est pas allé au bout. Aucun montant n&apos;a été prélevé.
             </p>
-            <p className="mt-1 h-5 font-body text-[13px] text-accent">
-              {plan.perMonth ? (
-                <>
-                  soit {plan.perMonth}/mois{" "}
-                  <span className="text-ink-faint">
-                    au lieu de <span className="line-through">{plans[0].price}</span>
-                  </span>
-                </>
-              ) : (
-                <span className="text-ink-faint">Facturé chaque mois</span>
-              )}
+            <p className="mt-1 font-body text-[13px] leading-relaxed text-ink-muted">
+              Ou commence tout de suite avec moins : {WEEKLY.label} à {WEEKLY.price} ({WEEKLY.summary.toLowerCase()}).
             </p>
-            {running && (
-              <p className="mt-2 flex items-center gap-1.5 font-body text-[12px] text-ink-faint">
-                <TrendingUp className="size-3.5 shrink-0" />
-                Après le chrono :{" "}
-                <span className="whitespace-nowrap">
-                  {PLAN_TIERS.standard[index].price} /{plan.interval}
-                </span>
-              </p>
+            <Button variant="secondary" size="sm" showArrow={false} className="mt-3" disabled={loading !== null} onClick={() => choose("weekly")}>
+              {busy("weekly") ? redirecting : `Commencer à ${WEEKLY.price} ${WEEKLY.period}`}
+            </Button>
+          </div>
+        )}
+
+        <div>
+          <h3 className="font-display text-[30px] font-semibold leading-tight tracking-[-0.03em] text-ink">Choisis ta formule.</h3>
+          <p className="mt-1.5 font-body text-[14px] leading-relaxed text-ink-muted">
+            {goal ? (
+              <>
+                Ton objectif : <span className="font-semibold text-ink">{euros(goal * 100)} par mois</span>. Voici de quoi le viser.
+              </>
+            ) : (
+              "Accès immédiat à ton espace, résiliable à tout moment."
             )}
-            <ul className="mt-5 flex flex-col gap-2.5">
-              {FEATURES.map((feature) => (
-                <li key={feature} className="flex items-start gap-2 font-body text-[13px] text-ink-muted">
-                  <Check className="mt-0.5 size-3.5 shrink-0 text-accent" strokeWidth={2.5} />
-                  {feature}
-                </li>
-              ))}
-              {extras(plan).map((extra) =>
-                extra.included ? (
-                  <li key={extra.label} className="flex items-start gap-2 font-body text-[13px] font-medium text-ink">
-                    <Plus className="mt-0.5 size-3.5 shrink-0 text-success" strokeWidth={3} />
-                    {extra.label}
-                  </li>
-                ) : (
-                  <li key={extra.label} className="flex items-start gap-2 font-body text-[13px] text-ink-faint/70">
-                    <Lock className="mt-0.5 size-3.5 shrink-0" strokeWidth={2} />
-                    <span className="line-through decoration-ink/25">{extra.label}</span>
-                  </li>
-                )
-              )}
-            </ul>
-            {plan.months === 1 && (
-              <p className="mt-4 rounded-lg border border-ink/8 bg-ink/[0.03] px-3 py-2 font-body text-[12px] leading-relaxed text-ink-faint">
-                Le crédit IA doublé et les économies sont réservés au <span className="text-ink-muted">Trimestriel</span> et
-                à l&apos;<span className="text-ink-muted">Annuel</span>.
-              </p>
-            )}
-            <div className="mt-auto pt-6">
-              <Button
-                showArrow={false}
-                variant={plan.recommended ? "primary" : "secondary"}
-                disabled={loadingPlan !== null}
-                onClick={() => choose(plan.id)}
-                className="w-full"
-              >
-                {loadingPlan === plan.id ? (
-                  <span className="flex items-center gap-2">
-                    <Loader2 className="size-4 animate-spin" /> Redirection vers le paiement...
-                  </span>
-                ) : (
-                  "Choisir"
+          </p>
+        </div>
+
+        <Guarantee />
+
+        <div role="radiogroup" aria-label="Formules" className="flex flex-col gap-3">
+          <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-ink-faint">Formules</p>
+          {plans.map((plan) => {
+            const active = plan.id === selected;
+            return (
+              <button
+                key={plan.id}
+                type="button"
+                role="radio"
+                aria-checked={active}
+                onClick={() => {
+                  setSelected(plan.id);
+                  track("plan_selected", { plan: plan.id });
+                }}
+                className={cn(
+                  "relative flex items-center gap-3.5 rounded-xl border p-4 text-left transition-colors",
+                  active
+                    ? "border-accent/60 bg-accent/[0.07] shadow-[0_0_32px_-14px_var(--color-accent)]"
+                    : "border-ink/12 bg-ink/[0.02] hover:border-ink/25",
+                  plan.recommended && "mt-2"
                 )}
+              >
+                {plan.recommended && (
+                  <span className="absolute -top-2.5 left-1/2 flex -translate-x-1/2 items-center gap-1 whitespace-nowrap rounded-full bg-accent px-3 py-0.5 font-mono text-[10px] font-semibold uppercase tracking-wider text-canvas">
+                    <Sparkles className="size-3" />
+                    Le plus choisi
+                  </span>
+                )}
+                <span
+                  aria-hidden
+                  className={cn(
+                    "flex size-5 shrink-0 items-center justify-center rounded-full border-2",
+                    active ? "border-accent bg-accent" : "border-ink/30"
+                  )}
+                >
+                  {active && <Check className="size-3 text-canvas" strokeWidth={3.5} />}
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="block font-display text-[17px] font-semibold text-ink">{plan.label}</span>
+                  <span className="mt-0.5 block font-body text-[14px] text-ink">
+                    <span className="font-semibold">{plan.price}</span> <span className="text-ink-muted">{plan.period}</span>
+                    {running && plan.nextPrice && <span className="text-[12px] text-ink-faint"> · puis {plan.nextPrice}</span>}
+                  </span>
+                  <span className="mt-2 block rounded-md border border-ink/10 px-2 py-1 font-body text-[11.5px] leading-snug text-ink-muted">
+                    {plan.summary}
+                  </span>
+                </span>
+                <span className="shrink-0 text-right">
+                  <span className="block font-display text-[18px] font-semibold text-ink">{plan.perDay ?? "Une fois"}</span>
+                  <span className="block font-body text-[11px] text-ink-faint">{plan.perDay ? "/ jour" : "à vie"}</span>
+                </span>
+              </button>
+            );
+          })}
+        </div>
+
+        <ConsentBoxes highlight={highlightTerms} />
+
+        <div ref={ctaRef}>
+          <Button showArrow={!loading} disabled={loading !== null} onClick={() => choose(selected)} className="w-full">
+            {busy(selected) ? redirecting : `Continuer · ${current.price} ${current.period}`}
+          </Button>
+          {error && !exitOpen && <p className="mt-3 text-center font-body text-[13px] text-red-400">{error}</p>}
+        </div>
+
+        <div className="flex flex-col items-center gap-2.5">
+          <p className="flex items-center gap-1.5 font-body text-[13px] text-success">
+            <Lock className="size-3.5" /> Paiement sécurisé, encaissé par Stripe
+          </p>
+          <div className="flex flex-wrap justify-center gap-2">
+            {[
+              { label: "Carte bancaire", icon: CreditCard },
+              { label: "Apple Pay", icon: Smartphone },
+              { label: "Google Pay", icon: Smartphone },
+            ].map(({ label, icon: Icon }) => (
+              <span key={label} className="flex items-center gap-1.5 rounded-lg border border-ink/12 px-3 py-1.5 font-body text-[12px] text-ink-muted">
+                <Icon className="size-3.5" />
+                {label}
+              </span>
+            ))}
+          </div>
+        </div>
+
+        <div className="divide-y divide-ink/10 border-y border-ink/10">
+          {FAQ.map((item) => (
+            <details key={item.q} className="group py-3.5">
+              <summary className="flex cursor-pointer list-none items-center justify-between font-body text-[14px] font-medium text-ink">
+                {item.q}
+                <span className="text-ink-faint transition-transform group-open:rotate-45">+</span>
+              </summary>
+              <p className="mt-2 font-body text-[13px] leading-relaxed text-ink-muted">{item.a}</p>
+            </details>
+          ))}
+        </div>
+        {question && (
+          <p className="text-center font-body text-[13px] text-ink-faint">
+            Une autre question ?{" "}
+            <a href={question} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-ink">
+              Écris-moi sur WhatsApp
+            </a>
+          </p>
+        )}
+
+        <div className="mt-4">
+          <p className="font-display text-[24px] font-semibold tracking-[-0.02em] text-ink">Ce que tu débloques</p>
+          <ul className="mt-4 flex flex-col gap-2.5">
+            {UNLOCKS.map((item) => (
+              <li key={item.label} className="flex items-center gap-3 rounded-xl border border-ink/10 bg-ink/[0.02] px-4 py-3">
+                <Check className="size-4 shrink-0 text-success" strokeWidth={2.5} />
+                <span>
+                  <span className="block font-body text-[14px] font-medium text-ink">{item.label}</span>
+                  <span className="block font-body text-[12px] text-ink-faint">{availability(item.feature)}</span>
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        <p className="font-body text-[11.5px] leading-relaxed text-ink-faint">
+          Dès 16 ans. Formules 1 et 3 mois : renouvellement automatique au prix indiqué (le prix de bienvenue est gardé tant que tu ne
+          résilies pas), résiliable à tout moment. Formule à vie : paiement unique, sans renouvellement.{" "}
+          <Link href="/conditions" className="underline underline-offset-2">
+            CGV
+          </Link>{" "}
+          ·{" "}
+          <Link href="/remboursement" className="underline underline-offset-2">
+            Remboursement
+          </Link>
+        </p>
+      </div>
+
+      {/* Sticky bar while the main button is off screen (phones). */}
+      <AnimatePresence>
+        {!ctaVisible && !exitOpen && (
+          <motion.div
+            initial={{ y: 80 }}
+            animate={{ y: 0 }}
+            exit={{ y: 80 }}
+            transition={{ type: "spring", stiffness: 380, damping: 34 }}
+            className="fixed inset-x-0 bottom-0 z-[90] border-t border-ink/10 bg-canvas/95 px-4 py-3 backdrop-blur-md sm:hidden"
+          >
+            <div className="mx-auto flex max-w-[560px] items-center justify-between gap-3">
+              <p className="font-body text-[15px] text-ink">
+                <span className="font-semibold">{current.price}</span> <span className="text-ink-muted">{current.period}</span>
+              </p>
+              <Button size="sm" disabled={loading !== null} onClick={() => choose(selected)}>
+                Continuer
               </Button>
             </div>
-          </div>
-        ))}
-      </div>
-      {error && <p className="mt-4 text-center font-body text-[13px] text-red-400">{error}</p>}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* The lifetime plan for less, to someone about to leave. */}
+      <AnimatePresence>
+        {exitOpen && (
+          <motion.div
+            className="fixed inset-0 z-[130] flex items-center justify-center p-4"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <button type="button" aria-label="Fermer" onClick={() => setExitOpen(false)} className="absolute inset-0 bg-black/75 backdrop-blur-sm" />
+            <motion.div
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="exit-title"
+              initial={{ y: 20, scale: 0.97 }}
+              animate={{ y: 0, scale: 1 }}
+              className="relative w-full max-w-md rounded-2xl border border-ink/12 bg-canvas-raised p-6"
+            >
+              <button
+                type="button"
+                onClick={() => setExitOpen(false)}
+                aria-label="Fermer"
+                className="absolute right-4 top-4 text-ink-faint transition-colors hover:text-ink"
+              >
+                <X className="size-5" />
+              </button>
+              <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-amber-300">Avant de partir</p>
+              <h3 id="exit-title" className="mt-2 font-display text-[26px] font-semibold leading-tight text-ink">
+                L&apos;accès à vie à {euros(EXIT_OFFER_CENTS)}, une seule fois.
+              </h3>
+              <p className="mt-2 font-body text-[14px] leading-relaxed text-ink-muted">
+                Tout, pour toujours, en un seul paiement : ton idée, ton site, tes plans, tes scripts vidéo, le coach IA et
+                l&apos;accompagnement. Au lieu de {lifetime.price} sur cette page.
+              </p>
+              <div className="mt-5">
+                <ConsentBoxes highlight={highlightTerms} />
+              </div>
+              <Button className="mt-5 w-full" disabled={loading !== null} onClick={() => choose("lifetime", "exit")}>
+                {busy("lifetime:exit") ? redirecting : `Je prends l'accès à vie à ${euros(EXIT_OFFER_CENTS)}`}
+              </Button>
+              {error && <p className="mt-3 text-center font-body text-[13px] text-red-400">{error}</p>}
+              <button
+                type="button"
+                onClick={() => setExitOpen(false)}
+                className="mt-3 w-full text-center font-body text-[13px] text-ink-faint underline-offset-2 hover:underline"
+              >
+                Non merci
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

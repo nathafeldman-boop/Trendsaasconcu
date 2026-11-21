@@ -1,15 +1,14 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
 import { translateAuthError } from "@/lib/supabase/auth-error";
 import { GoogleSignIn } from "@/components/auth/google-sign-in";
 import { track } from "@/lib/analytics/track";
-import { offerRemainingMs } from "@/lib/offer";
-import { reminderConsent } from "@/lib/checkout-reminder";
+import { checkoutExtras } from "@/lib/checkout-choices";
 
 const SIGNUP_ERRORS: Record<string, string> = {
   exists: "Ce compte existe déjà. Connecte-toi plutôt.",
@@ -20,7 +19,9 @@ const SIGNUP_ERRORS: Record<string, string> = {
 
 export function SignupForm({ onSuccess }: { onSuccess?: () => void }) {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const plan = searchParams.get("plan");
+  const offer = searchParams.get("offer") === "exit" ? "exit" : undefined;
   const next = searchParams.get("next");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -42,12 +43,18 @@ export function SignupForm({ onSuccess }: { onSuccess?: () => void }) {
         const res = await fetch("/api/checkout", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          // The launch offer's countdown carries over to the new account.
-          body: JSON.stringify({ planId: plan, offerRemainingMs: offerRemainingMs(), reminder: reminderConsent() }),
+          // The welcome offer's countdown and the pricing page's boxes carry over.
+          body: JSON.stringify({ planId: plan, offer, ...checkoutExtras(), returnTo: "/tarifs" }),
         });
         const data = await res.json();
         if (data.url) {
           window.location.assign(data.url);
+          return;
+        }
+        // The terms box wasn't ticked in this tab: back to the pricing page
+        // (static, nothing account-specific a cached render could hold).
+        if (res.status === 400) {
+          router.push("/tarifs");
           return;
         }
       } catch {
@@ -147,7 +154,7 @@ export function SignupForm({ onSuccess }: { onSuccess?: () => void }) {
         <p className="text-center font-body text-[12px] leading-relaxed text-ink-faint">
           En créant ton compte, tu acceptes nos{" "}
           <a href="/conditions" className="underline underline-offset-2 hover:text-ink-muted">
-            conditions d&apos;utilisation
+            conditions générales de vente
           </a>{" "}
           et notre{" "}
           <a href="/confidentialite" className="underline underline-offset-2 hover:text-ink-muted">

@@ -27,9 +27,9 @@ import { readFoundIdea } from "@/lib/onboarding/found-idea";
 // note after the answers that hurt; a projection before the pitch).
 //
 // Every note must describe something SaaSFounder actually delivers (idea,
-// build prompt, launch checklist, content ideas, AI coach, Stripe MRR
-// dashboard) — never videos made for them, a guarantee, or customer numbers
-// we don't have.
+// build prompt, launch autopilot, launch checklist, content ideas, AI coach,
+// Stripe MRR dashboard, the 48-hour guarantee on /remboursement) — never
+// videos made for them or customer numbers we don't have.
 
 export type Answers = Record<string, string | string[] | number | undefined>;
 
@@ -80,6 +80,8 @@ export type Step =
         | "objective"
         | "journey"
         | "commitment"
+        | "build"
+        | "guarantee"
         | "plans";
     });
 
@@ -489,6 +491,8 @@ export const STEPS: Step[] = [
     cta: "Continuer",
   },
   { type: "commitment", id: "commitment" },
+  { type: "build", id: "build" },
+  { type: "guarantee", id: "guarantee" },
   { type: "plans", id: "plans" },
 ];
 

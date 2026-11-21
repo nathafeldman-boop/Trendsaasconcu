@@ -22,7 +22,7 @@ Règles :
 - Exactement 3 idées, différentes entre elles.`;
 
 export async function POST(request: Request) {
-  const opened = await openAiSession();
+  const opened = await openAiSession("ideas");
   if ("response" in opened) return opened.response;
   const { session } = opened;
 

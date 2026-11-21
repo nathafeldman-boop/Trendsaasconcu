@@ -18,6 +18,8 @@ const STEP_OVERRIDES: Record<string, string> = {
   journey: "Le parcours proposé",
   method: "La méthode",
   commitment: "Engagement",
+  build: "L'IA prépare son SaaS",
+  guarantee: "Promesse de remboursement",
   plans: "Choix de la formule",
 };
 
@@ -34,7 +36,20 @@ export function stepOrder(id: string) {
   return index === -1 ? Number.MAX_SAFE_INTEGER : index;
 }
 
-const PLAN_LABELS: Record<string, string> = { monthly: "mensuelle", quarterly: "trimestrielle", annual: "annuelle" };
+const TIER_LABELS: Record<string, string> = {
+  launch: "prix de bienvenue",
+  standard: "prix standard",
+  exit: "offre avant de partir",
+  weekly: "offre 1 semaine",
+};
+
+const PLAN_LABELS: Record<string, string> = {
+  monthly: "1 mois",
+  quarterly: "3 mois",
+  lifetime: "à vie",
+  weekly: "1 semaine",
+  annual: "annuelle",
+};
 
 type Props = Record<string, unknown> | null | undefined;
 
@@ -64,13 +79,27 @@ export function eventLabel(name: string, props: Props, path?: string | null) {
     case "pricing_viewed":
       return "Voit les prix";
     case "checkout_clicked":
-      return `Choisit la formule ${PLAN_LABELS[text(p.plan)] ?? text(p.plan)}${p.tier === "standard" ? " (prix +60\u00a0%)" : p.tier === "launch" ? " (prix de lancement)" : ""}`;
+      return `Choisit la formule ${PLAN_LABELS[text(p.plan)] ?? text(p.plan)}${TIER_LABELS[text(p.tier)] ? ` (${TIER_LABELS[text(p.tier)]})` : ""}`;
+    case "plan_selected":
+      return `Sélectionne la formule ${PLAN_LABELS[text(p.plan)] ?? text(p.plan)}`;
+    case "terms_missing":
+      return "Clique sans cocher la case des CGV";
+    case "terms_accepted":
+      return `Accepte les CGV pour la formule ${PLAN_LABELS[text(p.plan)] ?? text(p.plan)}`;
+    case "exit_offer_shown":
+      return "Voit l'offre « à vie à 100 € » en voulant partir";
+    case "exit_offer_chosen":
+      return "Choisit l'offre « à vie à 100 € »";
+    case "weekly_offer_shown":
+      return "Revient d'un paiement pas terminé : voit l'offre 1 semaine";
+    case "weekly_offer_chosen":
+      return "Choisit l'offre 1 semaine à 4,99 €";
     case "checkout_reminder_sent":
       return "Reçoit l'email de rappel (paiement pas terminé)";
     case "offer_started":
-      return "Voit les prix : le compte à rebours de 10 min démarre";
+      return "Voit les prix : le chrono du prix de bienvenue démarre";
     case "offer_expired":
-      return "Laisse expirer l'offre de lancement (prix +60\u00a0%)";
+      return "Laisse expirer son prix de bienvenue";
     case "payment_completed": {
       const amount = Number(p.amount);
       const shown = Number.isFinite(amount) ? amount.toLocaleString("fr-FR", { minimumFractionDigits: 2 }) : text(p.amount);
@@ -165,6 +194,13 @@ export const ACTION_NAMES: Record<string, string> = {
   checkout_clicked: "Clique sur une formule",
   offer_started: "Démarre le chrono de l'offre",
   offer_expired: "Laisse expirer l'offre",
+  plan_selected: "Sélectionne une formule",
+  terms_missing: "Oublie la case des CGV",
+  terms_accepted: "Accepte les CGV",
+  exit_offer_shown: "Voit l'offre de sortie",
+  exit_offer_chosen: "Prend l'offre de sortie",
+  weekly_offer_shown: "Voit l'offre 1 semaine",
+  weekly_offer_chosen: "Prend l'offre 1 semaine",
   checkout_reminder_sent: "Reçoit le rappel de paiement",
   payment_completed: "Paie",
   subscription_canceled: "Résilie",

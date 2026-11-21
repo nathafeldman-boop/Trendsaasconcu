@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { getAuth } from "@/lib/supabase/auth";
+import { lacksFeature } from "@/lib/espace/access";
+import { PlanLock } from "@/components/espace/plan-lock";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { budgetUsedPercent, monthlyBudgetUsd, monthlySpendUsd } from "@/lib/claude/guard";
 import { CHECKLIST_ITEMS, CODE_TOOLS } from "@/lib/espace/content";
@@ -12,6 +14,7 @@ export const metadata: Metadata = {
 export default async function CoachPage({ searchParams }: { searchParams: Promise<{ q?: string }> }) {
   const { supabase, user } = await getAuth();
   if (!supabase || !user) return null;
+  if (await lacksFeature(supabase, user.id, "coach")) return <PlanLock feature="coach" />;
 
   const { q } = await searchParams;
   // stripe_connections has no client SELECT policy: only check it exists, server-side.

@@ -813,41 +813,21 @@ export function CommitmentScreen({ shell, onNext }: { shell: ShellProps; onNext:
   );
 }
 
-const HOURS_LABEL: Record<string, string> = { low: "moins de 5 h / semaine", mid: "5 à 15 h / semaine", high: "plus de 15 h / semaine" };
-const DEADLINE_LABEL: Record<string, string> = { asap: "le plus vite possible", "2sem": "2 semaines", "1mois": "1 mois", "3mois": "3 mois" };
 
 export function PlansScreen({ shell, answers }: { shell: ShellProps; answers: Answers }) {
   const idea = readFoundIdea(answers);
-  const recap = [
-    idea
-      ? { label: "Ton idée", value: idea.title }
-      : { label: "Ton temps", value: HOURS_LABEL[String(answers.hours)] ?? "—" },
-    { label: "Objectif", value: `${Math.round(Number(answers.revenueGoal ?? 3000)).toLocaleString("fr-FR")} € / mois` },
-    { label: "Échéance", value: DEADLINE_LABEL[String(answers.deadline)] ?? "—" },
-  ];
+  const goal = Number(answers.revenueGoal) || null;
   return (
     <StepShell
       {...shell}
-      eyebrow="Ton plan est prêt"
+      eyebrow="Dernière étape"
       title={
         <>
-          Il ne reste qu&apos;une étape :{" "}
-          <span className="font-serif italic tracking-normal text-accent">choisis ta formule.</span>
+          Débloque <span className="font-serif italic tracking-normal text-accent">{idea ? idea.title : "ton SaaS"}.</span>
         </>
       }
-      subtitle={`${idea ? `${idea.title}, ton` : "Ton idée, ton"} prompt de build et ton plan marketing se débloquent dès le paiement. Résiliable à tout moment.`}
     >
-      <div className="glass-panel mb-8 grid grid-cols-3 divide-x divide-ink/10 rounded-[18px]">
-        {recap.map((item) => (
-          <div key={item.label} className="px-3 py-4 text-center">
-            <p className="font-mono text-[10px] uppercase tracking-wider text-ink-faint">{item.label}</p>
-            <p className="mt-1 font-body text-[13px] font-medium text-ink">{item.value}</p>
-          </div>
-        ))}
-      </div>
-      <div className="-mx-2 sm:-mx-24">
-        <PricingCards />
-      </div>
+      <PricingCards goal={goal} />
       <p className="mt-6 text-center font-body text-[13px] text-ink-faint">
         <Link href="/acces" className="underline underline-offset-2 hover:text-ink-muted">
           J&apos;ai un code d&apos;accès

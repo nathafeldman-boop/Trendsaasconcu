@@ -3,16 +3,16 @@ import type { createClient } from "@/lib/supabase/server";
 import { getAuth } from "@/lib/supabase/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { costOf } from "@/lib/claude/client";
-import { PLANS } from "@/lib/stripe/plans";
+import { hasFeature, isPlanId, planFor, type Feature } from "@/lib/stripe/plans";
 
 // Hard ceiling on what one customer can cost in Claude calls per calendar
-// month (UTC). At 16,99 €/mois the margin stays large even for the heaviest
+// month (UTC). At 25 €/mois the margin stays large even for the heaviest
 // user; typical usage is a fraction of this.
 const BASE_BUDGET_USD = Number(process.env.AI_MONTHLY_BUDGET_USD) || 1.5;
 
-/** The monthly ceiling for a plan: quarterly and annual get double, as sold on the pricing cards. */
+/** The monthly ceiling for a plan: more for the longer plans (aiCredit in lib/stripe/plans.ts). */
 export function monthlyBudgetUsd(plan: string | null | undefined) {
-  return BASE_BUDGET_USD * (PLANS.find((p) => p.id === plan)?.aiCredit ?? 1);
+  return BASE_BUDGET_USD * (isPlanId(plan) ? planFor(plan).aiCredit : 1);
 }
 
 type ServerSupabase = NonNullable<Awaited<ReturnType<typeof createClient>>>;
@@ -30,11 +30,11 @@ function currentMonth() {
 }
 
 /**
- * Every Claude-backed route starts here: signed in, paying (or admin), and
- * under this month's budget. Returns either the session or the response to
- * send back as-is.
+ * Every Claude-backed route starts here: signed in, paying (or admin), on a
+ * plan that includes the feature, and under this month's budget. Returns
+ * either the session or the response to send back as-is.
  */
-export async function openAiSession(): Promise<{ session: AiSession } | { response: NextResponse }> {
+export async function openAiSession(feature?: Feature): Promise<{ session: AiSession } | { response: NextResponse }> {
   const { supabase, user } = await getAuth();
   if (!supabase) return { response: NextResponse.json({ error: "Not configured" }, { status: 503 }) };
   if (!user) return { response: NextResponse.json({ error: "Not authenticated" }, { status: 401 }) };
@@ -47,6 +47,10 @@ export async function openAiSession(): Promise<{ session: AiSession } | { respon
   // The AI is part of the paid plan: free accounts never spend API credit.
   if (!profile?.has_access && !profile?.is_admin) {
     return { response: NextResponse.json({ error: "no_access" }, { status: 403 }) };
+  }
+  // Some features come with the longer plans only (lib/stripe/plans.ts).
+  if (feature && !profile?.is_admin && !hasFeature(profile?.plan, feature)) {
+    return { response: NextResponse.json({ error: "plan", feature }, { status: 403 }) };
   }
 
   return {

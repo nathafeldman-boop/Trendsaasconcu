@@ -1,6 +1,6 @@
 import type Stripe from "stripe";
 import type { createAdminClient } from "@/lib/supabase/admin";
-import { euros, PLAN_TIERS } from "@/lib/stripe/plans";
+import { euros, isPlanId, planFor, type PriceTier } from "@/lib/stripe/plans";
 import { sendEmail } from "@/lib/email/send";
 import { logEvent } from "@/lib/analytics/server";
 
@@ -61,9 +61,11 @@ export async function sendCheckoutReminder(admin: AdminClient, session: Stripe.C
   const to = profile?.email ?? session.customer_details?.email ?? session.customer_email;
   if (!profile || !to) return;
 
-  const tier = session.metadata?.price_tier === "standard" ? "standard" : "launch";
-  const plan = PLAN_TIERS[tier].find((p) => p.id === session.metadata?.plan);
-  const planLine = plan && session.amount_total ? `${plan.label}, ${euros(session.amount_total)} /${plan.interval}` : null;
+  const tierMeta = session.metadata?.price_tier;
+  const tier: PriceTier = tierMeta === "standard" || tierMeta === "exit" ? tierMeta : "launch";
+  const planMeta = session.metadata?.plan;
+  const plan = isPlanId(planMeta) ? planFor(planMeta, tier) : null;
+  const planLine = plan && session.amount_total ? `${plan.label}, ${euros(session.amount_total)} ${plan.period}` : null;
   const url = session.after_expiration?.recovery?.url ?? `${origin}/tarifs`;
 
   const sent = await sendEmail({

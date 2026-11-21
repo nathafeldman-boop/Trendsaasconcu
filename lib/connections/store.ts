@@ -3,6 +3,7 @@ import { getAuth } from "@/lib/supabase/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { canEncrypt, decrypt, encrypt } from "@/lib/connections/crypto";
 import { refreshSupabaseToken, type TokenSet } from "@/lib/connections/oauth";
+import { hasFeature } from "@/lib/stripe/plans";
 
 export type Provider = "github" | "supabase" | "hostinger";
 export type AdminClient = NonNullable<ReturnType<typeof createAdminClient>>;
@@ -20,9 +21,12 @@ export async function openLaunchSession(): Promise<
   const { supabase, user } = await getAuth();
   if (!supabase) return { response: NextResponse.json({ error: "not_configured" }, { status: 503 }) };
   if (!user) return { response: NextResponse.json({ error: "not_authenticated" }, { status: 401 }) };
-  const { data: profile } = await supabase.from("profiles").select("has_access, is_admin").eq("id", user.id).single();
+  const { data: profile } = await supabase.from("profiles").select("has_access, is_admin, plan").eq("id", user.id).single();
   if (!profile?.has_access && !profile?.is_admin) {
     return { response: NextResponse.json({ error: "no_access" }, { status: 403 }) };
+  }
+  if (!profile?.is_admin && !hasFeature(profile?.plan, "launch")) {
+    return { response: NextResponse.json({ error: "plan", feature: "launch" }, { status: 403 }) };
   }
   const admin = createAdminClient();
   if (!admin || !canEncrypt()) return { response: NextResponse.json({ error: "not_configured" }, { status: 503 }) };

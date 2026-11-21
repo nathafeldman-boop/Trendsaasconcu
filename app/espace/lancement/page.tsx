@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { getAuth } from "@/lib/supabase/auth";
+import { lacksFeature } from "@/lib/espace/access";
+import { PlanLock } from "@/components/espace/plan-lock";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { canEncrypt } from "@/lib/connections/crypto";
 import { oauthConfig } from "@/lib/connections/oauth";
@@ -19,6 +21,7 @@ export default async function LancementPage({
 }) {
   const { supabase, user } = await getAuth();
   if (!supabase || !user) return null;
+  if (await lacksFeature(supabase, user.id, "launch")) return <PlanLock feature="launch" />;
 
   const admin = createAdminClient();
   const ready = Boolean(admin) && canEncrypt();

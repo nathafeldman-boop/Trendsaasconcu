@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { getAuth } from "@/lib/supabase/auth";
+import { lacksFeature } from "@/lib/espace/access";
+import { PlanLock } from "@/components/espace/plan-lock";
 import { getStripeMetrics } from "@/lib/stripe/metrics";
 import { RevenueTab } from "@/components/espace/revenue-tab";
 
@@ -10,6 +12,7 @@ export const metadata: Metadata = {
 export default async function RevenusPage() {
   const { supabase, user } = await getAuth();
   if (!supabase || !user) return null;
+  if (await lacksFeature(supabase, user.id, "revenue")) return <PlanLock feature="revenue" />;
 
   const [metrics, onboardingRes] = await Promise.all([
     getStripeMetrics(user.id),
