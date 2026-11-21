@@ -1,0 +1,24 @@
+import { NextResponse } from "next/server";
+import { isAdminRequest } from "@/lib/creators/admin-guard";
+import { recordPayout, setVideoStatus } from "@/lib/creators/store";
+
+export async function POST(request: Request) {
+  if (!(await isAdminRequest())) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  const body = await request.json().catch(() => null);
+
+  if (body?.action === "payout") {
+    const amount = Math.round(Number(body.amountCents));
+    if (typeof body.creatorId !== "string" || !Number.isFinite(amount) || amount <= 0) {
+      return NextResponse.json({ error: "Montant invalide" }, { status: 400 });
+    }
+    const note = typeof body.note === "string" ? body.note.slice(0, 200) : null;
+    return NextResponse.json({ ok: await recordPayout(body.creatorId, amount, note) });
+  }
+
+  if (body?.action === "video-status" && typeof body.videoId === "string" && ["active", "rejected"].includes(body.status)) {
+    const reason = typeof body.reason === "string" ? body.reason.slice(0, 200) : null;
+    return NextResponse.json({ ok: await setVideoStatus(body.videoId, body.status, reason) });
+  }
+
+  return NextResponse.json({ error: "Unknown action" }, { status: 400 });
+}

@@ -32,6 +32,11 @@ export default function ConfidentialitePage() {
             lisible que par nos serveurs, jamais par un autre utilisateur ni transmise à un tiers autre
             que Stripe lui-même.
           </li>
+          <li>
+            Si tu rejoins le programme créateurs : ton nom, ton @ TikTok, ton numéro de téléphone, tes
+            coordonnées de paiement et les liens de tes vidéos (avec leurs vues publiques). Ils servent
+            uniquement à te contacter et à te payer, et ne sont visibles que par l&apos;équipe SaaSFounder.
+          </li>
         </ul>
       </section>
 

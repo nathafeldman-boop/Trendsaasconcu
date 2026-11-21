@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { createStripeClient } from "@/lib/stripe/client";
 import { computeMrr } from "@/lib/stripe/mrr";
@@ -115,7 +116,15 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
 
   return (
     <div className="mx-auto max-w-6xl px-5 pb-20 pt-6 sm:px-8">
-      <h1 className="font-display text-3xl font-semibold text-ink">Admin</h1>
+      <div className="flex items-center justify-between gap-4">
+        <h1 className="font-display text-3xl font-semibold text-ink">Admin</h1>
+        <Link
+          href="/admin/createurs"
+          className="rounded-full border border-ink/15 px-4 py-2 font-body text-[13px] text-ink-muted transition-colors hover:border-accent/40 hover:text-ink"
+        >
+          Créateurs
+        </Link>
+      </div>
       <p className="mt-1 font-body text-ink-muted">Le parcours de tes visiteurs, tes revenus et la gestion des accès.</p>
       <div className="mt-8">
         <AnalyticsDashboard period={period} data={(analytics.data as Analytics | null) ?? null} feed={feed} />
