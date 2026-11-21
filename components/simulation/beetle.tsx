@@ -37,7 +37,7 @@ export function Beetle() {
       }}
       transition={{ duration: 11, delay: 1.4, times: [0, 0.22, 0.4, 0.56, 0.76, 1], ease: "linear" }}
     >
-      <svg width="34" height="44" viewBox="0 0 40 52" className="drop-shadow-[0_3px_4px_rgba(0,0,0,0.55)]">
+      <svg viewBox="0 0 40 52" className="h-auto w-[34px] drop-shadow-[0_3px_4px_rgba(0,0,0,0.55)] lg:w-[58px]">
         <defs>
           <radialGradient id="beetle-shell" cx="38%" cy="30%" r="75%">
             <stop offset="0%" stopColor="#5a3b22" />

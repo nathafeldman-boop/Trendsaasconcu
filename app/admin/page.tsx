@@ -119,7 +119,7 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
       <div className="flex items-center justify-between gap-4">
         <h1 className="font-display text-3xl font-semibold text-ink">Admin</h1>
         <div className="flex gap-2">
-          <Link href="/admin/simulation" className="rounded-full border border-ink/15 px-4 py-2 font-body text-[13px] text-ink-muted transition-colors hover:border-accent/40 hover:text-ink">
+          <Link href="/simulation" className="rounded-full border border-ink/15 px-4 py-2 font-body text-[13px] text-ink-muted transition-colors hover:border-accent/40 hover:text-ink">
             Simulation
           </Link>
           <Link href="/admin/createurs" className="rounded-full border border-ink/15 px-4 py-2 font-body text-[13px] text-ink-muted transition-colors hover:border-accent/40 hover:text-ink">

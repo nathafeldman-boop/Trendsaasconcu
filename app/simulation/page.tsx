@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Simulation } from "@/components/simulation/simulation";
 
 export const metadata: Metadata = {
-  title: "Simulation — Admin SaaSFounder",
+  title: "SaaSFounder.fr",
   robots: { index: false, follow: false },
 };
 

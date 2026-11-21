@@ -15,6 +15,8 @@ export default function robots(): MetadataRoute.Robots {
         "/mot-de-passe-oublie",
         "/reinitialiser-mot-de-passe",
         "/acces",
+        "/simulation",
+        "/createurs",
       ],
     },
     sitemap: "https://saasfounder.fr/sitemap.xml",
