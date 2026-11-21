@@ -8,15 +8,10 @@ import { STEPS, getSequence, type Answers, type Step } from "@/components/onboar
 import {
   AccountScreen,
   AnalysisScreen,
-  BarrierScreen,
-  CommitmentScreen,
-  JourneyScreen,
   LoadingScreen,
   MessageScreen,
   MultiScreen,
-  ObjectiveScreen,
   PlansScreen,
-  ProjectionScreen,
   Saas101Screen,
   ScaleScreen,
   SingleScreen,
@@ -25,7 +20,8 @@ import {
   UrlScreen,
 } from "@/components/onboarding/funnel-screens";
 import { IdeaRevealScreen } from "@/components/onboarding/idea-reveal";
-import { BuildScreen, GuaranteeScreen } from "@/components/onboarding/build-screen";
+import { BuildScreen } from "@/components/onboarding/build-screen";
+import { PhoneScreen, PotentialScreen } from "@/components/onboarding/potential-screen";
 import { ideaToText, readFoundIdea } from "@/lib/onboarding/found-idea";
 
 // v2: the funnel was rebuilt (different questions and order), so answers and
@@ -73,18 +69,13 @@ export function OnboardingWizard() {
   const [stepId, setStepId] = useState(() => readStoredState().stepId);
   const [answers, setAnswers] = useState<Answers>(() => readStoredState().answers);
   const [signedIn, setSignedIn] = useState<boolean | null>(null);
-  const [firstName, setFirstName] = useState<string | null>(null);
 
-  // Who's here: decides whether the signup step shows, and the name used
-  // on the "voilà comment on t'amène..." screen.
+  // Who's here: decides whether the signup step shows.
   useEffect(() => {
     const supabase = createClient();
     if (!supabase) return;
     supabase.auth.getUser().then(({ data }) => {
       setSignedIn(!!data.user);
-      const meta = data.user?.user_metadata ?? {};
-      const name = String(meta.first_name ?? meta.given_name ?? meta.full_name ?? meta.name ?? "").trim().split(/\s+/)[0];
-      setFirstName(name || null);
     });
   }, []);
 
@@ -200,10 +191,6 @@ export function OnboardingWizard() {
         return <LoadingScreen shell={shell} answers={answers} onAnswer={answer} onNext={goNext} />;
       case "idea":
         return <IdeaRevealScreen shell={shell} answers={answers} onAnswer={answer} onNext={goNext} />;
-      case "projection":
-        return <ProjectionScreen shell={shell} answers={answers} onNext={next} />;
-      case "barrier":
-        return <BarrierScreen shell={shell} onNext={next} />;
       case "account":
         return (
           <AccountScreen
@@ -217,16 +204,12 @@ export function OnboardingWizard() {
             }}
           />
         );
-      case "objective":
-        return <ObjectiveScreen shell={shell} answers={answers} onNext={next} />;
-      case "journey":
-        return <JourneyScreen shell={shell} firstName={firstName} onNext={next} />;
-      case "commitment":
-        return <CommitmentScreen shell={shell} onNext={next} />;
+      case "potential":
+        return <PotentialScreen shell={shell} answers={answers} onNext={next} />;
+      case "phone":
+        return <PhoneScreen shell={shell} answers={answers} onNext={next} />;
       case "build":
         return <BuildScreen shell={shell} answers={answers} onNext={next} />;
-      case "guarantee":
-        return <GuaranteeScreen shell={shell} onNext={next} />;
       case "plans":
         return <PlansScreen shell={shell} answers={answers} />;
     }

@@ -7,19 +7,16 @@ import { Check, PenLine, Sparkles } from "lucide-react";
 import { StepShell } from "@/components/onboarding/step-shell";
 import { ChoiceOption } from "@/components/onboarding/choice-option";
 import { ScaleQuestion } from "@/components/onboarding/scale-question";
-import { CommitmentHold } from "@/components/onboarding/commitment-hold";
 import { Illustration, RecurringRevenue } from "@/components/onboarding/illustrations";
+import { Beetle } from "@/components/onboarding/beetle";
 import { PricingCards } from "@/components/pricing/pricing-cards";
 import { SignupForm } from "@/components/auth/signup-form";
 import { Button } from "@/components/ui/button";
 import { BrandLogo } from "@/components/ui/brand-logo";
-import { CountUp } from "@/components/ui/count-up";
 import {
-  JOURNEY,
   LEVERS,
   LOADING_STEPS,
   REFERENCE_PRICE,
-  projection,
   revenueTier,
   type Answers,
   type Option,
@@ -27,8 +24,6 @@ import {
 } from "@/components/onboarding/funnel";
 import { readFoundIdea } from "@/lib/onboarding/found-idea";
 import { requestIdea } from "@/lib/onboarding/idea-request";
-import { VslPlayer } from "@/components/vsl/vsl-player";
-import { JOURNEY_FILM } from "@/lib/vsl/scenes";
 
 const EASE: [number, number, number, number] = [0.16, 1, 0.3, 1];
 const FREE_ID = "autre";
@@ -259,6 +254,9 @@ export function ScaleScreen({ shell, step, answers, onAnswer, onNext }: ScreenPr
 
 export function SliderScreen({ shell, step, answers, onAnswer, onNext }: ScreenProps<"slider">) {
   const value = Number(answers[step.id] ?? step.initial);
+  // The idea validated before the account sets the price per customer.
+  const idea = readFoundIdea(answers);
+  const price = idea?.price_per_month ?? REFERENCE_PRICE;
   const tier = revenueTier(value);
   const percent = ((value - step.min) / (step.max - step.min)) * 100;
   return (
@@ -269,6 +267,7 @@ export function SliderScreen({ shell, step, answers, onAnswer, onNext }: ScreenP
       subtitle={step.help}
       footer={<ContinueButton onClick={() => onNext(onAnswer({ [step.id]: value }))} />}
     >
+      {step.beetle && <Beetle />}
       <div className="glass-panel rounded-[22px] p-6">
         <div className="flex items-center justify-between gap-3">
           <p className="font-display text-[40px] font-medium tracking-[-0.04em] text-ink tabular-nums">{euros(value)}</p>
@@ -313,8 +312,8 @@ export function SliderScreen({ shell, step, answers, onAnswer, onNext }: ScreenP
 
         <div className="mt-6 h-px bg-ink/10" />
         <p className="mt-5 font-body text-[14px] leading-relaxed text-ink-muted">
-          À {REFERENCE_PRICE} € par mois et par client, ça fait{" "}
-          <span className="font-medium text-accent">{Math.ceil(value / REFERENCE_PRICE)} clients</span> à trouver.
+          {idea ? `Avec ${idea.title} à ${price} € par mois et par client` : `À ${price} € par mois et par client`}, ça fait{" "}
+          <span className="font-medium text-accent">{Math.ceil(value / price)} clients</span> à trouver.
         </p>
         <AnimatePresence mode="wait">
           <motion.p
@@ -593,99 +592,6 @@ export function LoadingScreen({ shell, answers, onAnswer, onNext }: Omit<ScreenP
   );
 }
 
-const SEGMENT_COLORS = ["bg-accent", "bg-white/70", "bg-accent-deep"];
-
-export function ProjectionScreen({ shell, answers, onNext }: { shell: ShellProps; answers: Answers; onNext: () => void }) {
-  const { sources, low, high, customers, price, ideaTitle, goal } = projection(answers);
-  const total = sources.reduce((n, s) => n + (s.low + s.high) / 2, 0) || 1;
-  return (
-    <StepShell
-      {...shell}
-      eyebrow="Ta projection"
-      title={ideaTitle ? `Voilà ce que ${ideaTitle} pourrait te rapporter.` : "Voilà ce que ton SaaS pourrait rapporter."}
-      footer={<ContinueButton onClick={onNext} />}
-    >
-      <div className="glass-panel relative overflow-hidden rounded-[24px] p-6">
-        <div aria-hidden className="absolute -right-16 -top-16 size-48 rounded-full bg-accent/15 blur-[60px]" />
-        <p className="relative font-mono text-[11px] uppercase tracking-[0.2em] text-ink-faint">Ton potentiel</p>
-        <p className="relative mt-2 font-display text-[36px] font-medium leading-tight tracking-[-0.04em] text-ink sm:text-[42px]">
-          <CountUp value={low} format={(n) => euros(n)} /> <span className="font-serif text-[0.8em] italic text-ink-faint">à</span>{" "}
-          <span className="text-accent">
-            <CountUp value={high} format={(n) => euros(n)} />
-          </span>
-        </p>
-        <p className="relative font-body text-[13px] text-ink-faint">par mois</p>
-
-        <div className="relative mt-6 flex h-2.5 gap-1 overflow-hidden rounded-full">
-          {sources.map((source, index) => (
-            <motion.span
-              key={source.label}
-              initial={{ flexGrow: 0 }}
-              animate={{ flexGrow: (source.low + source.high) / 2 / total }}
-              transition={{ duration: 0.9, delay: 0.3 + index * 0.15, ease: EASE }}
-              className={`h-full rounded-full ${SEGMENT_COLORS[index % SEGMENT_COLORS.length]}`}
-              style={{ flexBasis: 0 }}
-            />
-          ))}
-        </div>
-
-        <div className="relative mt-6 grid grid-cols-3 gap-3 border-t border-ink/10 pt-5">
-          <div>
-            <p className="font-display text-xl font-medium text-ink">{customers}</p>
-            <p className="font-body text-[12px] text-ink-faint">clients</p>
-          </div>
-          <div>
-            <p className="font-display text-xl font-medium text-ink">{price} €</p>
-            <p className="font-body text-[12px] text-ink-faint">par mois</p>
-          </div>
-          <div>
-            <p className="font-display text-xl font-medium text-accent">{euros(goal)}</p>
-            <p className="font-body text-[12px] text-ink-faint">ton objectif</p>
-          </div>
-        </div>
-      </div>
-
-      <div className="mt-4 flex flex-col gap-2">
-        {sources.map((source, index) => (
-          <div key={source.label} className="flex items-center gap-3 rounded-[14px] border border-ink/8 bg-ink/[0.02] px-4 py-3">
-            <span className={`size-2.5 rounded-full ${SEGMENT_COLORS[index % SEGMENT_COLORS.length]}`} />
-            <span className="flex-1 font-body text-[14px] text-ink">{source.label}</span>
-            <span className="font-mono text-[12px] text-ink-muted">
-              {euros(source.low)} – {euros(source.high)}
-            </span>
-          </div>
-        ))}
-      </div>
-      <p className="mt-4 font-body text-[12px] leading-relaxed text-ink-faint">
-        Scénario, pas une promesse : calculé à partir de tes réponses, pour un abonnement à {price} € par mois
-        {ideaTitle ? ` (${ideaTitle})` : ""}.
-      </p>
-    </StepShell>
-  );
-}
-
-export function BarrierScreen({ shell, onNext }: { shell: ShellProps; onNext: () => void }) {
-  return (
-    <StepShell
-      {...shell}
-      center
-      eyebrow="Ce qui te bloque"
-      title={
-        <>
-          Il te manque la méthode,{" "}
-          <span className="font-serif italic tracking-normal text-accent">et les outils clé en main.</span>
-        </>
-      }
-      subtitle="Bonne nouvelle : c'est exactement ce que SaaSFounder te donne."
-      footer={<ContinueButton onClick={onNext} />}
-    >
-      <div className="flex justify-center">
-        <Illustration id="rocket" className="size-32" />
-      </div>
-    </StepShell>
-  );
-}
-
 export function AccountScreen({ shell, answers, onDone }: { shell: ShellProps; answers: Answers; onDone: () => void }) {
   const idea = readFoundIdea(answers);
   return (
@@ -709,110 +615,6 @@ export function AccountScreen({ shell, answers, onDone }: { shell: ShellProps; a
     </StepShell>
   );
 }
-
-export function ObjectiveScreen({ shell, answers, onNext }: { shell: ShellProps; answers: Answers; onNext: () => void }) {
-  const phrase = String(answers.phrase ?? "").trim();
-  return (
-    <StepShell
-      {...shell}
-      center
-      eyebrow="Ton cap"
-      title={
-        <>
-          C&apos;est un cap réaliste.{" "}
-          <span className="font-serif italic tracking-normal text-accent">Et on va l&apos;atteindre avec toi.</span>
-        </>
-      }
-      footer={<ContinueButton onClick={onNext} />}
-    >
-      <div className="flex flex-col items-center gap-6">
-        <Illustration id="target" className="size-28" />
-        {phrase ? (
-          <motion.blockquote
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5, duration: 0.5 }}
-            className="glass-panel rounded-[20px] px-6 py-5 font-serif text-[20px] italic leading-snug text-ink"
-          >
-            « {phrase} »
-          </motion.blockquote>
-        ) : null}
-      </div>
-    </StepShell>
-  );
-}
-
-export function JourneyScreen({ shell, firstName, onNext }: { shell: ShellProps; firstName: string | null; onNext: () => void }) {
-  return (
-    <StepShell
-      {...shell}
-      eyebrow="Ce qu'on fait maintenant"
-      title={
-        <>
-          {firstName ? `${firstName}, voilà` : "Voilà"} comment on t&apos;amène{" "}
-          <span className="font-serif italic tracking-normal text-accent">à tes premiers revenus.</span>
-        </>
-      }
-      footer={<ContinueButton onClick={onNext} />}
-    >
-      <div className="mb-8 sm:-mx-16">
-        <VslPlayer film={JOURNEY_FILM} autoPlay="in-view" />
-        <p className="mt-3 text-center font-body text-[12px] text-ink-faint">Les vrais écrans de ton espace, avec un projet de démonstration.</p>
-      </div>
-      <ol className="relative flex flex-col gap-5">
-        <motion.span
-          aria-hidden
-          initial={{ scaleY: 0 }}
-          animate={{ scaleY: 1 }}
-          transition={{ duration: 1.2, delay: 0.3, ease: EASE }}
-          className="absolute bottom-6 left-[19px] top-6 w-px origin-top bg-gradient-to-b from-accent via-accent/40 to-transparent"
-        />
-        {JOURNEY.map((item, index) => (
-          <motion.li
-            key={item.num}
-            initial={{ opacity: 0, x: -12 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.45, delay: 0.3 + index * 0.25, ease: EASE }}
-            className="relative flex gap-4"
-          >
-            <span className="relative z-10 flex size-10 shrink-0 items-center justify-center rounded-full border border-accent/50 bg-canvas font-mono text-[13px] text-accent shadow-[0_0_16px_-4px_var(--color-accent)]">
-              {item.num}
-            </span>
-            <div className="glass-panel flex-1 rounded-[16px] p-4">
-              <p className="font-display text-[16px] font-medium text-ink">{item.title}</p>
-              <p className="mt-1 font-body text-[13px] leading-relaxed text-ink-muted">{item.body}</p>
-            </div>
-          </motion.li>
-        ))}
-      </ol>
-    </StepShell>
-  );
-}
-
-export function CommitmentScreen({ shell, onNext }: { shell: ShellProps; onNext: () => void }) {
-  return (
-    <StepShell
-      {...shell}
-      center
-      eyebrow="Ta promesse"
-      title={
-        <>
-          Avant d&apos;aller plus loin,{" "}
-          <span className="font-serif italic tracking-normal text-accent">fais-toi une promesse.</span>
-        </>
-      }
-    >
-      <blockquote className="mx-auto max-w-md font-serif text-[20px] italic leading-relaxed text-ink-muted">
-        « Je m&apos;engage à aller au bout de ce projet. À avancer même les jours où j&apos;ai moins envie. Et à me donner une
-        vraie chance de réussir. »
-      </blockquote>
-      <div className="mt-10 flex justify-center">
-        <CommitmentHold onCommit={onNext} />
-      </div>
-    </StepShell>
-  );
-}
-
 
 export function PlansScreen({ shell, answers }: { shell: ShellProps; answers: Answers }) {
   const idea = readFoundIdea(answers);

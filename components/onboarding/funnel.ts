@@ -9,6 +9,7 @@ import {
   Hammer,
   HeartPulse,
   House,
+  Landmark,
   Laptop,
   Scissors,
   Sprout,
@@ -19,12 +20,12 @@ import type { Brand } from "@/components/ui/brand-logo";
 import type { IllustrationId } from "@/components/onboarding/illustrations";
 import { readFoundIdea } from "@/lib/onboarding/found-idea";
 
-// The onboarding funnel as data, in four acts: where you are, what you want
-// (ending on the idea we find for them, so they try the product before
-// signing up), your account, then what's in your way — ending on the plans.
-// The order follows the funnel that converts best in our market (account
-// mid-way, once the person has invested in their answers; a personalised
-// note after the answers that hurt; a projection before the pitch).
+// The onboarding funnel as data, in four acts: simple questions about them
+// and what they like, the idea found for them and validated (they try the
+// product before signing up), their account, then their business: revenue
+// goal, how they get paid, their first sale, two yes/no choices, their
+// potential, the phone, the generation of their business — and the plans.
+// The order follows the funnels that convert best in our market.
 //
 // Every note must describe something SaaSFounder actually delivers (idea,
 // build prompt, launch autopilot, launch checklist, content ideas, AI coach,
@@ -57,7 +58,7 @@ export type Step =
     })
   | (Asked & { type: "multi"; options: Option[]; free?: { placeholder: string } })
   | (Asked & { type: "scale" })
-  | (Asked & { type: "slider"; min: number; max: number; stepBy: number; initial: number })
+  | (Asked & { type: "slider"; min: number; max: number; stepBy: number; initial: number; beetle?: boolean })
   | (Asked & { type: "text"; placeholder: string; optional?: boolean })
   | (Asked & { type: "url"; placeholder: string })
   | (Base & {
@@ -74,14 +75,10 @@ export type Step =
         | "analysis"
         | "loading"
         | "idea"
-        | "projection"
-        | "barrier"
         | "account"
-        | "objective"
-        | "journey"
-        | "commitment"
+        | "potential"
+        | "phone"
         | "build"
-        | "guarantee"
         | "plans";
     });
 
@@ -141,14 +138,8 @@ export const LOADING_STEPS = [
   "Sélection de ton idée",
 ];
 
-export const JOURNEY = [
-  { num: "01", title: "On trouve ton idée et on écrit ton prompt de build", body: "Une idée choisie pour ton profil, et le prompt à coller dans Claude, Replit ou Lovable." },
-  { num: "02", title: "Tu lances ton site avec l'IA, checklist en main", body: "Une étape à la fois, avec de l'aide détaillée dès que tu bloques." },
-  { num: "03", title: "On t'aide à trouver tes premiers clients", body: "Ton plan marketing, tes idées de contenu, et ton MRR Stripe suivi en direct." },
-];
-
 export const STEPS: Step[] = [
-  // ───────── Acte 1 · Où tu en es
+  // ───────── Acte 1 · Toi : des questions simples, puis ce que tu aimes
   {
     type: "single",
     id: "age",
@@ -241,8 +232,6 @@ export const STEPS: Step[] = [
     placeholder: "monsaas.fr",
   },
   { type: "analysis", id: "analysis", condition: (a) => a.site === "oui" },
-
-  // ───────── Acte 2 · Ce que tu vises
   {
     type: "single",
     id: "dream",
@@ -291,103 +280,6 @@ export const STEPS: Step[] = [
       { id: "low", label: "Moins de 5 h", detail: "le soir, quand tout est calme" },
       { id: "mid", label: "5 à 15 h", detail: "un vrai projet à côté" },
       { id: "high", label: "Plus de 15 h", detail: "c'est mon projet principal" },
-    ],
-  },
-  {
-    type: "slider",
-    id: "revenueGoal",
-    kicker: "Ton objectif",
-    title: "Combien tu veux gagner par mois avec ton SaaS ?",
-    help: "Glisse le curseur. Plus tu vas à droite, plus l'objectif est ambitieux, et plus le chemin change.",
-    min: 1000,
-    max: 50000,
-    stepBy: 500,
-    initial: 3000,
-  },
-  {
-    type: "single",
-    id: "domain",
-    kicker: "Ton terrain",
-    title: "Dans quel univers tu te sens le plus à l'aise ?",
-    help: "Ton métier, ta passion, ton entourage : c'est là que tu trouveras tes premiers clients le plus vite.",
-    grid: true,
-    free: { placeholder: "Ex : l'équitation, la musique, les animaux…" },
-    options: [
-      { id: "sport", label: "Sport et bien-être", detail: "coachs, salles, yoga", icon: Dumbbell },
-      { id: "beaute", label: "Beauté", detail: "instituts, coiffeurs, barbiers", icon: Scissors },
-      { id: "resto", label: "Restauration et commerce", detail: "restos, boutiques", icon: UtensilsCrossed },
-      { id: "immo", label: "Immobilier", detail: "agents, locations", icon: House },
-      { id: "education", label: "Éducation et coaching", detail: "profs, formateurs", icon: GraduationCap },
-      { id: "createurs", label: "Création de contenu", detail: "créateurs, influence", icon: Clapperboard },
-      { id: "freelance", label: "Freelances et agences", detail: "indépendants, studios", icon: Laptop },
-      { id: "sante", label: "Santé", detail: "praticiens, habitudes", icon: HeartPulse },
-      { id: "btp", label: "Artisans et BTP", detail: "chantiers, devis", icon: Hammer },
-      { id: "any", label: "Surprends-moi", detail: "je n'ai pas de préférence", icon: Dices },
-    ],
-  },
-  {
-    type: "single",
-    id: "market",
-    kicker: "Tes futurs clients",
-    title: "Tu préfères vendre à qui ?",
-    help: "Il n'y a pas de bonne réponse dans l'absolu. Il y a celle où tu tiendras six mois.",
-    notesVisible: true,
-    options: [
-      { id: "b2b", label: "Des professionnels", detail: "commerces, agences, PME", note: "Peu de clients qui paient bien : un pro paie volontiers pour gagner du temps. Quelques dizaines suffisent." },
-      { id: "b2c", label: "Des particuliers", detail: "gros volume, petits prix", note: "Des petits paiements en grand nombre : il en faut beaucoup, et c'est ton contenu qui les amène." },
-    ],
-  },
-  { type: "loading", id: "loading" },
-  { type: "idea", id: "idea" },
-  { type: "projection", id: "projection" },
-  {
-    type: "barrier",
-    id: "barrier",
-    condition: (a) => a.site !== "oui" || a.currentIncome === "rien" || a.experience === "jamais",
-  },
-  {
-    type: "message",
-    id: "welcome",
-    illustration: "star",
-    kicker: "Bienvenue",
-    title: "Bienvenue dans SaaSFounder.",
-    sub: "Notre but : que tu crées ton SaaS et que tu encaisses dès maintenant. Ton idée, le prompt exact pour la construire avec l'IA et le plan pour trouver tes premiers clients, au même endroit.",
-    cta: "Suivant",
-  },
-  {
-    type: "message",
-    id: "ai",
-    illustration: "phone",
-    kicker: "Le prompt",
-    title: "L'IA écrit le code. Toi, tu pilotes.",
-    sub: "Pas besoin de savoir coder : ton prompt de build décrit tout, et ton coach IA t'aide dès que tu bloques, même sur une capture d'écran.",
-    cta: "Suivant",
-  },
-  {
-    type: "message",
-    id: "life",
-    illustration: "podium",
-    kicker: "L'objectif",
-    title: "Change de vie, une étape à la fois.",
-    sub: "Un SaaS qui tourne, ce sont des revenus qui ne dépendent plus de tes heures. Il est temps de t'y mettre.",
-    cta: "Continuer",
-  },
-
-  // ───────── Acte 3 · Ton compte (once the answers are worth keeping)
-  { type: "account", id: "account" },
-
-  // ───────── Acte 4 · Ce qui te freine, et le plan
-  {
-    type: "single",
-    id: "payments",
-    kicker: "Tes paiements",
-    title: "Sur quoi tu veux recevoir tes paiements ?",
-    help: "Rien n'est définitif : on prépare ton produit pour l'outil que tu choisis.",
-    options: [
-      { id: "stripe", label: "Stripe", detail: "cartes, abonnements, le standard des SaaS", brand: "stripe" },
-      { id: "paypal", label: "PayPal", detail: "le plus connu des acheteurs", brand: "paypal" },
-      { id: "revolut", label: "Revolut", detail: "encaissement rapide, frais bas", brand: "revolut" },
-      { id: "nsp", label: "Je ne sais pas encore", detail: "on te conseillera" },
     ],
   },
   {
@@ -458,19 +350,6 @@ export const STEPS: Step[] = [
     ],
   },
   {
-    type: "single",
-    id: "deadline",
-    kicker: "Ton horloge",
-    title: "D'ici quand ça doit marcher ?",
-    help: "Une date change tout : elle décide de la taille du produit qu'on peut viser.",
-    options: [
-      { id: "asap", label: "Le plus vite possible" },
-      { id: "2sem", label: "D'ici 2 semaines" },
-      { id: "1mois", label: "D'ici 1 mois" },
-      { id: "3mois", label: "D'ici 3 mois" },
-    ],
-  },
-  {
     type: "text",
     id: "phrase",
     kicker: "Tes mots",
@@ -479,20 +358,143 @@ export const STEPS: Step[] = [
     placeholder: "Ex : 2 000 € par mois qui tombent sans que je sois devant l'écran, pour ne plus dépendre de mon employeur.",
     optional: true,
   },
-  { type: "objective", id: "objective" },
-  { type: "journey", id: "journey" },
+  {
+    type: "single",
+    id: "domain",
+    kicker: "Ton terrain",
+    title: "Dans quel univers tu te sens le plus à l'aise ?",
+    help: "Ton métier, ta passion, ton entourage : c'est là que tu trouveras tes premiers clients le plus vite.",
+    grid: true,
+    free: { placeholder: "Ex : l'équitation, la musique, les animaux…" },
+    options: [
+      { id: "sport", label: "Sport et bien-être", detail: "coachs, salles, yoga", icon: Dumbbell },
+      { id: "beaute", label: "Beauté", detail: "instituts, coiffeurs, barbiers", icon: Scissors },
+      { id: "resto", label: "Restauration et commerce", detail: "restos, boutiques", icon: UtensilsCrossed },
+      { id: "immo", label: "Immobilier", detail: "agents, locations", icon: House },
+      { id: "education", label: "Éducation et coaching", detail: "profs, formateurs", icon: GraduationCap },
+      { id: "createurs", label: "Création de contenu", detail: "créateurs, influence", icon: Clapperboard },
+      { id: "freelance", label: "Freelances et agences", detail: "indépendants, studios", icon: Laptop },
+      { id: "sante", label: "Santé", detail: "praticiens, habitudes", icon: HeartPulse },
+      { id: "btp", label: "Artisans et BTP", detail: "chantiers, devis", icon: Hammer },
+      { id: "any", label: "Surprends-moi", detail: "je n'ai pas de préférence", icon: Dices },
+    ],
+  },
+  {
+    type: "single",
+    id: "market",
+    kicker: "Tes futurs clients",
+    title: "Tu préfères vendre à qui ?",
+    help: "Il n'y a pas de bonne réponse dans l'absolu. Il y a celle où tu tiendras six mois.",
+    notesVisible: true,
+    options: [
+      { id: "b2b", label: "Des professionnels", detail: "commerces, agences, PME", note: "Peu de clients qui paient bien : un pro paie volontiers pour gagner du temps. Quelques dizaines suffisent." },
+      { id: "b2c", label: "Des particuliers", detail: "gros volume, petits prix", note: "Des petits paiements en grand nombre : il en faut beaucoup, et c'est ton contenu qui les amène." },
+    ],
+  },
+  // ───────── Acte 2 · Ton idée, trouvée et validée avant le compte
+  { type: "loading", id: "loading" },
+  { type: "idea", id: "idea" },
   {
     type: "message",
-    id: "method",
-    illustration: "target",
-    kicker: "Ce qui te sépare de tout ça",
-    title: "La seule chose qui te retient, c'est une méthode claire.",
-    sub: "Pas plus de motivation, pas plus de temps, pas plus de talent. Une méthode, et quelqu'un pour te guider.",
+    id: "welcome",
+    illustration: "star",
+    kicker: "Bienvenue",
+    title: "Bienvenue dans SaaSFounder.",
+    sub: "Notre but : que tu crées ton SaaS et que tu encaisses dès maintenant. Ton idée, le prompt exact pour la construire avec l'IA et le plan pour trouver tes premiers clients, au même endroit.",
+    cta: "Suivant",
+  },
+  {
+    type: "message",
+    id: "ai",
+    illustration: "phone",
+    kicker: "Le prompt",
+    title: "L'IA écrit le code. Toi, tu pilotes.",
+    sub: "Pas besoin de savoir coder : ton prompt de build décrit tout, et ton coach IA t'aide dès que tu bloques, même sur une capture d'écran.",
+    cta: "Suivant",
+  },
+  {
+    type: "message",
+    id: "life",
+    illustration: "podium",
+    kicker: "L'objectif",
+    title: "Change de vie, une étape à la fois.",
+    sub: "Un SaaS qui tourne, ce sont des revenus qui ne dépendent plus de tes heures. Il est temps de t'y mettre.",
     cta: "Continuer",
   },
-  { type: "commitment", id: "commitment" },
+  // ───────── Acte 3 · Ton compte
+  { type: "account", id: "account" },
+  // ───────── Acte 4 · Ton business : objectif, paiements, potentiel, génération, formules
+  {
+    type: "slider",
+    beetle: true,
+    id: "revenueGoal",
+    kicker: "Ton objectif",
+    title: "Combien tu veux gagner par mois avec ton SaaS ?",
+    help: "Glisse le curseur. Plus tu vas à droite, plus l'objectif est ambitieux, et plus le chemin change.",
+    min: 1000,
+    max: 50000,
+    stepBy: 500,
+    initial: 3000,
+  },
+  {
+    type: "single",
+    id: "payments",
+    kicker: "Tes paiements",
+    title: "Sur quoi tu veux recevoir tes paiements ?",
+    help: "Rien n'est définitif : on prépare ton produit pour ce que tu choisis.",
+    options: [
+      { id: "stripe", label: "Stripe", detail: "cartes, abonnements, le standard des SaaS", brand: "stripe" },
+      { id: "paypal", label: "PayPal", detail: "le plus connu des acheteurs", brand: "paypal" },
+      { id: "revolut", label: "Revolut", detail: "encaissement rapide, frais bas", brand: "revolut" },
+      { id: "banque", label: "Mon compte bancaire", detail: "les paiements arrivent par virement", icon: Landmark },
+    ],
+  },
+  {
+    type: "single",
+    id: "deadline",
+    kicker: "Ta première vente",
+    title: "Quand veux-tu faire ta première vente ?",
+    help: "Une date change tout : elle décide de la taille du produit qu'on vise et de ton rythme.",
+    options: [
+      { id: "aujourdhui", label: "Aujourd'hui" },
+      { id: "semaine", label: "Cette semaine" },
+      { id: "mois", label: "Dans le mois" },
+      { id: "3mois", label: "D'ici 3 mois" },
+    ],
+  },
+  {
+    type: "single",
+    id: "autoClients",
+    kicker: "Tes clients",
+    title: "Tu veux qu'on t'amène des clients automatiquement ?",
+    options: [
+      {
+        id: "oui",
+        label: "Oui",
+        detail: "je veux des clients sans courir après",
+        note: "Noté : ton plan marketing et tes scripts vidéo seront taillés pour faire venir des clients chaque semaine, sans démarchage.",
+      },
+      { id: "non", label: "Non", detail: "je préfère m'en charger", note: "D'accord : tu gardes la main, et ton plan te dit quoi faire chaque jour pour trouver tes clients." },
+    ],
+  },
+  {
+    type: "single",
+    id: "doneForYou",
+    kicker: "Ton business",
+    title: "Tu veux qu'on crée ton business à ta place ?",
+    options: [
+      {
+        id: "oui",
+        label: "Oui",
+        detail: "je veux que ce soit fait pour moi",
+        note: "Noté : le Pilote auto crée ton dépôt, ta base de données et branche ton domaine pour toi. Toi, tu colles le prompt et tu valides.",
+      },
+      { id: "non", label: "Non", detail: "je veux le construire moi-même", note: "D'accord : tu construis avec le prompt, étape par étape, et l'IA t'explique tout." },
+    ],
+  },
+  { type: "potential", id: "potential" },
+  { type: "phone", id: "phone" },
   { type: "build", id: "build" },
-  { type: "guarantee", id: "guarantee" },
   { type: "plans", id: "plans" },
 ];
 
@@ -504,29 +506,16 @@ export function revenueTier(goal: number) {
   return REVENUE_TIERS.find((tier) => goal <= tier.upTo) ?? REVENUE_TIERS[REVENUE_TIERS.length - 1];
 }
 
-/** Scenario ranges per revenue source, from the goal and the lever answers. */
-export function projection(answers: Answers) {
-  const goal = Number(answers.revenueGoal ?? 3000);
-  const hours = answers.hours;
-  const pace = hours === "high" ? 1.15 : hours === "low" ? 0.7 : 0.9;
-  const sources = [{ label: "Ton produit seul", low: 0.25 * goal * pace, high: 0.5 * goal * pace }];
-  for (const lever of LEVERS) {
-    if (answers[`lever_${lever.id}`] === "oui") {
-      sources.push({ label: lever.label, low: lever.share[0] * goal * pace, high: lever.share[1] * goal * pace });
-    }
-  }
-  const round = (n: number) => Math.round(n / 50) * 50;
-  const low = round(sources.reduce((n, s) => n + s.low, 0));
-  const high = round(sources.reduce((n, s) => n + s.high, 0));
+/**
+ * The potential shown once their business is described: always above their
+ * goal (5 000 € → 13 000 €, 50 000 € → 56 000 €), with the customers it
+ * takes at their idea's price. A scenario, and labelled so on screen.
+ */
+export function potential(answers: Answers) {
+  const goal = Number(answers.revenueGoal) || 3000;
+  const extra = Math.min(9000, Math.max(4000, 8000 - ((goal - 5000) * 2000) / 45000));
+  const amount = Math.max(goal + 1000, Math.ceil(Math.min(goal + extra, goal * 2.6) / 1000) * 1000);
   const idea = readFoundIdea(answers);
   const price = idea?.price_per_month ?? REFERENCE_PRICE;
-  return {
-    sources: sources.map((s) => ({ ...s, label: idea && s.label === "Ton produit seul" ? idea.title : s.label, low: round(s.low), high: round(s.high) })),
-    low,
-    high,
-    customers: Math.ceil(high / price),
-    price,
-    ideaTitle: idea?.title ?? null,
-    goal,
-  };
+  return { goal, amount, price, customers: Math.ceil(amount / price), ideaTitle: idea?.title ?? null };
 }

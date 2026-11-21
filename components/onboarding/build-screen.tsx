@@ -1,9 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
 import { motion } from "framer-motion";
-import { Check, Loader2, Lock, ShieldCheck } from "lucide-react";
+import { Check, Loader2, Lock, Play } from "lucide-react";
 import { StepShell } from "@/components/onboarding/step-shell";
 import { Button } from "@/components/ui/button";
 import type { Answers } from "@/components/onboarding/funnel";
@@ -26,23 +25,24 @@ function slug(text: string) {
 }
 
 /**
- * Right before the plans: their SaaS takes shape from their answers, part
- * by part, in a browser preview (the found idea's name, pitch and price).
- * What's shown is a preview of what they build with the prompt and the
- * launch autopilot after paying; the lower half stays locked.
+ * Right before the plans: their business and its content are generated
+ * from their answers, part by part (site, videos, marketing plan), in a
+ * browser preview of the found idea's name, pitch and price. What's shown
+ * is a preview of what they build with the prompt and the launch autopilot
+ * after paying; the lower half stays locked.
  */
 export function BuildScreen({ shell, answers, onNext }: { shell: ShellProps; answers: Answers; onNext: () => void }) {
   const idea = readFoundIdea(answers);
   const name = idea?.title ?? "Ton SaaS";
   const price = idea?.price_per_month ?? 29;
+  const payments: Record<string, string> = { stripe: "Stripe", paypal: "PayPal", revolut: "Revolut", banque: "Ton compte bancaire" };
   const parts = [
     { label: "Ton idée", detail: name },
-    { label: "Nom et logo", detail: null },
-    { label: "Pages", detail: "Accueil · inscription · paiement" },
-    { label: "Offres et tarifs", detail: "3 formules, tes prix" },
-    { label: "Plan de lancement", detail: "Une étape à la fois" },
-    { label: "Scripts vidéo", detail: "Adaptés à ton SaaS" },
-    { label: "Paiements et suivi", detail: "Stripe, tes revenus" },
+    { label: "Ton site", detail: "Accueil · inscription · paiement" },
+    { label: "Tes offres et tarifs", detail: "3 formules, tes prix" },
+    { label: "Tes vidéos", detail: "Des scripts adaptés à ton SaaS" },
+    { label: "Ton plan marketing", detail: "Tes canaux, ton rythme" },
+    { label: "Tes paiements", detail: payments[String(answers.payments)] ?? "Stripe" },
     { label: "Prêt à lancer", detail: null },
   ];
   const [done, setDone] = useState(1);
@@ -56,34 +56,33 @@ export function BuildScreen({ shell, answers, onNext }: { shell: ShellProps; ans
   // What's being done, part by part (the last one once everything is).
   const lines = [
     "Analyse de ton idée…",
-    "Choix du nom et du logo…",
-    "Écriture de tes pages…",
+    "Écriture de ton site…",
     "Préparation de tes offres…",
-    "Préparation de ton plan de lancement…",
-    "Écriture de tes scripts vidéo…",
-    "Branchement des paiements et du suivi…",
-    "Ton SaaS est prêt à être construit.",
+    "Écriture de tes vidéos…",
+    "Génération de ton plan marketing…",
+    "Branchement de tes paiements…",
+    "Ton business est prêt à être lancé.",
   ];
 
   return (
     <StepShell
       {...shell}
-      eyebrow={ready ? "Prêt à lancer" : `Construction · ${String(done).padStart(2, "0")} / ${String(parts.length).padStart(2, "0")}`}
+      eyebrow={ready ? "Prêt à lancer" : `Génération · ${String(done).padStart(2, "0")} / ${String(parts.length).padStart(2, "0")}`}
       title={
         ready ? (
           <>
-            Ton SaaS <span className="font-serif italic tracking-normal text-accent">est prêt.</span>
+            Ton business <span className="font-serif italic tracking-normal text-accent">est prêt.</span>
           </>
         ) : (
           <>
-            L&apos;IA prépare <span className="font-serif italic tracking-normal text-accent">ton SaaS.</span>
+            Génération de ton business <span className="font-serif italic tracking-normal text-accent">et de ton contenu.</span>
           </>
         )
       }
       subtitle={
         ready
-          ? "Préparé à partir de tes réponses. Il passe en ligne dès que tu le lances."
-          : "Chaque page, chaque offre et chaque prix part de tes réponses."
+          ? "Site, vidéos, plan marketing : préparés à partir de tes réponses. Ils passent en ligne dès que tu les lances."
+          : "Ton site, tes vidéos et ton plan marketing partent de tes réponses."
       }
     >
       <div className="grid gap-5 sm:grid-cols-[1fr_1.15fr]">
@@ -131,7 +130,7 @@ export function BuildScreen({ shell, answers, onNext }: { shell: ShellProps; ans
             <span className="ml-auto font-mono text-[9.5px] uppercase tracking-wider text-ink-faint">Aperçu</span>
           </div>
           <div className="flex flex-col gap-4 p-4">
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: done >= 2 ? 1 : 0.25 }}>
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: done >= 1 ? 1 : 0.25 }}>
               <div className="flex items-center gap-2">
                 <span className="flex size-6 items-center justify-center rounded-md bg-accent font-display text-[12px] font-bold text-canvas">
                   {name.charAt(0).toUpperCase()}
@@ -139,12 +138,12 @@ export function BuildScreen({ shell, answers, onNext }: { shell: ShellProps; ans
                 <span className="font-display text-[14px] font-semibold text-ink">{name}</span>
               </div>
             </motion.div>
-            <motion.div animate={{ opacity: done >= 3 ? 1 : 0.2 }}>
+            <motion.div animate={{ opacity: done >= 2 ? 1 : 0.2 }}>
               <p className="font-display text-[17px] font-semibold leading-snug text-ink">{idea?.pitch ?? "Ton produit, présenté en une phrase."}</p>
               {idea?.target && <p className="mt-1 font-body text-[12px] text-ink-muted">Pour {idea.target.charAt(0).toLowerCase() + idea.target.slice(1)}</p>}
               <span className="mt-3 inline-block rounded-full bg-accent px-3 py-1 font-body text-[11.5px] font-semibold text-canvas">Essayer gratuitement</span>
             </motion.div>
-            <motion.div animate={{ opacity: done >= 4 ? 1 : 0.2 }}>
+            <motion.div animate={{ opacity: done >= 3 ? 1 : 0.2 }}>
               <p className="font-mono text-[9.5px] uppercase tracking-wider text-ink-faint">Offres et tarifs</p>
               <div className="mt-1.5 grid grid-cols-3 gap-1.5">
                 {[
@@ -163,8 +162,21 @@ export function BuildScreen({ shell, answers, onNext }: { shell: ShellProps; ans
               </div>
             </motion.div>
             <div className={cn("flex flex-col gap-4 transition-[filter] duration-500", !ready && "blur-[1px]", ready && "blur-[3px]")}>
+              <motion.div animate={{ opacity: done >= 4 ? 1 : 0.2 }}>
+                <p className="font-mono text-[9.5px] uppercase tracking-wider text-ink-faint">Tes vidéos</p>
+                <div className="mt-1.5 grid grid-cols-3 gap-1.5">
+                  {["Accroche", "Démo", "Preuve"].map((label) => (
+                    <div key={label} className="flex aspect-[9/14] flex-col justify-end rounded-md border border-ink/10 bg-gradient-to-b from-ink/[0.03] to-ink/[0.1] p-1.5">
+                      <span className="mb-auto mt-1 self-center rounded-full bg-ink/15 p-1">
+                        <Play className="size-2.5 text-ink" />
+                      </span>
+                      <span className="font-body text-[9px] text-ink-muted">{label}</span>
+                    </div>
+                  ))}
+                </div>
+              </motion.div>
               <motion.div animate={{ opacity: done >= 5 ? 1 : 0.2 }}>
-                <p className="font-mono text-[9.5px] uppercase tracking-wider text-ink-faint">Plan de lancement</p>
+                <p className="font-mono text-[9.5px] uppercase tracking-wider text-ink-faint">Plan marketing</p>
                 <div className="mt-1.5 flex items-center gap-2 font-mono text-[10px] text-ink-faint">
                   J1
                   <span className="h-1 flex-1 overflow-hidden rounded-full bg-ink/10">
@@ -172,17 +184,18 @@ export function BuildScreen({ shell, answers, onNext }: { shell: ShellProps; ans
                   </span>
                   J30
                 </div>
-              </motion.div>
-              <motion.div animate={{ opacity: done >= 6 ? 1 : 0.2 }}>
-                <p className="font-mono text-[9.5px] uppercase tracking-wider text-ink-faint">Scripts vidéo</p>
-                <div className="mt-1.5 flex flex-col gap-1">
-                  {[92, 76, 84].map((w) => (
-                    <span key={w} className="h-1.5 rounded-full bg-ink/15" style={{ width: `${w}%` }} />
+                <div className="mt-1.5 flex gap-1.5">
+                  {["TikTok", "Instagram", "Shorts"].map((channel) => (
+                    <span key={channel} className="rounded-md border border-ink/10 px-1.5 py-0.5 font-body text-[9.5px] text-ink-muted">
+                      {channel}
+                    </span>
                   ))}
                 </div>
               </motion.div>
-              <motion.div animate={{ opacity: done >= 7 ? 1 : 0.2 }} className="flex gap-2">
-                <span className="rounded-md border border-ink/10 px-2 py-1 font-body text-[10.5px] text-ink-muted">Paiement · {done >= 7 ? "sécurisé" : "…"}</span>
+              <motion.div animate={{ opacity: done >= 6 ? 1 : 0.2 }} className="flex gap-2">
+                <span className="rounded-md border border-ink/10 px-2 py-1 font-body text-[10.5px] text-ink-muted">
+                  Paiements · {done >= 6 ? (payments[String(answers.payments)] ?? "Stripe") : "…"}
+                </span>
                 <span className="rounded-md border border-ink/10 px-2 py-1 font-body text-[10.5px] text-ink-muted">Visites · suivies</span>
               </motion.div>
             </div>
@@ -191,47 +204,14 @@ export function BuildScreen({ shell, answers, onNext }: { shell: ShellProps; ans
             <div className="absolute inset-x-0 bottom-0 flex flex-col items-center gap-1 bg-gradient-to-t from-canvas via-canvas/90 to-transparent px-4 pb-4 pt-14 text-center">
               <Lock className="size-4 text-accent" />
               <p className="font-body text-[12.5px] font-medium text-ink">{name} est prêt.</p>
-              <p className="font-body text-[11.5px] text-ink-muted">Débloque-le pour recevoir le prompt qui l&apos;écrit en entier et le mettre en ligne.</p>
+              <p className="font-body text-[11.5px] text-ink-muted">Débloque-le pour recevoir ton site, tes vidéos et ton plan marketing en entier.</p>
             </div>
           )}
         </div>
       </div>
       <div className="mt-8 flex justify-center">
         <Button onClick={onNext} disabled={!ready}>
-          {ready ? "Voir mon SaaS" : "Préparation…"}
-        </Button>
-      </div>
-    </StepShell>
-  );
-}
-
-/** The 48-hour guarantee, said once before the plans (conditions on /remboursement). */
-export function GuaranteeScreen({ shell, onNext }: { shell: ShellProps; onNext: () => void }) {
-  return (
-    <StepShell
-      {...shell}
-      center
-      eyebrow="Avant d'aller plus loin"
-      title={
-        <>
-          On a une promesse <span className="font-serif italic tracking-normal text-accent">à te faire.</span>
-        </>
-      }
-      subtitle="Si tu ne génères aucune vente en 48 heures, on te rembourse intégralement."
-    >
-      <div className="mx-auto flex max-w-md flex-col items-center text-center">
-        <span className="flex size-14 items-center justify-center rounded-full border border-success/40 bg-success/10">
-          <ShieldCheck className="size-7 text-success" />
-        </span>
-        <p className="mt-5 font-body text-[14px] leading-relaxed text-ink-muted">
-          Tu appliques la méthode pendant deux jours : au moins 3 vidéos par jour pour faire connaître ton SaaS. Aucune vente au bout des
-          48 heures ? Tu nous écris, on te rend la totalité de ton premier paiement.
-        </p>
-        <Link href="/remboursement" target="_blank" className="mt-4 font-body text-[13px] text-ink-faint underline underline-offset-2 hover:text-ink">
-          Voir les conditions
-        </Link>
-        <Button className="mt-8" onClick={onNext}>
-          J&apos;ai compris
+          {ready ? "Voir mon business" : "Génération…"}
         </Button>
       </div>
     </StepShell>

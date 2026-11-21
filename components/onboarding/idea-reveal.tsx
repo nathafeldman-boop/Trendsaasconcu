@@ -59,6 +59,8 @@ export function IdeaRevealScreen({
   const [price, setPrice] = useState(stored?.price_per_month ?? 0);
   const [attempt, setAttempt] = useState<{ n: number; exclude?: string }>({ n: stored ? 0 : 1 });
   const regenerated = answers[REGENERATED_KEY] === inputKey;
+  // The goal is asked after the account now: until then, a 3 000 € example.
+  const goalKnown = answers.revenueGoal !== undefined;
   const goal = Number(answers.revenueGoal ?? 3000);
   // The answers when the search started: the request is keyed on them.
   const latest = useRef({ answers, onAnswer, inputKey });
@@ -146,7 +148,7 @@ export function IdeaRevealScreen({
           <span className="font-serif italic tracking-normal text-accent">on a trouvé ton idée.</span>
         </>
       }
-      subtitle={`Avec elle, ${customersNeeded(goal, idea.price_per_month)} clients suffisent pour atteindre tes ${euros(goal)} par mois.`}
+      subtitle={`Avec elle, ${customersNeeded(goal, idea.price_per_month)} clients suffisent pour ${goalKnown ? "atteindre tes" : "faire"} ${euros(goal)} par mois.`}
       footer={
         <div className="flex flex-col gap-3">
           <Button showArrow={false} onClick={keep} className="w-full">
