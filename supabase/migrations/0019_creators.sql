@@ -49,6 +49,7 @@ create index if not exists creator_payouts_creator_idx on public.creator_payouts
 alter table public.creators enable row level security;
 alter table public.creator_videos enable row level security;
 alter table public.creator_payouts enable row level security;
+revoke all on public.creators, public.creator_videos, public.creator_payouts from anon, authenticated;
 
 -- Every 10 minutes: ask the site to refresh the views of the videos not
 -- checked in the last 9 minutes (the endpoint does nothing more often).
