@@ -27,8 +27,10 @@ function submitMessage(plan: Plan, tier: PriceTier) {
   if (plan.billing.mode === "payment") {
     return "Paiement unique, sans abonnement : ton espace est à toi pour toujours. Accès immédiat dès le paiement validé.";
   }
+  const billing = plan.billing;
+  const every = billing.interval === "week" ? "chaque semaine" : billing.count === 1 ? "chaque mois" : `tous les ${billing.count} mois`;
   const kept = tier === "launch" && plan.nextPrice ? " Ton prix de bienvenue est gardé à chaque renouvellement tant que tu ne résilies pas." : "";
-  return `Accès immédiat à ton espace. Renouvellement automatique ${plan.period}, résiliable à tout moment depuis ton espace.${kept}`;
+  return `Accès immédiat à ton espace. Renouvellement automatique ${every}, résiliable à tout moment depuis ton espace.${kept}`;
 }
 
 /** Where to come back to if they leave Stripe: a path on this site only. */
