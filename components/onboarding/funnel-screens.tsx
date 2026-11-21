@@ -8,7 +8,6 @@ import { StepShell } from "@/components/onboarding/step-shell";
 import { ChoiceOption } from "@/components/onboarding/choice-option";
 import { ScaleQuestion } from "@/components/onboarding/scale-question";
 import { Illustration, RecurringRevenue } from "@/components/onboarding/illustrations";
-import { Beetle } from "@/components/onboarding/beetle";
 import { PricingCards } from "@/components/pricing/pricing-cards";
 import { SignupForm } from "@/components/auth/signup-form";
 import { Button } from "@/components/ui/button";
@@ -267,7 +266,6 @@ export function SliderScreen({ shell, step, answers, onAnswer, onNext }: ScreenP
       subtitle={step.help}
       footer={<ContinueButton onClick={() => onNext(onAnswer({ [step.id]: value }))} />}
     >
-      {step.beetle && <Beetle />}
       <div className="glass-panel rounded-[22px] p-6">
         <div className="flex items-center justify-between gap-3">
           <p className="font-display text-[40px] font-medium tracking-[-0.04em] text-ink tabular-nums">{euros(value)}</p>

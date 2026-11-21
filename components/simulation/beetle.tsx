@@ -28,7 +28,7 @@ export function Beetle() {
   return (
     <motion.div
       aria-hidden
-      className="pointer-events-none fixed left-0 top-0 z-[200]"
+      className="pointer-events-none fixed left-0 top-0 z-[300]"
       initial={{ x: "-12vw", y: "66vh", rotate: 72 }}
       animate={{
         x: ["-12vw", "18vw", "38vw", "38vw", "62vw", "112vw"],

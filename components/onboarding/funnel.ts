@@ -58,7 +58,7 @@ export type Step =
     })
   | (Asked & { type: "multi"; options: Option[]; free?: { placeholder: string } })
   | (Asked & { type: "scale" })
-  | (Asked & { type: "slider"; min: number; max: number; stepBy: number; initial: number; beetle?: boolean })
+  | (Asked & { type: "slider"; min: number; max: number; stepBy: number; initial: number })
   | (Asked & { type: "text"; placeholder: string; optional?: boolean })
   | (Asked & { type: "url"; placeholder: string })
   | (Base & {
@@ -426,7 +426,6 @@ export const STEPS: Step[] = [
   // ───────── Acte 4 · Ton business : objectif, paiements, potentiel, génération, formules
   {
     type: "slider",
-    beetle: true,
     id: "revenueGoal",
     kicker: "Ton objectif",
     title: "Combien tu veux gagner par mois avec ton SaaS ?",
