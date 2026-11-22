@@ -14,7 +14,17 @@ export const PAYOUT_METHODS = [
 export type PayoutMethod = (typeof PAYOUT_METHODS)[number]["id"];
 
 export function payoutLabel(id: string) {
+  if (!id) return "à renseigner";
   return PAYOUT_METHODS.find((m) => m.id === id)?.label ?? id;
+}
+
+/** Optional at signup: both empty, or a known method with details. Null when invalid. */
+export function cleanPayout(method: unknown, details: unknown): { method: string; details: string } | null {
+  const m = typeof method === "string" ? method.trim().slice(0, 20) : "";
+  const d = typeof details === "string" ? details.trim().slice(0, 120) : "";
+  if (!m && !d) return { method: "", details: "" };
+  if (!PAYOUT_METHODS.some((x) => x.id === m) || d.length < 3) return null;
+  return { method: m, details: d };
 }
 
 export function earnedCents(views: number) {

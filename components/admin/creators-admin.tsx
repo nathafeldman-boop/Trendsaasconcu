@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { ChevronDown, MessageCircle, RefreshCw } from "lucide-react";
 import { CopyLink } from "@/components/creators/copy-link";
 import type { CreatorAccount } from "@/lib/creators/store";
-import { earnedCents, formatEuros, formatViews, payoutLabel, whatsappUrl } from "@/lib/creators/program";
+import { earnedCents, formatEuros, formatViews, PAYOUT_METHODS, payoutLabel, whatsappUrl } from "@/lib/creators/program";
 import { cn } from "@/lib/utils";
 
 async function post(body: object) {
@@ -45,6 +45,7 @@ function CreatorRow({ creator }: { creator: CreatorAccount }) {
   const [busy, setBusy] = useState(false);
 
   async function pay() {
+    if (!creator.payout_method && !window.confirm(`${creator.name} n'a pas encore dit où le payer. Enregistrer quand même un paiement ?`)) return;
     const typed = window.prompt(
       `Montant payé à ${creator.name} (en €) via ${payoutLabel(creator.payout_method)} :`,
       (creator.dueCents / 100).toFixed(2).replace(".", ",")
@@ -55,6 +56,17 @@ function CreatorRow({ creator }: { creator: CreatorAccount }) {
     setBusy(true);
     if (!(await post({ action: "payout", creatorId: creator.id, amountCents: cents }))) window.alert("Enregistrement impossible");
     setBusy(false);
+    router.refresh();
+  }
+
+  async function editPayout() {
+    const options = PAYOUT_METHODS.map((m, i) => `${i + 1}. ${m.label}`).join("\n");
+    const pick = window.prompt(`Moyen de paiement de ${creator.name} :\n${options}\n\nTape le numéro :`, "1");
+    const method = PAYOUT_METHODS[Number(pick) - 1];
+    if (!method) return;
+    const details = window.prompt(`${method.label} : coordonnées (${method.placeholder})`, creator.payout_method === method.id ? creator.payout_details : "");
+    if (!details) return;
+    if (!(await post({ action: "payout-details", creatorId: creator.id, method: method.id, details }))) window.alert("Coordonnées invalides");
     router.refresh();
   }
 
@@ -84,8 +96,11 @@ function CreatorRow({ creator }: { creator: CreatorAccount }) {
           </a>
         </td>
         <td className="py-3 pr-3">
-          {payoutLabel(creator.payout_method)}
+          <span className={cn(!creator.payout_method && "text-amber-300")}>{payoutLabel(creator.payout_method)}</span>
           <span className="block select-all break-all text-[12px] text-ink-faint">{creator.payout_details}</span>
+          <button type="button" onClick={editPayout} className="mt-1 text-[12px] text-accent hover:underline">
+            {creator.payout_method ? "Modifier" : "Ajouter"}
+          </button>
         </td>
         <td className="py-3 pr-3 text-right tabular-nums">{creator.videos.length}</td>
         <td className="py-3 pr-3 text-right tabular-nums">{formatViews(creator.views)}</td>

@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { Logo } from "@/components/ui/logo";
 import { AddVideoForm } from "@/components/creators/add-video-form";
 import { CopyLink } from "@/components/creators/copy-link";
+import { PayoutForm } from "@/components/creators/payout-form";
 import { getCreatorAccount } from "@/lib/creators/store";
 import { earnedCents, formatEuros, formatViews, payoutLabel, rateLabel } from "@/lib/creators/program";
 
@@ -60,7 +61,7 @@ export default async function CreatorAccountPage({
       <p className="mt-10 font-mono text-[11px] uppercase tracking-[0.25em] text-accent">Espace créateur · @{creator.tiktok_handle}</p>
       <h1 className="mt-2 font-display text-[32px] font-semibold tracking-[-0.04em] text-ink">Tes vues et tes gains</h1>
       <p className="mt-1 font-body text-[14px] text-ink-muted">
-        {rateLabel()} · vues mises à jour toutes les 10 minutes · paiement par {payoutLabel(creator.payout_method)}
+        {rateLabel()} · vues mises à jour toutes les 10 minutes · paiement : {payoutLabel(creator.payout_method)}
       </p>
 
       <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
@@ -71,6 +72,14 @@ export default async function CreatorAccountPage({
           </div>
         ))}
       </div>
+
+      {!creator.payout_method && (
+        <section className="mt-8 rounded-[20px] border border-accent/40 bg-accent/[0.06] p-5">
+          <h2 className="font-body text-[15px] font-semibold text-ink">Où veux-tu être payé ?</h2>
+          <p className="mb-4 mt-1 font-body text-[13px] text-ink-muted">Ajoute-le quand tu veux : sans ça, on te contactera avant de te payer.</p>
+          <PayoutForm token={creator.token} initialMethod="" initialDetails="" />
+        </section>
+      )}
 
       <section className="glass-panel mt-8 rounded-[20px] p-5">
         <h2 className="font-body text-[15px] font-semibold text-ink">Ajouter une vidéo</h2>
@@ -108,6 +117,17 @@ export default async function CreatorAccountPage({
           </ul>
         )}
       </section>
+
+      {creator.payout_method && (
+        <details className="mt-8 rounded-[16px] border border-ink/10 p-4">
+          <summary className="cursor-pointer font-body text-[14px] text-ink-muted">
+            Paiement par {payoutLabel(creator.payout_method)} · modifier
+          </summary>
+          <div className="mt-4">
+            <PayoutForm token={creator.token} initialMethod={creator.payout_method} initialDetails={creator.payout_details} />
+          </div>
+        </details>
+      )}
 
       {creator.payouts.length > 0 && (
         <section className="mt-8">

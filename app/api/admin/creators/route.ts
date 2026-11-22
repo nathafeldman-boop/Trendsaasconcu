@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { isAdminRequest } from "@/lib/creators/admin-guard";
-import { recordPayout, setVideoStatus } from "@/lib/creators/store";
+import { recordPayout, setPayoutDetails, setVideoStatus } from "@/lib/creators/store";
+import { cleanPayout } from "@/lib/creators/program";
 
 export async function POST(request: Request) {
   if (!(await isAdminRequest())) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
@@ -13,6 +14,12 @@ export async function POST(request: Request) {
     }
     const note = typeof body.note === "string" ? body.note.slice(0, 200) : null;
     return NextResponse.json({ ok: await recordPayout(body.creatorId, amount, note) });
+  }
+
+  if (body?.action === "payout-details" && typeof body.creatorId === "string") {
+    const payout = cleanPayout(body.method, body.details);
+    if (!payout) return NextResponse.json({ error: "Moyen de paiement invalide" }, { status: 400 });
+    return NextResponse.json({ ok: await setPayoutDetails({ id: body.creatorId }, payout.method, payout.details) });
   }
 
   if (body?.action === "video-status" && typeof body.videoId === "string" && ["active", "rejected"].includes(body.status)) {

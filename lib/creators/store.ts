@@ -185,6 +185,14 @@ export async function refreshStaleVideos({ limit = 40, concurrency = 5 } = {}) {
   return { checked: (data ?? []).length, updated, failed };
 }
 
+/** Where to pay a creator: set by the creator (by token) or by an admin (by id). */
+export async function setPayoutDetails(by: { token: string } | { id: string }, method: string, details: string) {
+  if ("token" in by && !UUID.test(by.token)) return false;
+  const query = db().from("creators").update({ payout_method: method, payout_details: details });
+  const { data, error } = await ("token" in by ? query.eq("token", by.token) : query.eq("id", by.id)).select("id");
+  return !error && (data?.length ?? 0) > 0;
+}
+
 export async function recordPayout(creatorId: string, amountCents: number, note: string | null) {
   const { error } = await db().from("creator_payouts").insert({ creator_id: creatorId, amount_cents: amountCents, note });
   return !error;
