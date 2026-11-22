@@ -88,7 +88,7 @@ export function AccessCodeInline({ alwaysOpen = false }: { alwaysOpen?: boolean 
       <Input
         label="Code d'accès"
         name="code"
-        placeholder="Ton code (ex : NATHANAEL)"
+        placeholder="Ton code d'accès"
         autoComplete="off"
       />
       {error && <p className="text-center font-body text-[12px] text-red-400">{error}</p>}
