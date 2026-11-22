@@ -6,7 +6,7 @@ import { AddVideoForm } from "@/components/creators/add-video-form";
 import { CopyLink } from "@/components/creators/copy-link";
 import { PayoutForm } from "@/components/creators/payout-form";
 import { getCreatorAccount } from "@/lib/creators/store";
-import { earnedCents, formatEuros, formatViews, payoutLabel, rateLabel } from "@/lib/creators/program";
+import { bonusCents, bonusLabel, earnedCents, formatEuros, formatViews, payoutLabel, rateLabel } from "@/lib/creators/program";
 
 export const metadata: Metadata = {
   title: "Mon espace créateur — SaaSFounder",
@@ -63,6 +63,7 @@ export default async function CreatorAccountPage({
       <p className="mt-1 font-body text-[14px] text-ink-muted">
         {rateLabel()} · vues mises à jour toutes les 10 minutes · paiement : {payoutLabel(creator.payout_method)}
       </p>
+      <p className="mt-1 font-body text-[13px] text-accent">Bonus par vidéo : {bonusLabel()}.</p>
 
       <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
         {stats.map((s) => (
@@ -130,7 +131,8 @@ export default async function CreatorAccountPage({
                 </div>
                 <div className="shrink-0 text-right">
                   <p className="font-display text-[16px] font-semibold text-ink">{formatViews(Number(v.views))} vues</p>
-                  <p className="font-body text-[12px] text-ink-faint">{v.status === "active" ? formatEuros(earnedCents(Number(v.views))) : "—"}</p>
+                  <p className="font-body text-[12px] text-ink-faint">{v.status === "active" ? formatEuros(earnedCents(Number(v.views))) : "—"}
+                    {v.status === "active" && bonusCents(Number(v.views)) > 0 && ` dont ${formatEuros(bonusCents(Number(v.views)))} de bonus`}</p>
                 </div>
               </li>
             ))}

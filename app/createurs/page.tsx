@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Logo } from "@/components/ui/logo";
 import { CreatorSignupForm } from "@/components/creators/signup-form";
-import { rateLabel } from "@/lib/creators/program";
+import { bonusLabel, rateLabel } from "@/lib/creators/program";
 
 export const metadata: Metadata = {
   title: "Programme créateurs — SaaSFounder",
@@ -26,6 +26,9 @@ export default function CreatorsPage() {
       <h1 className="mt-3 font-display text-[36px] font-semibold leading-[1.05] tracking-[-0.04em] text-ink">
         Tes TikToks te paient : <span className="text-accent">{rateLabel()}.</span>
       </h1>
+      <p className="mt-4 rounded-[14px] border border-accent/30 bg-accent/[0.06] px-4 py-3 font-body text-[14.5px] leading-relaxed text-ink">
+        <strong>Bonus par vidéo :</strong> {bonusLabel()}.
+      </p>
       <ol className="mt-8 flex flex-col gap-4">
         {STEPS.map((step, i) => (
           <li key={step.title} className="flex gap-4">

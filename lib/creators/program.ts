@@ -27,8 +27,29 @@ export function cleanPayout(method: unknown, details: unknown): { method: string
   return { method: m, details: d };
 }
 
-export function earnedCents(views: number) {
+/** One-off bonuses per video, on top of the per-view pay, when it crosses each threshold. */
+export const BONUSES = [
+  { views: 100_000, cents: 2000 },
+  { views: 500_000, cents: 2000 },
+  { views: 1_000_000, cents: 5000 },
+] as const;
+
+export function viewCents(views: number) {
   return Math.floor((Math.max(0, views) * RATE_CENTS_PER_1000_VIEWS) / 1000);
+}
+
+export function bonusCents(views: number) {
+  return BONUSES.reduce((sum, b) => (views >= b.views ? sum + b.cents : sum), 0);
+}
+
+/** What one video earns: its views plus the bonuses it has reached. */
+export function earnedCents(views: number) {
+  return viewCents(views) + bonusCents(views);
+}
+
+export function bonusLabel() {
+  const short = (v: number) => (v >= 1_000_000 ? `${v / 1_000_000} M` : `${v / 1000} k`);
+  return BONUSES.map((b) => `+${formatEuros(b.cents)} à ${short(b.views)} vues`).join(", ");
 }
 
 export function formatEuros(cents: number) {
