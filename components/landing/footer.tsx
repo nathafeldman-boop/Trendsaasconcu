@@ -3,6 +3,7 @@ import { Logo } from "@/components/ui/logo";
 import { whatsappLink } from "@/lib/legal";
 
 const LINKS = [
+  { label: "Blog", href: "/blog" },
   { label: "CGV", href: "/conditions" },
   { label: "Conditions de remboursement", href: "/remboursement" },
   { label: "Confidentialité", href: "/confidentialite" },

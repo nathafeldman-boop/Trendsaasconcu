@@ -9,12 +9,15 @@ export function Nav() {
         <Logo />
         <div className="flex items-center gap-5">
           <nav className="hidden items-center gap-5 font-body text-[14px] text-ink-muted sm:flex">
-            <a href="#comment" className="transition-colors hover:text-ink">
+            <Link href="/#comment" className="transition-colors hover:text-ink">
               Comment ça marche
-            </a>
-            <a href="#questions" className="transition-colors hover:text-ink">
+            </Link>
+            <Link href="/#questions" className="transition-colors hover:text-ink">
               Questions
-            </a>
+            </Link>
+            <Link href="/blog" className="transition-colors hover:text-ink">
+              Blog
+            </Link>
             <Link href="/connexion" className="transition-colors hover:text-ink">
               Se connecter
             </Link>

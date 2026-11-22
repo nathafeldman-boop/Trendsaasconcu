@@ -5,6 +5,7 @@ import { EXIT_OFFER_CENTS, OFFER_MINUTES, euros, planFor } from "@/lib/stripe/pl
 import { LEGAL_UPDATED_AT, SUPPORT_EMAIL } from "@/lib/legal";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/conditions" },
   title: "Conditions générales de vente — SaaSFounder",
 };
 

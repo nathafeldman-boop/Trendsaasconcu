@@ -19,6 +19,6 @@ export default function robots(): MetadataRoute.Robots {
         "/createurs",
       ],
     },
-    sitemap: "https://saasfounder.fr/sitemap.xml",
+    sitemap: "https://www.saasfounder.fr/sitemap.xml",
   };
 }

@@ -5,6 +5,7 @@ import { PricingCards } from "@/components/pricing/pricing-cards";
 import { AccessCodeInline } from "@/components/access/access-code-inline";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/tarifs" },
   title: "Tarifs — SaaSFounder",
 };
 

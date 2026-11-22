@@ -4,6 +4,7 @@ import { AmbientGlow } from "@/components/ui/ambient-glow";
 import { GlobalSignOut } from "@/components/auth/global-sign-out";
 import { ActivityHeartbeat } from "@/components/activity-heartbeat";
 import { PageViewTracker } from "@/components/analytics/page-view-tracker";
+import { SITE_URL } from "@/lib/site";
 import "./globals.css";
 
 const display = DM_Sans({
@@ -35,10 +36,9 @@ const description =
   "Notre but : que tu crées ton SaaS avec l'IA et que tu encaisses tes premiers paiements dès maintenant. Idée, prompt de build, coach IA et suivi de tes revenus Stripe. Sans expérience, sans code.";
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://saasfounder.fr"),
+  metadataBase: new URL(SITE_URL),
   title,
   description,
-  alternates: { canonical: "/" },
   openGraph: {
     title,
     description,
@@ -48,7 +48,7 @@ export const metadata: Metadata = {
     type: "website",
   },
   twitter: {
-    card: "summary",
+    card: "summary_large_image",
     title,
     description,
   },

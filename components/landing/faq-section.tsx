@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { TwoTone } from "@/components/landing/cta-button";
 
-const FAQ = [
+export const FAQ = [
   {
     q: "Les idées ne sont pas « prises » si tout le monde les voit ?",
     a: "Très peu de gens passent à l'action, et personne ne l'exécute pareil. Ton idée part de tes réponses : ton temps, ton niveau, ta cible et ton objectif de revenus.",

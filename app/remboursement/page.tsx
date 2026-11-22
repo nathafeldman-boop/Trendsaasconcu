@@ -4,6 +4,7 @@ import { LegalPage } from "@/components/legal/legal-page";
 import { LEGAL_UPDATED_AT, SUPPORT_EMAIL } from "@/lib/legal";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/remboursement" },
   title: "Conditions de remboursement — SaaSFounder",
   description: "La garantie « pas de vente en 2 jours » de SaaSFounder : les conditions et comment la demander.",
 };
