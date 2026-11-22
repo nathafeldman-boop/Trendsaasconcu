@@ -117,8 +117,8 @@ export async function POST(request: Request) {
       mode: oneTime ? "payment" : "subscription",
       locale: "fr",
       line_items: [{ price: priceId, quantity: 1 }],
-      // Card, Apple Pay and Google Pay only: no Link (its pre-ticked "save
-      // with Link" box and phone field), Klarna or Amazon Pay.
+      // Card, Apple Pay, Google Pay, Klarna and Revolut Pay (see
+      // lib/stripe/payment-methods.ts); Checkout shows only those the plan allows.
       ...(methodsConfig ? { payment_method_configuration: methodsConfig } : { payment_method_types: ["card"] }),
       // Promo codes are created in the Stripe dashboard; this just shows the field.
       allow_promotion_codes: true,

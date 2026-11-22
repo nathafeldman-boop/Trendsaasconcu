@@ -1,18 +1,21 @@
 import type Stripe from "stripe";
 
 // SaaSFounder's own payment method configuration in the shared Stripe
-// account: card, Apple Pay and Google Pay, nothing else. Unlike passing
+// account: card, Apple Pay, Google Pay, Klarna (pay in 3 or 4, shown only
+// where Checkout supports it, e.g. the one-time lifetime plan) and Revolut
+// Pay. Link stays off (its pre-ticked "save with Link" box and phone field). Unlike passing
 // payment_method_types: ["card"], a configuration keeps Checkout's dynamic
 // display, including Apple Pay on browsers other than Safari (paid by
 // scanning a QR code with an iPhone). Created on first use, then reused.
 
-const NAME = "SaaSFounder : carte, Apple Pay, Google Pay";
+const NAME = "SaaSFounder : carte, Apple Pay, Google Pay, Klarna, Revolut Pay";
+// Earlier names of the same configuration, picked up and renamed.
+const OLD_NAMES = ["SaaSFounder : carte, Apple Pay, Google Pay"];
 
-const ON = ["card", "apple_pay", "google_pay"] as const;
+const ON = ["card", "apple_pay", "google_pay", "klarna", "revolut_pay"] as const;
 // Everything the account's default configuration turns on besides those.
 const OFF = [
   "link",
-  "klarna",
   "amazon_pay",
   "samsung_pay",
   "bancontact",
@@ -46,11 +49,15 @@ export async function paymentMethodConfiguration(stripe: Stripe) {
   if (configId !== undefined) return configId;
   try {
     const { data } = await stripe.paymentMethodConfigurations.list({ limit: 100 });
-    const existing = data.find((config) => config.name === NAME && config.active && !config.parent);
+    const existing = data.find(
+      (config) => (config.name === NAME || OLD_NAMES.includes(config.name)) && config.active && !config.parent
+    );
     if (!existing) {
       configId = (await stripe.paymentMethodConfigurations.create({ name: NAME, ...desiredSettings() })).id;
     } else {
-      if (!matches(existing)) await stripe.paymentMethodConfigurations.update(existing.id, desiredSettings());
+      if (!matches(existing) || existing.name !== NAME) {
+        await stripe.paymentMethodConfigurations.update(existing.id, { name: NAME, ...desiredSettings() });
+      }
       configId = existing.id;
     }
   } catch (err) {
