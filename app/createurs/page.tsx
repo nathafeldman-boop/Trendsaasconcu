@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Logo } from "@/components/ui/logo";
 import { CreatorSignupForm } from "@/components/creators/signup-form";
-import { bonusLabel, rateLabel } from "@/lib/creators/program";
+import { bonusLabel, formatEuros, rateLabel, STREAK_BONUS_CENTS } from "@/lib/creators/program";
 
 export const metadata: Metadata = {
   title: "Programme créateurs — SaaSFounder",
@@ -28,6 +28,8 @@ export default function CreatorsPage() {
       </h1>
       <p className="mt-4 rounded-[14px] border border-accent/30 bg-accent/[0.06] px-4 py-3 font-body text-[14.5px] leading-relaxed text-ink">
         <strong>Bonus par vidéo :</strong> {bonusLabel()}.
+        <br />
+        <strong>Série :</strong> {formatEuros(STREAK_BONUS_CENTS)} en plus chaque mois où tu publies au moins une vidéo par jour.
       </p>
       <ol className="mt-8 flex flex-col gap-4">
         {STEPS.map((step, i) => (

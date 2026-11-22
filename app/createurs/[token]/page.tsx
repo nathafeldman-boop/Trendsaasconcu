@@ -6,7 +6,7 @@ import { AddVideoForm } from "@/components/creators/add-video-form";
 import { CopyLink } from "@/components/creators/copy-link";
 import { PayoutForm } from "@/components/creators/payout-form";
 import { getCreatorAccount } from "@/lib/creators/store";
-import { bonusCents, bonusLabel, earnedCents, formatEuros, formatViews, payoutLabel, rateLabel } from "@/lib/creators/program";
+import { bonusCents, bonusLabel, earnedCents, formatEuros, formatViews, payoutLabel, rateLabel, STREAK_BONUS_CENTS } from "@/lib/creators/program";
 
 export const metadata: Metadata = {
   title: "Mon espace créateur — SaaSFounder",
@@ -63,7 +63,9 @@ export default async function CreatorAccountPage({
       <p className="mt-1 font-body text-[14px] text-ink-muted">
         {rateLabel()} · vues mises à jour toutes les 10 minutes · paiement : {payoutLabel(creator.payout_method)}
       </p>
-      <p className="mt-1 font-body text-[13px] text-accent">Bonus par vidéo : {bonusLabel()}.</p>
+      <p className="mt-1 font-body text-[13px] text-accent">
+        Bonus par vidéo : {bonusLabel()}. Série : {formatEuros(STREAK_BONUS_CENTS)} si tu publies au moins une vidéo chaque jour du mois.
+      </p>
 
       <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
         {stats.map((s) => (
@@ -73,6 +75,32 @@ export default async function CreatorAccountPage({
           </div>
         ))}
       </div>
+
+      <section className="mt-6 rounded-[20px] border border-ink/10 p-5">
+        <div className="flex flex-wrap items-baseline justify-between gap-2">
+          <h2 className="font-body text-[15px] font-semibold text-ink">Ta série</h2>
+          <p className="font-display text-[22px] font-semibold text-ink">
+            {creator.streak.current} jour{creator.streak.current > 1 ? "s" : ""} d&apos;affilée
+          </p>
+        </div>
+        <div className="mt-3 h-2 overflow-hidden rounded-full bg-ink/10">
+          <div
+            className="h-full rounded-full bg-accent"
+            style={{ width: `${Math.round((creator.streak.thisMonth / creator.streak.daysInThisMonth) * 100)}%` }}
+          />
+        </div>
+        <p className="mt-2 font-body text-[13px] text-ink-muted">
+          {creator.streak.thisMonth} / {creator.streak.daysInThisMonth} jours avec une vidéo ce mois-ci.{" "}
+          {creator.streak.stillPossible
+            ? `Publie chaque jour jusqu'à la fin du mois pour gagner ${formatEuros(STREAK_BONUS_CENTS)}.`
+            : `Un jour a été manqué ce mois-ci : le bonus de ${formatEuros(STREAK_BONUS_CENTS)} repart le mois prochain.`}
+        </p>
+        {creator.streak.completedMonths.length > 0 && (
+          <p className="mt-1 font-body text-[13px] text-success">
+            Mois complets : {creator.streak.completedMonths.length} · {formatEuros(creator.streak.bonusCents)} de bonus gagnés.
+          </p>
+        )}
+      </section>
 
       {!creator.payout_method && (
         <section className="mt-8 rounded-[20px] border border-accent/40 bg-accent/[0.06] p-5">

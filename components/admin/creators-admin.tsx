@@ -125,7 +125,9 @@ function CreatorRow({ creator }: { creator: CreatorAccount }) {
           <td colSpan={9} className="pb-4">
             <div className="rounded-[12px] bg-ink/[0.03] p-3">
               <div className="mb-2 flex flex-wrap items-center gap-2 text-[12px] text-ink-faint">
-                Inscrit le {new Date(creator.created_at).toLocaleDateString("fr-FR")} · page perso :
+                Inscrit le {new Date(creator.created_at).toLocaleDateString("fr-FR")} · série : {creator.streak.current} j · ce mois-ci{" "}
+                {creator.streak.thisMonth}/{creator.streak.daysInThisMonth} j
+                {creator.streak.completedMonths.length > 0 && ` · ${creator.streak.completedMonths.length} mois complet(s)`} · page perso :
                 <CopyLink path={`/createurs/${creator.token}`} label="Copier son lien" />
               </div>
               {creator.videos.length === 0 && <p className="text-[13px] text-ink-muted">Pas encore de vidéo.</p>}

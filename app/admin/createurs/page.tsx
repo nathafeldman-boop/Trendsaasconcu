@@ -4,7 +4,7 @@ import { ArrowLeft } from "lucide-react";
 import { CopyLink } from "@/components/creators/copy-link";
 import { CreatorsTable, RefreshViewsButton } from "@/components/admin/creators-admin";
 import { listCreatorAccounts } from "@/lib/creators/store";
-import { bonusLabel, formatEuros, formatViews, rateLabel } from "@/lib/creators/program";
+import { bonusLabel, formatEuros, formatViews, rateLabel, STREAK_BONUS_CENTS } from "@/lib/creators/program";
 
 export const metadata: Metadata = {
   title: "Créateurs — Admin SaaSFounder",
@@ -38,7 +38,7 @@ export default async function CreatorsAdminPage() {
       <div className="mt-4 flex flex-wrap items-end justify-between gap-4">
         <div>
           <h1 className="font-display text-3xl font-semibold text-ink">Créateurs</h1>
-          <p className="mt-1 font-body text-ink-muted">{rateLabel()} · bonus par vidéo : {bonusLabel()} · vues relues toutes les 10 minutes.</p>
+          <p className="mt-1 font-body text-ink-muted">{rateLabel()} · bonus par vidéo : {bonusLabel()} · série : {formatEuros(STREAK_BONUS_CENTS)} par mois complet · vues relues toutes les 10 minutes.</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <CopyLink path="/createurs" label="Copier le lien d'inscription" />

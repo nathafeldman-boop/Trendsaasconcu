@@ -47,6 +47,54 @@ export function earnedCents(views: number) {
   return viewCents(views) + bonusCents(views);
 }
 
+/** Paid once for every calendar month with at least one video posted each day. */
+export const STREAK_BONUS_CENTS = 3000;
+
+/** A date as YYYY-MM-DD in Paris time. */
+export function parisDay(date: Date | string) {
+  return new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Paris" }).format(new Date(date));
+}
+
+function daysInMonth(month: string) {
+  const [y, m] = month.split("-").map(Number);
+  return new Date(Date.UTC(y, m, 0)).getUTCDate();
+}
+
+/**
+ * The posting streak, from the days (Paris time) the creator's videos were
+ * published: months fully covered (one bonus each), the current run of
+ * consecutive days, and how this month is going.
+ */
+export function streak(postedDays: string[], today = parisDay(new Date())) {
+  const days = new Set(postedDays);
+  const byMonth = new Map<string, number>();
+  for (const d of days) byMonth.set(d.slice(0, 7), (byMonth.get(d.slice(0, 7)) ?? 0) + 1);
+  const completedMonths = [...byMonth].filter(([month, count]) => count >= daysInMonth(month)).map(([month]) => month);
+
+  // Consecutive days up to today (or up to yesterday, if nothing is posted yet today).
+  let current = 0;
+  const cursor = new Date(`${today}T12:00:00Z`);
+  if (!days.has(today)) cursor.setUTCDate(cursor.getUTCDate() - 1);
+  while (days.has(cursor.toISOString().slice(0, 10))) {
+    current++;
+    cursor.setUTCDate(cursor.getUTCDate() - 1);
+  }
+
+  const month = today.slice(0, 7);
+  const dayOfMonth = Number(today.slice(8, 10));
+  let missedThisMonth = 0;
+  for (let d = 1; d < dayOfMonth; d++) if (!days.has(`${month}-${String(d).padStart(2, "0")}`)) missedThisMonth++;
+  return {
+    completedMonths,
+    bonusCents: completedMonths.length * STREAK_BONUS_CENTS,
+    current,
+    thisMonth: byMonth.get(month) ?? 0,
+    daysInThisMonth: daysInMonth(month),
+    // Still possible this month: no past day of the month without a video.
+    stillPossible: missedThisMonth === 0,
+  };
+}
+
 export function bonusLabel() {
   const short = (v: number) => (v >= 1_000_000 ? `${v / 1_000_000} M` : `${v / 1000} k`);
   return BONUSES.map((b) => `+${formatEuros(b.cents)} à ${short(b.views)} vues`).join(", ");

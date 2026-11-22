@@ -1,5 +1,5 @@
 import { createAdminClient } from "@/lib/supabase/admin";
-import { earnedCents, normalizeHandle } from "@/lib/creators/program";
+import { earnedCents, normalizeHandle, parisDay, streak } from "@/lib/creators/program";
 import { fetchVideoStats, parseTikTokUrl } from "@/lib/creators/tiktok";
 
 export type Creator = {
@@ -34,6 +34,7 @@ export type CreatorAccount = Creator & {
   videos: CreatorVideo[];
   payouts: CreatorPayout[];
   views: number;
+  streak: ReturnType<typeof streak>;
   earnedCents: number;
   paidCents: number;
   dueCents: number;
@@ -52,9 +53,11 @@ function db() {
 function account(creator: Creator, videos: CreatorVideo[], payouts: CreatorPayout[]): CreatorAccount {
   const counted = videos.filter((v) => v.status === "active");
   const views = counted.reduce((sum, v) => sum + Number(v.views), 0);
-  const earned = counted.reduce((sum, v) => sum + earnedCents(Number(v.views)), 0);
+  // The day each counted video went up on TikTok (until it is read, the day it was added).
+  const run = streak(counted.map((v) => parisDay(v.posted_at ?? v.created_at)));
+  const earned = counted.reduce((sum, v) => sum + earnedCents(Number(v.views)), 0) + run.bonusCents;
   const paid = payouts.reduce((sum, p) => sum + p.amount_cents, 0);
-  return { ...creator, videos, payouts, views, earnedCents: earned, paidCents: paid, dueCents: Math.max(0, earned - paid) };
+  return { ...creator, videos, payouts, views, streak: run, earnedCents: earned, paidCents: paid, dueCents: Math.max(0, earned - paid) };
 }
 
 export async function getCreatorAccount(token: string): Promise<CreatorAccount | null> {
