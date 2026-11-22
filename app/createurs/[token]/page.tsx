@@ -81,6 +81,26 @@ export default async function CreatorAccountPage({
         </section>
       )}
 
+      <section className="mt-8 rounded-[20px] border border-ink/10 bg-ink/[0.03] p-5">
+        <h2 className="font-body text-[15px] font-semibold text-ink">Ce que tu peux filmer</h2>
+        <p className="mt-1 font-body text-[13.5px] leading-relaxed text-ink-muted">
+          La simulation montre la création d&apos;un SaaS de A à Z : l&apos;objectif de revenus, les choix, le potentiel, puis le site
+          généré. Ouvre-la sur ton ordinateur et filme l&apos;écran avec ton téléphone. Rien n&apos;est enregistré, tu peux la rejouer
+          autant que tu veux.
+        </p>
+        <a
+          href="/simulation"
+          target="_blank"
+          rel="noopener"
+          className="mt-4 inline-flex h-11 items-center justify-center rounded-full bg-ink px-5 font-body text-[14px] font-semibold text-canvas transition-transform hover:scale-[1.02]"
+        >
+          Ouvrir la simulation
+        </a>
+        <p className="mt-3 font-body text-[12.5px] text-ink-faint">
+          Pense à indiquer « Collaboration commerciale » sur chaque vidéo, et à mentionner saasfounder.fr.
+        </p>
+      </section>
+
       <section className="glass-panel mt-8 rounded-[20px] p-5">
         <h2 className="font-body text-[15px] font-semibold text-ink">Ajouter une vidéo</h2>
         <p className="mb-4 mt-1 font-body text-[13px] text-ink-muted">Colle le lien d&apos;une vidéo publiée par @{creator.tiktok_handle}.</p>
