@@ -45,7 +45,7 @@ export function MarketingTab({
   );
 
   return (
-    <div className="mx-auto flex max-w-[940px] flex-col gap-8 px-5 py-8 sm:px-8 lg:px-12 lg:py-12">
+    <div className="mx-auto flex max-w-[940px] flex-col gap-7 px-4 pb-8 pt-2 sm:gap-8 sm:px-8 sm:py-8 lg:px-12 lg:py-12">
       <TabHeader
         eyebrow="Marketing"
         title="Tes premiers clients."

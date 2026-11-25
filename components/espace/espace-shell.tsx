@@ -106,7 +106,7 @@ export function EspaceShell({
 
       <main className="min-w-0 flex-1 pb-28 lg:pb-16">
         {/* Mobile header: logo only, the tabs live in the bottom bar. */}
-        <header className="flex items-center justify-between px-5 py-5 lg:hidden">
+        <header className="flex items-center justify-between px-4 py-3 sm:px-5 sm:py-5 lg:hidden">
           <Link href="/espace">
             <Logo />
           </Link>

@@ -54,7 +54,7 @@ export function RevenueTab({ initialMetrics, revenueGoal }: { initialMetrics: St
   }
 
   return (
-    <div className="mx-auto flex max-w-[940px] flex-col gap-8 px-5 py-8 sm:px-8 lg:px-12 lg:py-12">
+    <div className="mx-auto flex max-w-[940px] flex-col gap-7 px-4 pb-8 pt-2 sm:gap-8 sm:px-8 sm:py-8 lg:px-12 lg:py-12">
       <TabHeader
         eyebrow="Revenus"
         title="Tes revenus, en direct."
@@ -243,8 +243,8 @@ function ConnectCard({
   }
 
   return (
-    <section id="connecter-stripe" className="glass-panel scroll-mt-16 rounded-[26px] p-6 sm:p-8">
-      <div className="flex items-start gap-4">
+    <section id="connecter-stripe" className="glass-panel scroll-mt-16 rounded-[26px] p-5 sm:p-8">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:gap-4">
         <span className="flex size-12 shrink-0 items-center justify-center rounded-[14px] border border-ink/10 bg-ink/[0.04]">
           <BrandLogo brand="stripe" className="size-6" />
         </span>

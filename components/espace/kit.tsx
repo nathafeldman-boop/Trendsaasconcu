@@ -19,11 +19,11 @@ export function TabHeader({
   children?: React.ReactNode;
 }) {
   return (
-    <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+    <header className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
       <div>
         <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-accent">{eyebrow}</p>
-        <h1 className="mt-3 font-display text-[30px] font-semibold leading-tight text-ink sm:text-[36px]">{title}</h1>
-        <p className="mt-2 max-w-xl font-body text-[15px] leading-relaxed text-ink-muted">{sub}</p>
+        <h1 className="mt-2 font-display text-[26px] font-semibold leading-tight text-ink sm:mt-3 sm:text-[36px]">{title}</h1>
+        <p className="mt-2 max-w-xl font-body text-[14px] leading-relaxed text-ink-muted sm:text-[15px]">{sub}</p>
       </div>
       {children}
     </header>

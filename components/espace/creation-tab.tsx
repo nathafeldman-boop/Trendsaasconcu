@@ -118,7 +118,7 @@ export function CreationTab({
   const progress = Math.round((doneCount / (CHECKLIST_ITEMS.length + 3)) * 100);
 
   return (
-    <div className="mx-auto flex max-w-[940px] flex-col gap-8 px-5 py-8 sm:px-8 lg:px-12 lg:py-12">
+    <div className="mx-auto flex max-w-[940px] flex-col gap-7 px-4 pb-8 pt-2 sm:gap-8 sm:px-8 sm:py-8 lg:px-12 lg:py-12">
       <TabHeader
         eyebrow="Création de SaaS"
         title={firstName ? `${firstName}, on construit ton SaaS.` : "On construit ton SaaS."}
@@ -264,10 +264,10 @@ function Section({
       initial={{ opacity: 0, y: 14 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.35 }}
-      className="glass-panel scroll-mt-16 rounded-[26px] p-6 sm:p-8"
+      className="glass-panel scroll-mt-16 rounded-[26px] p-5 sm:p-8"
     >
-      <div className="flex items-start gap-4">
-        <span className="flex size-12 shrink-0 items-center justify-center rounded-[14px] border border-accent/25 bg-accent/10 text-accent">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:gap-4">
+        <span className="flex size-10 shrink-0 items-center justify-center rounded-[12px] border border-accent/25 sm:size-12 sm:rounded-[14px] bg-accent/10 text-accent">
           <Icon className="size-5" strokeWidth={1.75} />
         </span>
         <div className="min-w-0 flex-1">
@@ -279,7 +279,7 @@ function Section({
           <p className="mt-1 font-body text-[14px] leading-relaxed text-ink-muted">{sub}</p>
         </div>
       </div>
-      <div className="mt-6">{children}</div>
+      <div className="mt-5 sm:mt-6">{children}</div>
     </motion.section>
   );
 }

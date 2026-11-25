@@ -74,9 +74,9 @@ export function MarketingPanel({
 
   return (
     <div className="flex flex-col gap-6">
-      <section id="canal" className="glass-panel scroll-mt-16 rounded-[26px] p-6 sm:p-8">
-        <div className="flex items-start gap-4">
-          <span className="flex size-12 shrink-0 items-center justify-center rounded-[14px] border border-accent/25 bg-accent/10 text-accent">
+      <section id="canal" className="glass-panel scroll-mt-16 rounded-[26px] p-5 sm:p-8">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:gap-4">
+          <span className="flex size-10 shrink-0 items-center justify-center rounded-[12px] border border-accent/25 sm:size-12 sm:rounded-[14px] bg-accent/10 text-accent">
             <Megaphone className="size-5" strokeWidth={1.75} />
           </span>
           <div>
@@ -147,9 +147,9 @@ export function MarketingPanel({
       </section>
 
       {state.chosen_channel && (
-        <section id="video" className="glass-panel scroll-mt-16 rounded-[26px] p-6 sm:p-8">
-          <div className="flex items-start gap-4">
-            <span className="flex size-12 shrink-0 items-center justify-center rounded-[14px] border border-accent/25 bg-accent/10 text-accent">
+        <section id="video" className="glass-panel scroll-mt-16 rounded-[26px] p-5 sm:p-8">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:gap-4">
+            <span className="flex size-10 shrink-0 items-center justify-center rounded-[12px] border border-accent/25 sm:size-12 sm:rounded-[14px] bg-accent/10 text-accent">
               <Video className="size-5" strokeWidth={1.75} />
             </span>
             <div>

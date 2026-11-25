@@ -95,7 +95,7 @@ export function LaunchTab({ ideaTitle, ideaText, connections, initialState, avai
   }, [notice.connected, notice.error, router]);
 
   return (
-    <div className="mx-auto flex max-w-[940px] flex-col gap-6 px-5 py-8 sm:px-8 lg:px-12 lg:py-12">
+    <div className="mx-auto flex max-w-[940px] flex-col gap-6 px-4 pb-8 pt-2 sm:px-8 sm:py-8 lg:px-12 lg:py-12">
       <TabHeader
         eyebrow="Pilote automatique"
         title="On met tout en place pour toi."
@@ -170,9 +170,9 @@ function StepCard({
       initial={{ opacity: 0, y: 14 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.35, delay: num * 0.04 }}
-      className={cn("glass-panel rounded-[26px] p-6 sm:p-8", done && "shadow-[inset_0_0_0_1px_rgba(52,211,153,0.18)]")}
+      className={cn("glass-panel rounded-[26px] p-5 sm:p-8", done && "shadow-[inset_0_0_0_1px_rgba(52,211,153,0.18)]")}
     >
-      <div className="flex items-start gap-4">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:gap-4">
         <span className="flex h-12 shrink-0 items-center gap-1.5 rounded-[14px] border border-ink/10 bg-ink/[0.04] px-3">
           {brands.map((brand) => (
             <BrandLogo key={brand} brand={brand} className="size-5" />
@@ -187,7 +187,7 @@ function StepCard({
           <p className="mt-1 font-body text-[14px] leading-relaxed text-ink-muted">{sub}</p>
         </div>
       </div>
-      <div className="mt-6">{children}</div>
+      <div className="mt-5 sm:mt-6">{children}</div>
     </motion.section>
   );
 }

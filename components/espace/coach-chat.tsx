@@ -131,7 +131,7 @@ export function CoachChat({
   }
 
   return (
-    <div className="mx-auto flex min-h-[calc(100dvh-8rem)] max-w-[860px] flex-col px-5 pt-8 sm:px-8 lg:min-h-[calc(100dvh-2.25rem)] lg:px-12 lg:pt-12">
+    <div className="mx-auto flex min-h-[calc(100dvh-8rem)] max-w-[860px] flex-col px-4 pt-2 sm:px-8 sm:pt-8 lg:min-h-[calc(100dvh-2.25rem)] lg:px-12 lg:pt-12">
       <TabHeader
         eyebrow="Coach IA"
         title={firstName ? `Ton coach, ${firstName}.` : "Ton coach."}
@@ -140,20 +140,20 @@ export function CoachChat({
         <BudgetMeter used={budgetUsed} />
       </TabHeader>
 
-      <div className="mt-6 flex flex-wrap gap-2">
-        <span className="flex items-center gap-1.5 font-mono text-[10.5px] uppercase tracking-[0.18em] text-ink-faint">
+      <div className="-mx-4 mt-4 flex gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none] sm:mx-0 sm:mt-6 sm:flex-wrap sm:overflow-visible sm:px-0 [&::-webkit-scrollbar]:hidden">
+        <span className="flex shrink-0 items-center gap-1.5 font-mono text-[10.5px] uppercase tracking-[0.18em] text-ink-faint">
           <Brain className="size-3.5" /> Il sait que
         </span>
         {facts.map((f) => (
-          <span key={f.label} className="rounded-full border border-ink/10 bg-ink/[0.03] px-3 py-1 font-body text-[12px] text-ink-muted">
+          <span key={f.label} className="shrink-0 whitespace-nowrap rounded-full border border-ink/10 bg-ink/[0.03] px-3 py-1 font-body text-[12px] text-ink-muted">
             <span className="text-ink-faint">{f.label} :</span> {f.value}
           </span>
         ))}
       </div>
 
-      <div className="mt-8 flex flex-1 flex-col gap-5">
+      <div className="mt-5 flex flex-1 flex-col gap-5 sm:mt-8">
         {messages.length === 0 && (
-          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="glass-panel rounded-[24px] p-6">
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="glass-panel rounded-[24px] p-4 sm:p-6">
             <div className="flex items-center gap-3">
               <CoachAvatar />
               <p className="font-body text-[15px] leading-relaxed text-ink">
@@ -222,8 +222,8 @@ export function CoachChat({
         <div ref={bottomRef} />
       </div>
 
-      <div className="sticky bottom-[84px] z-10 mt-6 pb-4 lg:bottom-0 lg:pb-8">
-        <div className="glass-panel rounded-[22px] bg-canvas-raised/90 p-2.5">
+      <div className="sticky bottom-[calc(4.25rem+max(env(safe-area-inset-bottom),0.5rem))] z-10 -mx-4 mt-4 bg-gradient-to-t from-canvas from-70% to-transparent px-4 pb-3 pt-5 sm:mx-0 sm:px-0 lg:bottom-0 lg:pb-8">
+        <div className="glass-panel rounded-[22px] !bg-canvas-raised p-2.5">
           {image && (
             <div className="flex items-center gap-2 px-2 pb-2 pt-1">
               {/* eslint-disable-next-line @next/next/no-img-element -- ephemeral data URL, not a static asset */}
@@ -272,8 +272,8 @@ export function CoachChat({
             </button>
           </div>
         </div>
-        <div className="mt-2 flex items-center justify-between px-2">
-          <p className="font-body text-[11.5px] text-ink-faint">Entrée pour envoyer · Maj + Entrée pour aller à la ligne</p>
+        <div className="mt-2 flex items-center justify-end px-2 sm:justify-between">
+          <p className="hidden font-body text-[11.5px] text-ink-faint sm:block">Entrée pour envoyer · Maj + Entrée pour aller à la ligne</p>
           {messages.length > 0 && (
             <button type="button" onClick={reset} className="flex items-center gap-1 font-body text-[11.5px] text-ink-faint hover:text-ink">
               <RotateCcw className="size-3" /> Nouvelle conversation
