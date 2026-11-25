@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { Testimonials } from "@/components/onboarding/testimonials";
 import { motion } from "framer-motion";
 import { Check, Loader2, Lock, Play } from "lucide-react";
 import { StepShell } from "@/components/onboarding/step-shell";
@@ -209,6 +210,7 @@ export function BuildScreen({ shell, answers, onNext }: { shell: ShellProps; ans
           )}
         </div>
       </div>
+      <Testimonials className="mt-8" />
       <div className="mt-8 flex justify-center">
         <Button onClick={onNext} disabled={!ready}>
           {ready ? "Voir mon business" : "Génération…"}

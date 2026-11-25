@@ -5,6 +5,7 @@ import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
 import { Check, PenLine, Sparkles } from "lucide-react";
 import { StepShell } from "@/components/onboarding/step-shell";
+import { Testimonials } from "@/components/onboarding/testimonials";
 import { ChoiceOption } from "@/components/onboarding/choice-option";
 import { ScaleQuestion } from "@/components/onboarding/scale-question";
 import { Illustration, RecurringRevenue } from "@/components/onboarding/illustrations";
@@ -546,6 +547,7 @@ export function LoadingScreen({ shell, answers, onAnswer, onNext }: Omit<ScreenP
             );
           })}
         </ol>
+        <Testimonials className="mt-8 max-w-sm" />
       </div>
 
       <AnimatePresence>
