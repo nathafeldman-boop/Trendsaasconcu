@@ -173,7 +173,7 @@ function StepCard({
       className={cn("glass-panel rounded-[26px] p-5 sm:p-8", done && "shadow-[inset_0_0_0_1px_rgba(52,211,153,0.18)]")}
     >
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:gap-4">
-        <span className="flex h-12 shrink-0 items-center gap-1.5 rounded-[14px] border border-ink/10 bg-ink/[0.04] px-3">
+        <span className="flex h-10 shrink-0 items-center gap-1.5 self-start rounded-[12px] border border-ink/10 bg-ink/[0.04] px-3 sm:h-12 sm:rounded-[14px]">
           {brands.map((brand) => (
             <BrandLogo key={brand} brand={brand} className="size-5" />
           ))}
