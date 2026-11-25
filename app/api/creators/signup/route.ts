@@ -30,7 +30,7 @@ export async function POST(request: Request) {
       {
         error:
           result.error === "taken"
-            ? `@${handle} est déjà inscrit. Retrouve ton lien perso dans le message qu'on t'a envoyé, ou écris-nous.`
+            ? `@${handle} est déjà inscrit. Utilise « Déjà inscrit ? » plus haut pour retrouver ton espace avec ton numéro.`
             : "Inscription impossible pour le moment, réessaie.",
       },
       { status: result.error === "taken" ? 409 : 500 }

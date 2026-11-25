@@ -6,6 +6,7 @@ import { AddVideoForm } from "@/components/creators/add-video-form";
 import { CopyLink } from "@/components/creators/copy-link";
 import { PayoutForm } from "@/components/creators/payout-form";
 import { InstagramForm } from "@/components/creators/instagram-form";
+import { RememberCreator } from "@/components/creators/creator-login";
 import { getCreatorAccount } from "@/lib/creators/store";
 import { bonusCents, bonusLabel, earnedCents, formatEuros, formatViews, payoutLabel, rateLabel, STREAK_BONUS_CENTS } from "@/lib/creators/program";
 
@@ -45,6 +46,7 @@ export default async function CreatorAccountPage({
 
   return (
     <main className="mx-auto max-w-2xl px-5 pb-20 pt-6">
+      <RememberCreator token={creator.token} />
       <div className="flex items-center justify-between">
         <Link href="/" className="inline-flex">
           <Logo />
@@ -190,10 +192,10 @@ export default async function CreatorAccountPage({
       {creator.payout_method && (
         <details className="mt-8 rounded-[16px] border border-ink/10 p-4">
           <summary className="cursor-pointer font-body text-[14px] text-ink-muted">
-            Paiement par {payoutLabel(creator.payout_method)} · modifier
+            Paiement par {payoutLabel(creator.payout_method)} (…{creator.payout_details.slice(-4)}) · modifier
           </summary>
           <div className="mt-4">
-            <PayoutForm token={creator.token} initialMethod={creator.payout_method} initialDetails={creator.payout_details} />
+            <PayoutForm token={creator.token} initialMethod={creator.payout_method} initialDetails="" />
           </div>
         </details>
       )}

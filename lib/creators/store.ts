@@ -88,6 +88,13 @@ export async function listCreatorAccounts(): Promise<CreatorAccount[]> {
   );
 }
 
+/** A creator's personal link, from their TikTok handle and phone number (both as given at signup). */
+export async function findCreatorToken(handle: string, phone: string) {
+  const { data } = await db().from("creators").select("token, phone").ilike("tiktok_handle", handle).limit(1);
+  const creator = data?.[0];
+  return creator && creator.phone === phone ? (creator.token as string) : null;
+}
+
 export async function createCreator(input: Omit<Creator, "id" | "token" | "created_at">) {
   const { data, error } = await db().from("creators").insert(input).select("token").single();
   if (error) return { error: error.code === "23505" ? ("taken" as const) : ("failed" as const) };

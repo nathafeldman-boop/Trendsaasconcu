@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Logo } from "@/components/ui/logo";
 import { CreatorSignupForm } from "@/components/creators/signup-form";
+import { CreatorLogin } from "@/components/creators/creator-login";
 import { bonusLabel, formatEuros, rateLabel, STREAK_BONUS_CENTS } from "@/lib/creators/program";
 
 export const metadata: Metadata = {
@@ -42,7 +43,11 @@ export default function CreatorsPage() {
           </li>
         ))}
       </ol>
-      <div className="glass-panel mt-10 rounded-[20px] p-6">
+      <div className="mt-10">
+        <CreatorLogin />
+      </div>
+      <div className="glass-panel mt-6 rounded-[20px] p-6">
+        <p className="mb-5 font-body text-[15px] font-semibold text-ink">Nouveau ? Inscris-toi</p>
         <CreatorSignupForm />
       </div>
       <p className="mt-6 text-center font-body text-[12px] leading-relaxed text-ink-faint">
