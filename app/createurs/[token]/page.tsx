@@ -84,10 +84,16 @@ export default async function CreatorAccountPage({
       <section id="ajouter" className="glass-panel mt-6 rounded-[20px] border border-accent/30 p-5">
         <h2 className="font-body text-[17px] font-semibold text-ink">Ajouter une vidéo</h2>
         <p className="mb-4 mt-1 font-body text-[13px] leading-relaxed text-ink-muted">
-          Tu postes la même vidéo sur TikTok et sur Instagram ? Colle les deux liens ici. On paie la plateforme qui fait le plus de
-          vues (on n&apos;additionne pas). Un seul lien suffit si tu ne postes que sur l&apos;une des deux.
+          Une vidéo = une carte. Tu postes la même vidéo sur TikTok et sur Instagram ? Colle les deux liens ensemble : on paie la
+          plateforme qui fait le plus de vues (on n&apos;additionne pas). Si tu ne colles qu&apos;un lien, on te demandera si c&apos;est
+          un doublon.
         </p>
-        <AddVideoForm token={creator.token} />
+        <AddVideoForm
+          token={creator.token}
+          lonePosts={creator.posts
+            .filter((p) => Boolean(p.tiktok) !== Boolean(p.instagram))
+            .map((p) => ({ key: p.key, platform: p.tiktok ? "tiktok" : "instagram", date: p.postedAt, views: p.views }))}
+        />
         <p className="mt-3 font-body text-[12px] leading-relaxed text-ink-faint">
           TikTok : vues lues automatiquement toutes les 10 minutes (vidéo publiée par @{creator.tiktok_handle}). Instagram : envoie-nous
           une capture des vues du reel sur WhatsApp, on les met à jour.
