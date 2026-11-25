@@ -3,7 +3,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { createStripeClient } from "@/lib/stripe/client";
 import { computeMrr } from "@/lib/stripe/mrr";
-import { AdminPanel } from "@/components/admin/admin-panel";
+import { AdminPanel, type DailyFunnel } from "@/components/admin/admin-panel";
 import { AnalyticsDashboard, type Analytics, type FeedEvent } from "@/components/admin/analytics-dashboard";
 
 export const metadata: Metadata = {
@@ -87,7 +87,7 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
   const onlineSince = new Date();
   onlineSince.setMinutes(onlineSince.getMinutes() - 5);
 
-  const [todayCount, yesterdayCount, dayBeforeCount, online, codes, users, platformRevenue, analytics, recent] =
+  const [todayCount, yesterdayCount, dayBeforeCount, online, codes, users, platformRevenue, analytics, recent, daily] =
     await Promise.all([
       supabase
         .from("profiles")
@@ -125,9 +125,11 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
         .select("id, created_at, name, path, props, user_id, anon_id, source, device, country")
         .order("created_at", { ascending: false })
         .limit(40),
+      supabase.rpc("admin_daily_funnel", { p_days: 14 }),
     ]);
 
   if (analytics.error) console.error("admin_analytics failed:", analytics.error.message);
+  if (daily.error) console.error("admin_daily_funnel failed:", daily.error.message);
 
   // Names for the live feed: the 200 latest accounts cover nearly every
   // event; anyone older shows as "Compte".
@@ -161,6 +163,7 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
           yesterday: yesterdayCount.count ?? 0,
           dayBefore: dayBeforeCount.count ?? 0,
         }}
+        daily={(daily.data as DailyFunnel[] | null) ?? []}
         online={online.data ?? []}
         codes={codes.data ?? []}
         users={users.data ?? []}

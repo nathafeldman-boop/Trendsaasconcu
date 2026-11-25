@@ -57,6 +57,53 @@ type PlatformRevenue =
       }[];
     };
 
+export type DailyFunnel = { day: string; visitors: number; signups: number; checkouts: number; payments: number };
+
+const pct = (part: number, whole: number) => (whole > 0 ? `${Math.round((part / whole) * 100)} %` : "—");
+
+function dayLabel(day: string, index: number) {
+  if (index === 0) return "Aujourd'hui";
+  if (index === 1) return "Hier";
+  const label = new Date(`${day}T12:00:00Z`).toLocaleDateString("fr-FR", { weekday: "short", day: "numeric", month: "short", timeZone: "Europe/Paris" });
+  return label.charAt(0).toUpperCase() + label.slice(1);
+}
+
+/** Visits, sign-ups, opened payments and payments, one row per Paris day. */
+function DailyTable({ rows }: { rows: DailyFunnel[] }) {
+  if (rows.length === 0) return null;
+  return (
+    <div className="mt-4 overflow-x-auto rounded-lg border border-ink/12 bg-ink/[0.02]">
+      <table className="w-full min-w-[520px] text-left font-body text-[14px]">
+        <thead>
+          <tr className="border-b border-ink/10 font-mono text-[11px] uppercase tracking-wider text-ink-faint">
+            <th className="px-4 py-3 font-normal">Jour</th>
+            <th className="px-4 py-3 text-right font-normal">Visites</th>
+            <th className="px-4 py-3 text-right font-normal">Inscrits</th>
+            <th className="px-4 py-3 text-right font-normal">Visite → inscrit</th>
+            <th className="px-4 py-3 text-right font-normal">Paiements ouverts</th>
+            <th className="px-4 py-3 text-right font-normal">Payés</th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((r, i) => (
+            <tr key={r.day} className={i === 0 ? "border-b border-ink/8 bg-accent/[0.05]" : "border-b border-ink/8 last:border-0"}>
+              <td className="px-4 py-2.5 text-ink">{dayLabel(r.day, i)}</td>
+              <td className="px-4 py-2.5 text-right tabular-nums text-ink">{r.visitors}</td>
+              <td className="px-4 py-2.5 text-right tabular-nums text-ink">{r.signups}</td>
+              <td className="px-4 py-2.5 text-right tabular-nums text-accent">{pct(r.signups, r.visitors)}</td>
+              <td className="px-4 py-2.5 text-right tabular-nums text-ink-muted">{r.checkouts}</td>
+              <td className="px-4 py-2.5 text-right tabular-nums text-ink-muted">{r.payments}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <p className="border-t border-ink/8 px-4 py-2.5 font-body text-[12px] text-ink-faint">
+        Visites : personnes différentes ayant ouvert au moins une page du site ce jour-là (heure de Paris).
+      </p>
+    </div>
+  );
+}
+
 function randomCode() {
   const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
   let code = "SAASFOUNDER-";
@@ -66,12 +113,14 @@ function randomCode() {
 
 export function AdminPanel({
   stats,
+  daily,
   online,
   codes,
   users,
   platformRevenue,
 }: {
   stats: { today: number; yesterday: number; dayBefore: number };
+  daily: DailyFunnel[];
   online: OnlineUser[];
   codes: AccessCode[];
   users: UserRow[];
@@ -133,6 +182,9 @@ export function AdminPanel({
         <StatCard icon={UserPlus} label="Avant-hier" value={stats.dayBefore} />
         <StatCard icon={Radio} label="En ligne maintenant" value={online.length} />
       </div>
+
+      <h3 className="mt-8 font-display text-[18px] font-semibold text-ink">Visites et inscrits par jour</h3>
+      <DailyTable rows={daily} />
 
       {online.length > 0 && (
         <div className="mt-4 rounded-lg border border-ink/12 bg-ink/[0.02] p-4">
