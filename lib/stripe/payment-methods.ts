@@ -3,16 +3,16 @@ import type Stripe from "stripe";
 // SaaSFounder's own payment method configuration in the shared Stripe
 // account: card, Apple Pay, Google Pay, Klarna (pay in 3 or 4, shown only
 // where Checkout supports it, e.g. the one-time lifetime plan) and Revolut
-// Pay. Link stays off (its pre-ticked "save with Link" box and phone field). Unlike passing
+// Pay, and PayPal (enabled on the account). Link stays off (its pre-ticked "save with Link" box and phone field). Unlike passing
 // payment_method_types: ["card"], a configuration keeps Checkout's dynamic
 // display, including Apple Pay on browsers other than Safari (paid by
 // scanning a QR code with an iPhone). Created on first use, then reused.
 
-const NAME = "SaaSFounder : carte, Apple Pay, Google Pay, Klarna, Revolut Pay";
+const NAME = "SaaSFounder : carte, Apple Pay, Google Pay, Klarna, Revolut Pay, PayPal";
 // Earlier names of the same configuration, picked up and renamed.
-const OLD_NAMES = ["SaaSFounder : carte, Apple Pay, Google Pay"];
+const OLD_NAMES = ["SaaSFounder : carte, Apple Pay, Google Pay", "SaaSFounder : carte, Apple Pay, Google Pay, Klarna, Revolut Pay"];
 
-const ON = ["card", "apple_pay", "google_pay", "klarna", "revolut_pay"] as const;
+const ON = ["card", "apple_pay", "google_pay", "klarna", "revolut_pay", "paypal"] as const;
 // Everything the account's default configuration turns on besides those.
 const OFF = [
   "link",
@@ -56,7 +56,11 @@ export async function paymentMethodConfiguration(stripe: Stripe) {
       configId = (await stripe.paymentMethodConfigurations.create({ name: NAME, ...desiredSettings() })).id;
     } else {
       if (!matches(existing) || existing.name !== NAME) {
-        await stripe.paymentMethodConfigurations.update(existing.id, { name: NAME, ...desiredSettings() });
+        // A refused update (a method the account can't offer) keeps the
+        // configuration as it was rather than dropping to card-only.
+        await stripe.paymentMethodConfigurations
+          .update(existing.id, { name: NAME, ...desiredSettings() })
+          .catch((err) => console.error("Payment method configuration not updated:", err instanceof Error ? err.message : err));
       }
       configId = existing.id;
     }
