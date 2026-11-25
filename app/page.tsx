@@ -5,12 +5,16 @@ import { HowItWorks } from "@/components/landing/how-it-works";
 import { VslSection } from "@/components/landing/vsl-section";
 import { FAQ, FaqSection } from "@/components/landing/faq-section";
 import { FinalCta } from "@/components/landing/final-cta";
+import { LatestPosts } from "@/components/landing/latest-posts";
 import { Footer } from "@/components/landing/footer";
 import { JsonLd } from "@/components/seo/json-ld";
 import { SITE_NAME, SITE_URL } from "@/lib/site";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = { alternates: { canonical: "/" } };
+
+// Re-rendered hourly so the latest guides appear on the day they go live.
+export const revalidate = 3600;
 
 const STRUCTURED_DATA = [
   {
@@ -51,6 +55,7 @@ export default function Home() {
         <HowItWorks />
         <VslSection />
         <FaqSection />
+        <LatestPosts />
         <FinalCta />
       </main>
       <Footer />
