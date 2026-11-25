@@ -28,12 +28,30 @@ export type CreatorVideo = {
   last_error: string | null;
   status: "active" | "rejected";
   rejected_reason: string | null;
+  /** The other platform's row for the same video (TikTok ↔ Instagram). */
+  pair_id: string | null;
+};
+
+/**
+ * One video, posted on TikTok, Instagram or both. Only the platform with
+ * the most views is paid: the two counts are never added.
+ */
+export type CreatorPost = {
+  key: string;
+  tiktok: CreatorVideo | null;
+  instagram: CreatorVideo | null;
+  /** The views paid: the best of the active platforms. */
+  views: number;
+  counted: "tiktok" | "instagram" | null;
+  earnedCents: number;
+  postedAt: string;
 };
 
 export type CreatorPayout = { id: string; creator_id: string; created_at: string; amount_cents: number; note: string | null };
 
 export type CreatorAccount = Creator & {
   videos: CreatorVideo[];
+  posts: CreatorPost[];
   payouts: CreatorPayout[];
   views: number;
   streak: ReturnType<typeof streak>;
@@ -52,14 +70,34 @@ function db() {
   return client;
 }
 
+/** Groups a creator's videos into posts: a TikTok and its Instagram twin are one post. */
+export function groupPosts(videos: CreatorVideo[]): CreatorPost[] {
+  const groups = new Map<string, CreatorVideo[]>();
+  for (const v of videos) {
+    const key = v.pair_id ?? v.id;
+    groups.set(key, [...(groups.get(key) ?? []), v]);
+  }
+  const posts = [...groups.entries()].map(([key, rows]) => {
+    const tiktok = rows.find((r) => r.platform === "tiktok") ?? null;
+    const instagram = rows.find((r) => r.platform === "instagram") ?? null;
+    const active = rows.filter((r) => r.status === "active");
+    const best = active.reduce<CreatorVideo | null>((top, r) => (!top || Number(r.views) > Number(top.views) ? r : top), null);
+    const views = best ? Number(best.views) : 0;
+    const postedAt = rows.map((r) => r.posted_at ?? r.created_at).sort()[0];
+    return { key, tiktok, instagram, views, counted: best?.platform ?? null, earnedCents: best ? earnedCents(views) : 0, postedAt };
+  });
+  return posts.sort((a, b) => b.postedAt.localeCompare(a.postedAt));
+}
+
 function account(creator: Creator, videos: CreatorVideo[], payouts: CreatorPayout[]): CreatorAccount {
-  const counted = videos.filter((v) => v.status === "active");
-  const views = counted.reduce((sum, v) => sum + Number(v.views), 0);
-  // The day each counted video went up on TikTok (until it is read, the day it was added).
-  const run = streak(counted.map((v) => parisDay(v.posted_at ?? v.created_at)));
-  const earned = counted.reduce((sum, v) => sum + earnedCents(Number(v.views)), 0) + run.bonusCents;
+  const posts = groupPosts(videos);
+  const counted = posts.filter((p) => p.counted);
+  const views = counted.reduce((sum, p) => sum + p.views, 0);
+  // The day each counted post went up (until it is read, the day it was added).
+  const run = streak(counted.map((p) => parisDay(p.postedAt)));
+  const earned = counted.reduce((sum, p) => sum + p.earnedCents, 0) + run.bonusCents;
   const paid = payouts.reduce((sum, p) => sum + p.amount_cents, 0);
-  return { ...creator, videos, payouts, views, streak: run, earnedCents: earned, paidCents: paid, dueCents: Math.max(0, earned - paid) };
+  return { ...creator, videos, posts, payouts, views, streak: run, earnedCents: earned, paidCents: paid, dueCents: Math.max(0, earned - paid) };
 }
 
 export async function getCreatorAccount(token: string): Promise<CreatorAccount | null> {
@@ -103,11 +141,6 @@ export async function createCreator(input: Omit<Creator, "id" | "token" | "creat
 
 type AddResult = { ok: true; video: CreatorVideo } | { ok: false; error: string };
 
-/**
- * Adds a video to a creator: it must be a TikTok link, published by the
- * creator's own account, and not already added by anyone. When TikTok can't
- * be read right now, the video is kept and checked at the next refresh.
- */
 const INSTAGRAM_URL = /^(?:https?:\/\/)?(?:www\.)?instagram\.com\/(?:[\w.]+\/)?(reels?|p|tv)\/([\w-]+)/i;
 
 /**
@@ -115,12 +148,9 @@ const INSTAGRAM_URL = /^(?:https?:\/\/)?(?:www\.)?instagram\.com\/(?:[\w.]+\/)?(
  * counts without the account owner's authorisation, so its views are
  * entered by an admin from a screenshot the creator sends.
  */
-async function addInstagramVideo(creator: CreatorAccount, rawUrl: string): Promise<AddResult> {
+async function addInstagramVideo(creator: CreatorAccount, rawUrl: string, pairId: string | null): Promise<AddResult> {
   const match = rawUrl.trim().match(INSTAGRAM_URL);
   if (!match) return { ok: false, error: "Colle le lien d'un reel Instagram (instagram.com/reel/…)." };
-  if (!creator.instagram_handle) {
-    return { ok: false, error: "Ajoute d'abord ton @ Instagram plus haut sur ta page." };
-  }
   const code = match[2];
   const { data, error } = await db()
     .from("creator_videos")
@@ -129,22 +159,21 @@ async function addInstagramVideo(creator: CreatorAccount, rawUrl: string): Promi
       platform: "instagram",
       url: `https://www.instagram.com/reel/${code}/`,
       video_id: `ig:${code}`,
-      author: normalizeHandle(creator.instagram_handle),
+      author: creator.instagram_handle ? normalizeHandle(creator.instagram_handle) : null,
       views: 0,
       last_error: null,
+      pair_id: pairId,
     })
     .select("*")
     .single();
-  if (error) return { ok: false, error: error.code === "23505" ? "Cette vidéo est déjà enregistrée." : "Enregistrement impossible, réessaie." };
+  if (error) return { ok: false, error: error.code === "23505" ? "Ce reel Instagram est déjà enregistré." : "Enregistrement impossible, réessaie." };
   return { ok: true, video: data as CreatorVideo };
 }
 
-export async function addCreatorVideo(token: string, rawUrl: string): Promise<AddResult> {
-  const creator = await getCreatorAccount(token);
-  if (!creator) return { ok: false, error: "Lien créateur invalide." };
-  if (/instagram\.com/i.test(rawUrl)) return addInstagramVideo(creator, rawUrl);
+/** Adds a TikTok video, published by the creator's own account. */
+async function addTikTokVideo(creator: CreatorAccount, rawUrl: string, pairId: string | null): Promise<AddResult> {
   const url = parseTikTokUrl(rawUrl);
-  if (!url) return { ok: false, error: "Colle le lien d'une vidéo TikTok ou d'un reel Instagram." };
+  if (!url) return { ok: false, error: "Colle le lien d'une vidéo TikTok (tiktok.com/@…/video/…)." };
 
   let stats: Awaited<ReturnType<typeof fetchVideoStats>> | null = null;
   let fetchError: string | null = null;
@@ -158,10 +187,10 @@ export async function addCreatorVideo(token: string, rawUrl: string): Promise<Ad
   const fromUrl = url.match(/tiktok\.com\/@([\w.]+)\//)?.[1]?.toLowerCase();
   const author = stats?.author || fromUrl || null;
   if (author && author !== handle) {
-    return { ok: false, error: `Cette vidéo est publiée par @${author}, pas par ton compte @${handle}.` };
+    return { ok: false, error: `Cette vidéo TikTok est publiée par @${author}, pas par ton compte @${handle}.` };
   }
   const videoId = stats?.videoId ?? url.match(/\/(?:video|photo)\/(\d+)/)?.[1];
-  if (!videoId) return { ok: false, error: fetchError ?? "Vidéo introuvable." };
+  if (!videoId) return { ok: false, error: fetchError ?? "Vidéo TikTok introuvable." };
 
   const { data, error } = await db()
     .from("creator_videos")
@@ -174,11 +203,58 @@ export async function addCreatorVideo(token: string, rawUrl: string): Promise<Ad
       views: stats?.views ?? 0,
       views_checked_at: stats ? new Date().toISOString() : null,
       last_error: fetchError,
+      pair_id: pairId,
     })
     .select("*")
     .single();
-  if (error) return { ok: false, error: error.code === "23505" ? "Cette vidéo est déjà enregistrée." : "Enregistrement impossible, réessaie." };
+  if (error) return { ok: false, error: error.code === "23505" ? "Cette vidéo TikTok est déjà enregistrée." : "Enregistrement impossible, réessaie." };
   return { ok: true, video: data as CreatorVideo };
+}
+
+/** Adds one video from a single link, TikTok or Instagram. */
+export async function addCreatorVideo(token: string, rawUrl: string): Promise<AddResult> {
+  const creator = await getCreatorAccount(token);
+  if (!creator) return { ok: false, error: "Lien créateur invalide." };
+  return /instagram\.com/i.test(rawUrl) ? addInstagramVideo(creator, rawUrl, null) : addTikTokVideo(creator, rawUrl, null);
+}
+
+type PostResult = { ok: true } | { ok: false; error: string };
+
+/**
+ * Adds one video posted on TikTok and/or Instagram (at least one link).
+ * With `toPost`, adds the missing platform to a post already there.
+ */
+export async function addCreatorPost(
+  token: string,
+  links: { tiktok?: string; instagram?: string },
+  toPost?: string
+): Promise<PostResult> {
+  const creator = await getCreatorAccount(token);
+  if (!creator) return { ok: false, error: "Lien créateur invalide." };
+  const tiktok = links.tiktok?.trim() ?? "";
+  const instagram = links.instagram?.trim() ?? "";
+  if (!tiktok && !instagram) return { ok: false, error: "Colle au moins un lien : TikTok ou Instagram." };
+  if (tiktok && /instagram\.com/i.test(tiktok)) return { ok: false, error: "Le premier champ attend un lien TikTok." };
+  if (instagram && !/instagram\.com/i.test(instagram)) return { ok: false, error: "Le second champ attend un lien Instagram." };
+
+  let pairId: string | null = null;
+  if (toPost) {
+    const post = creator.posts.find((p) => p.key === toPost);
+    if (!post) return { ok: false, error: "Vidéo introuvable." };
+    if ((tiktok && post.tiktok) || (instagram && post.instagram)) return { ok: false, error: "Cette vidéo a déjà ce lien." };
+    pairId = post.key;
+  }
+
+  if (tiktok) {
+    const added = await addTikTokVideo(creator, tiktok, pairId);
+    if (!added.ok) return added;
+    pairId ??= added.video.id;
+  }
+  if (instagram) {
+    const added = await addInstagramVideo(creator, instagram, pairId);
+    if (!added.ok) return { ok: false, error: tiktok ? `TikTok ajouté, mais pas l'Instagram : ${added.error}` : added.error };
+  }
+  return { ok: true };
 }
 
 /** Re-reads the views of the videos not checked in the last 9 minutes. */

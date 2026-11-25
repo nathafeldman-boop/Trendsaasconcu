@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { ChevronDown, MessageCircle, RefreshCw } from "lucide-react";
 import { CopyLink } from "@/components/creators/copy-link";
 import type { CreatorAccount } from "@/lib/creators/store";
-import { earnedCents, formatEuros, formatViews, PAYOUT_METHODS, payoutLabel, whatsappUrl } from "@/lib/creators/program";
+import { formatEuros, formatViews, PAYOUT_METHODS, payoutLabel, whatsappUrl } from "@/lib/creators/program";
 import { cn } from "@/lib/utils";
 
 async function post(body: object) {
@@ -153,7 +153,11 @@ function CreatorRow({ creator }: { creator: CreatorAccount }) {
                 <CopyLink path={`/createurs/${creator.token}`} label="Copier son lien" />
               </div>
               {creator.videos.length === 0 && <p className="text-[13px] text-ink-muted">Pas encore de vidéo.</p>}
-              {creator.videos.map((v) => (
+              {creator.videos.map((v) => {
+                const post = creator.posts.find((p) => p.tiktok?.id === v.id || p.instagram?.id === v.id);
+                const paired = Boolean(post?.tiktok && post?.instagram);
+                const counted = post?.counted === v.platform;
+                return (
                 <div key={v.id} className="flex items-center justify-between gap-3 border-t border-ink/5 py-2 text-[13px]">
                   <a href={v.url} target="_blank" rel="noreferrer" className="min-w-0 truncate text-ink hover:text-accent">
                     {v.url.replace("https://www.", "")}
@@ -163,7 +167,8 @@ function CreatorRow({ creator }: { creator: CreatorAccount }) {
                     </span>
                   </a>
                   <span className="shrink-0 tabular-nums">
-                    {formatViews(Number(v.views))} vues · {formatEuros(v.status === "active" ? earnedCents(Number(v.views)) : 0)}
+                    {v.platform === "instagram" ? "IG" : "TT"} · {formatViews(Number(v.views))} vues ·{" "}
+                    {counted ? formatEuros(post?.earnedCents ?? 0) : paired ? "non comptée (l'autre fait plus)" : formatEuros(0)}
                   </span>
                   {v.platform === "instagram" && (
                     <button
@@ -182,7 +187,8 @@ function CreatorRow({ creator }: { creator: CreatorAccount }) {
                     {v.status === "active" ? "Refuser" : "Réactiver"}
                   </button>
                 </div>
-              ))}
+                );
+              })}
               {creator.payouts.length > 0 && (
                 <p className="mt-2 text-[12px] text-ink-faint">
                   Paiements : {creator.payouts.map((p) => `${formatEuros(p.amount_cents)} le ${new Date(p.created_at).toLocaleDateString("fr-FR")}`).join(" · ")}

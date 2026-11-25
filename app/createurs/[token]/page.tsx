@@ -2,13 +2,13 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Logo } from "@/components/ui/logo";
-import { AddVideoForm } from "@/components/creators/add-video-form";
+import { AddMissingLink, AddVideoForm } from "@/components/creators/add-video-form";
 import { CopyLink } from "@/components/creators/copy-link";
 import { PayoutForm } from "@/components/creators/payout-form";
 import { InstagramForm } from "@/components/creators/instagram-form";
 import { RememberCreator } from "@/components/creators/creator-login";
 import { getCreatorAccount } from "@/lib/creators/store";
-import { bonusCents, bonusLabel, earnedCents, formatEuros, formatViews, payoutLabel, rateLabel, STREAK_BONUS_CENTS } from "@/lib/creators/program";
+import { bonusCents, bonusLabel, formatEuros, formatViews, payoutLabel, rateLabel, STREAK_BONUS_CENTS } from "@/lib/creators/program";
 
 export const metadata: Metadata = {
   title: "Mon espace créateur — SaaSFounder",
@@ -81,6 +81,19 @@ export default async function CreatorAccountPage({
         ))}
       </div>
 
+      <section id="ajouter" className="glass-panel mt-6 rounded-[20px] border border-accent/30 p-5">
+        <h2 className="font-body text-[17px] font-semibold text-ink">Ajouter une vidéo</h2>
+        <p className="mb-4 mt-1 font-body text-[13px] leading-relaxed text-ink-muted">
+          Tu postes la même vidéo sur TikTok et sur Instagram ? Colle les deux liens ici. On paie la plateforme qui fait le plus de
+          vues (on n&apos;additionne pas). Un seul lien suffit si tu ne postes que sur l&apos;une des deux.
+        </p>
+        <AddVideoForm token={creator.token} />
+        <p className="mt-3 font-body text-[12px] leading-relaxed text-ink-faint">
+          TikTok : vues lues automatiquement toutes les 10 minutes (vidéo publiée par @{creator.tiktok_handle}). Instagram : envoie-nous
+          une capture des vues du reel sur WhatsApp, on les met à jour.
+        </p>
+      </section>
+
       <section className="mt-6 rounded-[20px] border border-ink/10 p-5">
         <div className="flex flex-wrap items-baseline justify-between gap-2">
           <h2 className="font-body text-[15px] font-semibold text-ink">Ta série</h2>
@@ -135,59 +148,68 @@ export default async function CreatorAccountPage({
         </p>
       </section>
 
-      <section className="mt-8 rounded-[20px] border border-ink/10 p-5">
-        <h2 className="font-body text-[15px] font-semibold text-ink">Ton Instagram</h2>
-        <p className="mb-3 mt-1 font-body text-[13px] leading-relaxed text-ink-muted">
-          Tes reels Instagram comptent aussi, au même tarif. Instagram ne nous laisse pas lire les vues automatiquement : envoie-nous
-          une capture des statistiques de chaque reel sur WhatsApp et on met tes vues à jour.
-        </p>
-        <InstagramForm token={creator.token} initial={creator.instagram_handle} />
-      </section>
-
-      <section className="glass-panel mt-8 rounded-[20px] p-5">
-        <h2 className="font-body text-[15px] font-semibold text-ink">Ajouter une vidéo</h2>
-        <p className="mb-4 mt-1 font-body text-[13px] text-ink-muted">
-          Colle le lien d&apos;une vidéo TikTok publiée par @{creator.tiktok_handle}, ou d&apos;un reel Instagram
-          {creator.instagram_handle ? ` publié par @${creator.instagram_handle}` : ""}.
-        </p>
-        <AddVideoForm token={creator.token} />
-      </section>
-
       <section className="mt-8">
-        <h2 className="font-body text-[15px] font-semibold text-ink">Tes vidéos ({creator.videos.length})</h2>
-        {creator.videos.length === 0 ? (
+        <h2 className="font-body text-[15px] font-semibold text-ink">Tes vidéos ({creator.posts.length})</h2>
+        {creator.posts.length === 0 ? (
           <p className="mt-3 font-body text-[14px] text-ink-muted">Aucune vidéo pour l&apos;instant.</p>
         ) : (
           <ul className="mt-3 flex flex-col gap-2">
-            {creator.videos.map((v) => (
-              <li key={v.id} className="flex items-center justify-between gap-3 rounded-[14px] border border-ink/10 p-4">
-                <div className="min-w-0">
-                  <a href={v.url} target="_blank" rel="noreferrer" className="block truncate font-body text-[13.5px] text-ink hover:text-accent">
-                    {v.platform === "instagram" ? "Reel Instagram" : "Vidéo TikTok"} {v.video_id.replace("ig:", "").slice(-6)}
-                    {v.posted_at && <span className="text-ink-faint"> · publiée le {new Date(v.posted_at).toLocaleDateString("fr-FR")}</span>}
-                  </a>
-                  <p className="font-body text-[12px] text-ink-faint">
-                    {v.status === "rejected"
-                      ? `Non comptée${v.rejected_reason ? ` : ${v.rejected_reason}` : ""}`
-                      : v.platform === "instagram"
-                        ? v.views_checked_at
-                          ? `Vues mises à jour par l'équipe ${ago(v.views_checked_at)}`
-                          : "Envoie-nous une capture des vues sur WhatsApp"
-                        : v.last_error
-                          ? `Lecture impossible (${v.last_error}), on réessaie`
-                          : `Mise à jour ${ago(v.views_checked_at)}`}
+            {creator.posts.map((post) => (
+              <li key={post.key} className="rounded-[14px] border border-ink/10 p-4">
+                <div className="flex items-baseline justify-between gap-3">
+                  <p className="font-body text-[12.5px] text-ink-faint">
+                    Publiée le {new Date(post.postedAt).toLocaleDateString("fr-FR", { timeZone: "Europe/Paris" })}
+                  </p>
+                  <p className="shrink-0 text-right font-body text-[13px] text-ink">
+                    <span className="font-display text-[16px] font-semibold">{formatEuros(post.earnedCents)}</span>
+                    {bonusCents(post.views) > 0 && <span className="text-ink-faint"> dont {formatEuros(bonusCents(post.views))} de bonus</span>}
                   </p>
                 </div>
-                <div className="shrink-0 text-right">
-                  <p className="font-display text-[16px] font-semibold text-ink">{formatViews(Number(v.views))} vues</p>
-                  <p className="font-body text-[12px] text-ink-faint">{v.status === "active" ? formatEuros(earnedCents(Number(v.views))) : "—"}
-                    {v.status === "active" && bonusCents(Number(v.views)) > 0 && ` dont ${formatEuros(bonusCents(Number(v.views)))} de bonus`}</p>
+                <div className="mt-2 flex flex-col gap-1.5">
+                  {[post.tiktok, post.instagram].map((v, i) => {
+                    const platform = i === 0 ? "tiktok" : "instagram";
+                    const name = i === 0 ? "TikTok" : "Instagram";
+                    if (!v) return <AddMissingLink key={platform} token={creator.token} post={post.key} platform={platform} />;
+                    const counted = post.counted === platform;
+                    return (
+                      <div key={platform} className="flex items-center justify-between gap-3">
+                        <div className="min-w-0">
+                          <a href={v.url} target="_blank" rel="noreferrer" className="font-body text-[13.5px] font-semibold text-ink hover:text-accent">
+                            {name}
+                          </a>
+                          <span className="ml-2 font-body text-[12px] text-ink-faint">
+                            {v.status === "rejected"
+                              ? `non comptée${v.rejected_reason ? ` : ${v.rejected_reason}` : ""}`
+                              : platform === "instagram"
+                                ? v.views_checked_at
+                                  ? `mis à jour ${ago(v.views_checked_at)}`
+                                  : "envoie-nous une capture sur WhatsApp"
+                                : v.last_error
+                                  ? "lecture en cours, on réessaie"
+                                  : `mis à jour ${ago(v.views_checked_at)}`}
+                          </span>
+                        </div>
+                        <p className={`shrink-0 font-body text-[13.5px] tabular-nums ${counted ? "font-semibold text-accent" : "text-ink-faint"}`}>
+                          {formatViews(Number(v.views))} vues{counted && post.tiktok && post.instagram ? " · comptées" : ""}
+                        </p>
+                      </div>
+                    );
+                  })}
                 </div>
               </li>
             ))}
           </ul>
         )}
       </section>
+
+      <details className="mt-8 rounded-[16px] border border-ink/10 p-4">
+        <summary className="cursor-pointer font-body text-[14px] text-ink-muted">
+          Ton compte Instagram{creator.instagram_handle ? ` : @${creator.instagram_handle}` : " (facultatif)"}
+        </summary>
+        <div className="mt-4">
+          <InstagramForm token={creator.token} initial={creator.instagram_handle} />
+        </div>
+      </details>
 
       {creator.payout_method && (
         <details className="mt-8 rounded-[16px] border border-ink/10 p-4">
