@@ -70,6 +70,22 @@ function CreatorRow({ creator }: { creator: CreatorAccount }) {
     router.refresh();
   }
 
+  async function editInstagram() {
+    const handle = window.prompt(`@ Instagram de ${creator.name} :`, creator.instagram_handle ? `@${creator.instagram_handle}` : "");
+    if (handle === null) return;
+    if (!(await post({ action: "instagram-handle", creatorId: creator.id, handle }))) window.alert("@ Instagram invalide");
+    router.refresh();
+  }
+
+  async function enterViews(videoId: string, current: number) {
+    const typed = window.prompt("Vues du reel (d'après la capture envoyée par le créateur) :", String(current));
+    if (typed === null) return;
+    const views = Number(typed.replace(/[\s.,]/g, ""));
+    if (!Number.isFinite(views) || views < 0) return window.alert("Nombre invalide");
+    if (!(await post({ action: "manual-views", videoId, views }))) window.alert("Enregistrement impossible");
+    router.refresh();
+  }
+
   async function toggleVideo(videoId: string, status: "active" | "rejected") {
     const reason = status === "rejected" ? window.prompt("Raison (visible par le créateur) :", "Ne respecte pas les règles") : null;
     if (status === "rejected" && reason === null) return;
@@ -85,7 +101,10 @@ function CreatorRow({ creator }: { creator: CreatorAccount }) {
             <ChevronDown className={cn("size-3.5 transition-transform", open && "rotate-180")} />
             <span>
               {creator.name}
-              <span className="block text-[12px] text-ink-faint">@{creator.tiktok_handle}</span>
+              <span className="block text-[12px] text-ink-faint">
+                TikTok @{creator.tiktok_handle}
+                {creator.instagram_handle && <> · IG @{creator.instagram_handle}</>}
+              </span>
             </span>
           </button>
         </td>
@@ -125,7 +144,10 @@ function CreatorRow({ creator }: { creator: CreatorAccount }) {
           <td colSpan={9} className="pb-4">
             <div className="rounded-[12px] bg-ink/[0.03] p-3">
               <div className="mb-2 flex flex-wrap items-center gap-2 text-[12px] text-ink-faint">
-                Inscrit le {new Date(creator.created_at).toLocaleDateString("fr-FR")} · série : {creator.streak.current} j · ce mois-ci{" "}
+                <button type="button" onClick={editInstagram} className="text-accent hover:underline">
+                  {creator.instagram_handle ? "Modifier l'Instagram" : "Ajouter l'Instagram"}
+                </button>{" "}
+                · Inscrit le {new Date(creator.created_at).toLocaleDateString("fr-FR")} · série : {creator.streak.current} j · ce mois-ci{" "}
                 {creator.streak.thisMonth}/{creator.streak.daysInThisMonth} j
                 {creator.streak.completedMonths.length > 0 && ` · ${creator.streak.completedMonths.length} mois complet(s)`} · page perso :
                 <CopyLink path={`/createurs/${creator.token}`} label="Copier son lien" />
@@ -143,6 +165,15 @@ function CreatorRow({ creator }: { creator: CreatorAccount }) {
                   <span className="shrink-0 tabular-nums">
                     {formatViews(Number(v.views))} vues · {formatEuros(v.status === "active" ? earnedCents(Number(v.views)) : 0)}
                   </span>
+                  {v.platform === "instagram" && (
+                    <button
+                      type="button"
+                      onClick={() => enterViews(v.id, Number(v.views))}
+                      className="shrink-0 rounded-full bg-accent px-2.5 py-1 text-[12px] font-semibold text-canvas"
+                    >
+                      Saisir les vues
+                    </button>
+                  )}
                   <button
                     type="button"
                     onClick={() => toggleVideo(v.id, v.status === "active" ? "rejected" : "active")}

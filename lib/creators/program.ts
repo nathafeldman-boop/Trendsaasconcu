@@ -113,6 +113,13 @@ export function rateLabel() {
   return `${formatEuros(RATE_CENTS_PER_1000_VIEWS)} pour 1 000 vues`;
 }
 
+/** An optional Instagram handle: "" or null when left empty, false when invalid. */
+export function cleanInstagram(raw: unknown): string | null | false {
+  const handle = typeof raw === "string" ? normalizeHandle(raw.slice(0, 40)) : "";
+  if (!handle) return null;
+  return /^[\w.]{1,30}$/.test(handle) ? handle : false;
+}
+
 /** "@Name.Here " → "name.here": TikTok handles are case-insensitive. */
 export function normalizeHandle(raw: string) {
   return raw.trim().replace(/^@+/, "").toLowerCase();

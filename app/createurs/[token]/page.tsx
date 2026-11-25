@@ -5,6 +5,7 @@ import { Logo } from "@/components/ui/logo";
 import { AddVideoForm } from "@/components/creators/add-video-form";
 import { CopyLink } from "@/components/creators/copy-link";
 import { PayoutForm } from "@/components/creators/payout-form";
+import { InstagramForm } from "@/components/creators/instagram-form";
 import { getCreatorAccount } from "@/lib/creators/store";
 import { bonusCents, bonusLabel, earnedCents, formatEuros, formatViews, payoutLabel, rateLabel, STREAK_BONUS_CENTS } from "@/lib/creators/program";
 
@@ -58,7 +59,9 @@ export default async function CreatorAccountPage({
         </div>
       )}
 
-      <p className="mt-10 font-mono text-[11px] uppercase tracking-[0.25em] text-accent">Espace créateur · @{creator.tiktok_handle}</p>
+      <p className="mt-10 font-mono text-[11px] uppercase tracking-[0.25em] text-accent">Espace créateur · TikTok @{creator.tiktok_handle}
+        {creator.instagram_handle && ` · Instagram @${creator.instagram_handle}`}
+      </p>
       <h1 className="mt-2 font-display text-[32px] font-semibold tracking-[-0.04em] text-ink">Tes vues et tes gains</h1>
       <p className="mt-1 font-body text-[14px] text-ink-muted">
         {rateLabel()} · vues mises à jour toutes les 10 minutes · paiement : {payoutLabel(creator.payout_method)}
@@ -130,9 +133,21 @@ export default async function CreatorAccountPage({
         </p>
       </section>
 
+      <section className="mt-8 rounded-[20px] border border-ink/10 p-5">
+        <h2 className="font-body text-[15px] font-semibold text-ink">Ton Instagram</h2>
+        <p className="mb-3 mt-1 font-body text-[13px] leading-relaxed text-ink-muted">
+          Tes reels Instagram comptent aussi, au même tarif. Instagram ne nous laisse pas lire les vues automatiquement : envoie-nous
+          une capture des statistiques de chaque reel sur WhatsApp et on met tes vues à jour.
+        </p>
+        <InstagramForm token={creator.token} initial={creator.instagram_handle} />
+      </section>
+
       <section className="glass-panel mt-8 rounded-[20px] p-5">
         <h2 className="font-body text-[15px] font-semibold text-ink">Ajouter une vidéo</h2>
-        <p className="mb-4 mt-1 font-body text-[13px] text-ink-muted">Colle le lien d&apos;une vidéo publiée par @{creator.tiktok_handle}.</p>
+        <p className="mb-4 mt-1 font-body text-[13px] text-ink-muted">
+          Colle le lien d&apos;une vidéo TikTok publiée par @{creator.tiktok_handle}, ou d&apos;un reel Instagram
+          {creator.instagram_handle ? ` publié par @${creator.instagram_handle}` : ""}.
+        </p>
         <AddVideoForm token={creator.token} />
       </section>
 
@@ -146,15 +161,19 @@ export default async function CreatorAccountPage({
               <li key={v.id} className="flex items-center justify-between gap-3 rounded-[14px] border border-ink/10 p-4">
                 <div className="min-w-0">
                   <a href={v.url} target="_blank" rel="noreferrer" className="block truncate font-body text-[13.5px] text-ink hover:text-accent">
-                    Vidéo {v.video_id.slice(-6)}
+                    {v.platform === "instagram" ? "Reel Instagram" : "Vidéo TikTok"} {v.video_id.replace("ig:", "").slice(-6)}
                     {v.posted_at && <span className="text-ink-faint"> · publiée le {new Date(v.posted_at).toLocaleDateString("fr-FR")}</span>}
                   </a>
                   <p className="font-body text-[12px] text-ink-faint">
                     {v.status === "rejected"
                       ? `Non comptée${v.rejected_reason ? ` : ${v.rejected_reason}` : ""}`
-                      : v.last_error
-                        ? `Lecture impossible (${v.last_error}), on réessaie`
-                        : `Mise à jour ${ago(v.views_checked_at)}`}
+                      : v.platform === "instagram"
+                        ? v.views_checked_at
+                          ? `Vues mises à jour par l'équipe ${ago(v.views_checked_at)}`
+                          : "Envoie-nous une capture des vues sur WhatsApp"
+                        : v.last_error
+                          ? `Lecture impossible (${v.last_error}), on réessaie`
+                          : `Mise à jour ${ago(v.views_checked_at)}`}
                   </p>
                 </div>
                 <div className="shrink-0 text-right">

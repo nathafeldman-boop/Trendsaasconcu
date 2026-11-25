@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 };
 
 const STEPS = [
-  { title: "Inscris-toi", body: "Ton nom, ton @ TikTok, ton numéro et où on te paie." },
+  { title: "Inscris-toi", body: "Ton nom, ton @ TikTok (et Instagram si tu en as un), ton numéro et où on te paie." },
   { title: "Publie tes vidéos", body: "Filme notre simulation (un SaaS créé de A à Z) ou parle de SaaSFounder, puis colle le lien de chaque vidéo sur ta page." },
   { title: "Sois payé à la vue", body: "On met tes vues à jour toutes les 10 minutes. Tu vois ce qu'on te doit en direct." },
 ];

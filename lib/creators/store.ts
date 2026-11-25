@@ -8,6 +8,7 @@ export type Creator = {
   created_at: string;
   name: string;
   tiktok_handle: string;
+  instagram_handle: string | null;
   phone: string;
   payout_method: string;
   payout_details: string;
@@ -18,6 +19,7 @@ export type CreatorVideo = {
   creator_id: string;
   created_at: string;
   url: string;
+  platform: "tiktok" | "instagram";
   video_id: string;
   author: string | null;
   posted_at: string | null;
@@ -99,11 +101,43 @@ type AddResult = { ok: true; video: CreatorVideo } | { ok: false; error: string 
  * creator's own account, and not already added by anyone. When TikTok can't
  * be read right now, the video is kept and checked at the next refresh.
  */
+const INSTAGRAM_URL = /^(?:https?:\/\/)?(?:www\.)?instagram\.com\/(?:[\w.]+\/)?(reels?|p|tv)\/([\w-]+)/i;
+
+/**
+ * Adds an Instagram reel or post. Instagram doesn't let a site read view
+ * counts without the account owner's authorisation, so its views are
+ * entered by an admin from a screenshot the creator sends.
+ */
+async function addInstagramVideo(creator: CreatorAccount, rawUrl: string): Promise<AddResult> {
+  const match = rawUrl.trim().match(INSTAGRAM_URL);
+  if (!match) return { ok: false, error: "Colle le lien d'un reel Instagram (instagram.com/reel/…)." };
+  if (!creator.instagram_handle) {
+    return { ok: false, error: "Ajoute d'abord ton @ Instagram plus haut sur ta page." };
+  }
+  const code = match[2];
+  const { data, error } = await db()
+    .from("creator_videos")
+    .insert({
+      creator_id: creator.id,
+      platform: "instagram",
+      url: `https://www.instagram.com/reel/${code}/`,
+      video_id: `ig:${code}`,
+      author: normalizeHandle(creator.instagram_handle),
+      views: 0,
+      last_error: null,
+    })
+    .select("*")
+    .single();
+  if (error) return { ok: false, error: error.code === "23505" ? "Cette vidéo est déjà enregistrée." : "Enregistrement impossible, réessaie." };
+  return { ok: true, video: data as CreatorVideo };
+}
+
 export async function addCreatorVideo(token: string, rawUrl: string): Promise<AddResult> {
   const creator = await getCreatorAccount(token);
   if (!creator) return { ok: false, error: "Lien créateur invalide." };
+  if (/instagram\.com/i.test(rawUrl)) return addInstagramVideo(creator, rawUrl);
   const url = parseTikTokUrl(rawUrl);
-  if (!url) return { ok: false, error: "Colle le lien d'une vidéo TikTok (tiktok.com/@…/video/…)." };
+  if (!url) return { ok: false, error: "Colle le lien d'une vidéo TikTok ou d'un reel Instagram." };
 
   let stats: Awaited<ReturnType<typeof fetchVideoStats>> | null = null;
   let fetchError: string | null = null;
@@ -148,6 +182,7 @@ export async function refreshStaleVideos({ limit = 40, concurrency = 5 } = {}) {
     .from("creator_videos")
     .select("id, url, views, author, creator_id, creators(tiktok_handle)")
     .eq("status", "active")
+    .eq("platform", "tiktok")
     .or(`views_checked_at.is.null,views_checked_at.lt.${before}`)
     .order("views_checked_at", { ascending: true, nullsFirst: true })
     .limit(limit);
@@ -194,6 +229,24 @@ export async function setPayoutDetails(by: { token: string } | { id: string }, m
   const query = db().from("creators").update({ payout_method: method, payout_details: details });
   const { data, error } = await ("token" in by ? query.eq("token", by.token) : query.eq("id", by.id)).select("id");
   return !error && (data?.length ?? 0) > 0;
+}
+
+/** A creator's Instagram account, set by the creator (by token) or an admin (by id). */
+export async function setInstagramHandle(by: { token: string } | { id: string }, handle: string | null) {
+  if ("token" in by && !UUID.test(by.token)) return false;
+  const query = db().from("creators").update({ instagram_handle: handle });
+  const { data, error } = await ("token" in by ? query.eq("token", by.token) : query.eq("id", by.id)).select("id");
+  return !error && (data?.length ?? 0) > 0;
+}
+
+/** Instagram views, entered by an admin. Never lowered by mistake: the new count must be a whole number. */
+export async function setManualViews(videoId: string, views: number) {
+  const { error } = await db()
+    .from("creator_videos")
+    .update({ views: Math.max(0, Math.round(views)), views_checked_at: new Date().toISOString(), last_error: null })
+    .eq("id", videoId)
+    .eq("platform", "instagram");
+  return !error;
 }
 
 export async function recordPayout(creatorId: string, amountCents: number, note: string | null) {

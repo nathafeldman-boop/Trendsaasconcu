@@ -34,7 +34,7 @@ export function AddVideoForm({ token }: { token: string }) {
       <input
         value={url}
         onChange={(e) => setUrl(e.target.value)}
-        placeholder="https://www.tiktok.com/@toncompte/video/…"
+        placeholder="Lien TikTok ou reel Instagram"
         inputMode="url"
         required
         className="h-[52px] rounded-lg border border-ink/12 bg-accent/5 px-4 font-body text-[15px] text-ink outline-none placeholder:text-ink-faint focus:border-accent/60"

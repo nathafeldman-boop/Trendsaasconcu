@@ -26,6 +26,7 @@ export function CreatorSignupForm() {
       body: JSON.stringify({
         name: form.get("name"),
         tiktok: form.get("tiktok"),
+        instagram: form.get("instagram"),
         phone: form.get("phone"),
         payoutMethod: method ?? "",
         payoutDetails: method ? form.get("payoutDetails") : "",
@@ -48,6 +49,7 @@ export function CreatorSignupForm() {
     <form onSubmit={submit} className="flex flex-col gap-5">
       <Input label="Ton prénom et nom" name="name" autoComplete="name" required maxLength={80} />
       <Input label="Ton @ TikTok" name="tiktok" placeholder="@toncompte" autoCapitalize="none" autoCorrect="off" required maxLength={40} />
+      <Input label="Ton @ Instagram (facultatif)" name="instagram" placeholder="@toncompte" autoCapitalize="none" autoCorrect="off" maxLength={40} />
       <Input label="Ton numéro (WhatsApp)" name="phone" type="tel" autoComplete="tel" placeholder="06 12 34 56 78" required maxLength={30} />
 
       <fieldset className="flex flex-col gap-2">
