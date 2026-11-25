@@ -222,7 +222,7 @@ export function CoachChat({
         <div ref={bottomRef} />
       </div>
 
-      <div className="sticky bottom-[calc(4.25rem+max(env(safe-area-inset-bottom),0.5rem))] z-10 -mx-4 mt-4 bg-gradient-to-t from-canvas from-70% to-transparent px-4 pb-3 pt-5 sm:mx-0 sm:px-0 lg:bottom-0 lg:pb-8">
+      <div className="sticky bottom-[calc(3.5rem+max(env(safe-area-inset-bottom),0.5rem))] z-10 -mx-4 mt-4 bg-gradient-to-t from-canvas from-70% to-transparent px-4 pb-3 pt-5 sm:mx-0 sm:px-0 lg:bottom-0 lg:pb-8">
         <div className="glass-panel rounded-[22px] !bg-canvas-raised p-2.5">
           {image && (
             <div className="flex items-center gap-2 px-2 pb-2 pt-1">
