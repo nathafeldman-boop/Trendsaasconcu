@@ -1,20 +1,6 @@
 import type { LucideIcon } from "lucide-react";
 import {
-  Briefcase,
-  Clapperboard,
-  Compass,
-  Dices,
-  Dumbbell,
-  GraduationCap,
-  Hammer,
-  HeartPulse,
-  House,
   Landmark,
-  Laptop,
-  Scissors,
-  Sprout,
-  UtensilsCrossed,
-  Zap,
 } from "lucide-react";
 import type { Brand } from "@/components/ui/brand-logo";
 import type { IllustrationId } from "@/components/onboarding/illustrations";
@@ -73,6 +59,8 @@ export type Step =
       type:
         | "saas101"
         | "analysis"
+        | "projection"
+        | "diagnosis"
         | "loading"
         | "idea"
         | "account"
@@ -132,27 +120,47 @@ export const LEVERS = [
 
 export const LOADING_STEPS = [
   "Lecture de tes réponses",
-  "Calcul du temps que tu peux y mettre",
-  "Repérage des problèmes de ton univers",
-  "Choix du prix pour ton objectif",
-  "Sélection de ton idée",
+  "Repérage de ta niche",
+  "Calcul de tes leviers d'acquisition",
+  "Assemblage de ta projection",
 ];
 
+/** "Ce qui te bloque", from their answer to the brake question. */
+export const DIAGNOSIS: Record<string, { strong: string; soft: string }> = {
+  methode: { strong: "Il te manque la méthode", soft: "et un plan clé en main." },
+  concentration: { strong: "Il te manque un plan découpé", soft: "en petites tâches, une à la fois." },
+  essaie: { strong: "Ton effort n'est pas au bon endroit,", soft: "il n'est pas insuffisant." },
+  debut: { strong: "Il te manque juste le bon départ", soft: "et un chemin clair." },
+};
+export const DEFAULT_DIAGNOSIS = { strong: "Il te manque un plan clair", soft: "et les bons outils." };
+
 export const STEPS: Step[] = [
-  // ───────── Acte 1 · Toi : des questions simples, puis ce que tu aimes
+  // ───────── Avant le compte (sur le modèle du questionnaire TrendSaaS) : le rêve,
+  // le parcours, ce qui bloque, l'objectif, la projection, puis le compte pour
+  // débloquer les résultats.
   {
     type: "single",
-    id: "age",
-    kicker: "Pour commencer",
-    title: "Tu as quel âge ?",
-    help: "On n'avance pas au même rythme à vingt et à cinquante ans. Ça change le temps devant toi, pas tes chances.",
-    grid: true,
+    id: "dream",
+    kicker: "Ce qui te fait avancer",
+    title: "Quel est ton rêve ultime ?",
+    help: "Celui auquel tu penses vraiment, pas celui qui sonne sérieux.",
+    free: { placeholder: "Ex : offrir une maison à ma mère, vivre au soleil…" },
     options: [
-      { id: "16-18", label: "16 – 18 ans", detail: "le temps joue pour toi", icon: Sprout },
-      { id: "19-30", label: "19 – 30 ans", detail: "de l'énergie à revendre", icon: Zap },
-      { id: "31-60", label: "31 – 60 ans", detail: "un vrai réseau, peu de temps", icon: Briefcase },
-      { id: "60plus", label: "60 ans et plus", detail: "une expérience qui vaut de l'or", icon: Compass },
+      { id: "mille", label: "Faire mes premiers 1 000 €", detail: "la preuve que ça marche" },
+      { id: "liberte", label: "Être libre financièrement", detail: "ne plus dépendre d'un salaire" },
+      { id: "parents", label: "Rendre mes proches fiers", detail: "leur montrer que le pari valait le coup" },
+      { id: "quitter", label: "Quitter mon travail", detail: "partir sans peur du mois suivant" },
+      { id: "etudes", label: "Vivre de mon projet", detail: "plutôt que d'un diplôme ou d'un patron" },
     ],
+  },
+  {
+    type: "message",
+    id: "proof",
+    illustration: "rocket",
+    kicker: "Tu n'es pas seul",
+    title: "Créer son SaaS n'a jamais été aussi accessible.",
+    sub: "Avec l'IA, plus besoin de savoir coder ni d'avoir une équipe : tu décris ton idée, l'IA construit ton site, et on t'aide à trouver tes premiers clients.",
+    cta: "Continuer",
   },
   {
     type: "single",
@@ -183,69 +191,13 @@ export const STEPS: Step[] = [
   },
   { type: "saas101", id: "saas101", condition: (a) => a.experience === "jamais" },
   {
-    type: "single",
-    id: "currentIncome",
-    condition: (a) => Boolean(a.experience) && a.experience !== "jamais",
-    kicker: "Où tu en es",
-    title: "Combien te rapporte ton activité en ligne par mois ?",
-    help: "Ce que tu gagnes aujourd'hui, pas ce que tu vises. L'objectif viendra plus tard.",
-    options: [
-      { id: "rien", label: "Rien pour l'instant", detail: "pas encore de revenus en ligne", note: "Normal, et c'est précisément là qu'on intervient : passer de zéro à un premier paiement." },
-      { id: "100-1000", label: "100 – 1 000 € par mois", detail: "les premiers euros rentrent", note: "Tu as prouvé que des gens paient. Il reste à rendre ça régulier." },
-      { id: "1000-5000", label: "1 000 – 5 000 € par mois", detail: "c'est devenu un vrai revenu", note: "Belle base. L'enjeu maintenant : un système qui tourne sans toi à chaque étape." },
-      { id: "10000plus", label: "Plus de 10 000 € par mois", detail: "l'activité tient toute seule", note: "À ce niveau, ce qui freine n'est plus le produit mais tout ce qu'il y a autour." },
-    ],
-  },
-  {
-    type: "single",
-    id: "platforms",
-    condition: (a) => Boolean(a.experience) && a.experience !== "jamais",
-    kicker: "Ta présence",
-    title: "Tu publies sur combien de plateformes ?",
-    help: "Celles où tu postes vraiment, pas celles où tu as juste un compte.",
-    options: [
-      { id: "4plus", label: "4 et plus", detail: "je suis un peu partout" },
-      { id: "2-3", label: "2 ou 3", detail: "une principale, une ou deux secondaires" },
-      { id: "1", label: "1 seule", detail: "je concentre tout au même endroit" },
-      { id: "aucune", label: "Aucune pour l'instant", detail: "je ne publie nulle part" },
-    ],
-  },
-  {
-    type: "single",
-    id: "site",
-    condition: (a) => Boolean(a.experience) && a.experience !== "jamais",
-    kicker: "Ta vitrine",
-    title: "As-tu déjà un SaaS en ligne ?",
-    help: "Même une version minimale, même sans client.",
-    options: [
-      { id: "oui", label: "Oui", detail: "il tourne déjà quelque part" },
-      { id: "non", label: "Pas encore", detail: "rien de publié pour le moment" },
-    ],
-  },
-  {
-    type: "url",
-    id: "siteUrl",
-    condition: (a) => a.site === "oui",
-    kicker: "Ton site",
-    title: "Donne-nous son adresse.",
-    help: "On la garde dans ton dossier : elle sert à l'analyse détaillée dans ton espace.",
-    placeholder: "monsaas.fr",
-  },
-  { type: "analysis", id: "analysis", condition: (a) => a.site === "oui" },
-  {
-    type: "single",
-    id: "dream",
-    kicker: "Ce qui te fait avancer",
-    title: "Quel est ton rêve ultime ?",
-    help: "Celui auquel tu penses vraiment, pas celui qui sonne sérieux.",
-    free: { placeholder: "Ex : offrir une maison à ma mère, vivre au soleil…" },
-    options: [
-      { id: "mille", label: "Faire mes premiers 1 000 €", detail: "la preuve que ça marche" },
-      { id: "liberte", label: "Être libre financièrement", detail: "ne plus dépendre d'un salaire" },
-      { id: "parents", label: "Rendre mes proches fiers", detail: "leur montrer que le pari valait le coup" },
-      { id: "quitter", label: "Quitter mon travail", detail: "partir sans peur du mois suivant" },
-      { id: "etudes", label: "Vivre de mon projet", detail: "plutôt que d'un diplôme ou d'un patron" },
-    ],
+    type: "message",
+    id: "almost",
+    illustration: "target",
+    kicker: "On y est presque",
+    title: "Encore quelques questions courtes.",
+    sub: "Pour finaliser ton plan, aide-nous à mieux comprendre ton projet.",
+    cta: "Continuer",
   },
   {
     type: "single",
@@ -283,117 +235,19 @@ export const STEPS: Step[] = [
     ],
   },
   {
-    type: "multi",
-    id: "frustrations",
-    kicker: "Ce qui pique",
-    title: "Qu'est-ce qui t'énerve le plus dans ta situation ?",
-    help: "Plusieurs réponses possibles. Coche ce qui te traverse vraiment l'esprit le dimanche soir.",
-    free: { placeholder: "Ex : je n'apprends plus rien…" },
-    options: [
-      { id: "plafond", label: "Mes revenus sont plafonnés", detail: "travailler plus ne me fera pas gagner beaucoup plus", note: "Un abonnement casse ce plafond : chaque client continue de payer le mois suivant, que tu travailles ou non ce jour-là." },
-      { id: "temps", label: "Je n'ai plus de temps à moi", detail: "mes journées ne m'appartiennent pas", note: "C'est pris en compte : ton plan tient en tâches courtes, et l'IA fait le plus long à ta place." },
-      { id: "comparaison", label: "Je vois d'autres réussir", detail: "et ils ne sont pas plus doués que moi", note: "Ils ne le sont pas. Ce qu'ils avaient, c'est une méthode, et c'est ce qu'on te donne." },
-      { id: "train", label: "J'ai peur de rater le coche", detail: "l'IA rebat les cartes et je regarde", note: "Tu es au bon endroit au bon moment : ton idée et ton prompt sortent aujourd'hui, pas dans six mois." },
-    ],
-  },
-  {
-    type: "single",
-    id: "blocker",
-    kicker: "Le vrai blocage",
-    title: "Qu'est-ce qui t'a arrêté jusqu'ici ?",
-    help: "On construit ton plan autour de ton point faible, pas l'inverse.",
-    free: { placeholder: "Ex : je n'ose pas en parler autour de moi…" },
-    options: [
-      { id: "idea", label: "Trouver la bonne idée", detail: "j'en ai cinquante, aucune ne me convainc" },
-      { id: "build", label: "Construire le produit", detail: "je bloque devant la page blanche" },
-      { id: "sell", label: "Trouver des clients", detail: "je sais faire, je ne sais pas vendre" },
-      { id: "finish", label: "Aller au bout", detail: "je démarre fort, puis j'abandonne" },
-    ],
-  },
-  {
-    type: "multi",
-    id: "refusals",
-    kicker: "Tes limites",
-    title: "Qu'est-ce que tu refuses de faire, même pour de l'argent ?",
-    help: "Réponds franchement : on écartera ce qui l'exige. Un business bâti sur ce qu'on déteste ne tient pas six mois.",
-    free: { placeholder: "Ex : gérer de la comptabilité, encadrer des gens…" },
-    options: [
-      { id: "appels", label: "Passer des appels de vente", detail: "démarcher, relancer au téléphone", note: "Pas besoin : un SaaS se vend depuis son site. La personne arrive, comprend et paie, sans un seul appel." },
-      { id: "video", label: "Me montrer en vidéo", detail: "visage à l'écran, face caméra", note: "Pas besoin non plus : écran filmé, carrousels, texte. Ton plan marketing ne te demandera jamais de te montrer." },
-      { id: "rien", label: "Rien, je suis prêt à tout", detail: "si ça marche, je le fais" },
-    ],
-  },
-  {
-    type: "single",
-    id: "todayGoal",
+    type: "slider",
+    id: "revenueGoal",
     kicker: "Ton objectif",
-    title: "Qu'est-ce que tu attends en priorité ?",
-    help: "Une seule chose à la fois. C'est comme ça qu'on avance vite.",
-    options: [
-      { id: "ventes", label: "Faire mes premières ventes", note: "C'est réaliste avec la bonne méthode, et c'est exactement celle qu'on te donne." },
-      { id: "idee", label: "Trouver mon idée de SaaS" },
-      { id: "produit", label: "Mettre mon premier SaaS en ligne" },
-    ],
+    title: "Combien tu veux gagner par mois d'ici 3 mois ?",
+    help: "Glisse le curseur. Plus tu vas à droite, plus l'objectif est ambitieux, et plus le chemin change.",
+    min: 1000,
+    max: 50000,
+    stepBy: 500,
+    initial: 3000,
   },
-  {
-    type: "single",
-    id: "lifeGoal",
-    kicker: "La vie derrière l'argent",
-    title: "Et au fond, tu cherches quoi ?",
-    help: "L'argent est un moyen. Dis-nous la fin, on choisira un produit qui va avec.",
-    free: { placeholder: "Ex : pouvoir m'occuper de mes parents…" },
-    options: [
-      { id: "auto", label: "Un business qui tourne tout seul", detail: "des revenus qui ne dépendent pas de mes heures", note: "C'est le principe d'un SaaS : une fois en ligne, il vend et livre sans toi à chaque étape." },
-      { id: "quitter", label: "Quitter ma situation actuelle", detail: "vite, mais proprement", note: "On visera le chemin le plus court vers un revenu qui remplace le tien : peu de clients, qui paient bien." },
-      { id: "liberte", label: "Une liberté totale", detail: "travailler d'où je veux, quand je veux", note: "Ton produit se vendra par écrit et s'utilisera seul : rien ne t'obligera à être quelque part à heure fixe." },
-      { id: "prouver", label: "Me prouver que j'en suis capable", detail: "une première victoire, et on verra", note: "On va droit au but : le premier euro payé par un inconnu. C'est la seule preuve qui compte." },
-    ],
-  },
-  {
-    type: "text",
-    id: "phrase",
-    kicker: "Tes mots",
-    title: "Décris en une phrase où tu veux être dans un an.",
-    help: "Sois concret : un chiffre, un lieu, un rythme de vie. Cette phrase deviendra ton cap.",
-    placeholder: "Ex : 2 000 € par mois qui tombent sans que je sois devant l'écran, pour ne plus dépendre de mon employeur.",
-    optional: true,
-  },
-  {
-    type: "single",
-    id: "domain",
-    kicker: "Ton terrain",
-    title: "Dans quel univers tu te sens le plus à l'aise ?",
-    help: "Ton métier, ta passion, ton entourage : c'est là que tu trouveras tes premiers clients le plus vite.",
-    grid: true,
-    free: { placeholder: "Ex : l'équitation, la musique, les animaux…" },
-    options: [
-      { id: "sport", label: "Sport et bien-être", detail: "coachs, salles, yoga", icon: Dumbbell },
-      { id: "beaute", label: "Beauté", detail: "instituts, coiffeurs, barbiers", icon: Scissors },
-      { id: "resto", label: "Restauration et commerce", detail: "restos, boutiques", icon: UtensilsCrossed },
-      { id: "immo", label: "Immobilier", detail: "agents, locations", icon: House },
-      { id: "education", label: "Éducation et coaching", detail: "profs, formateurs", icon: GraduationCap },
-      { id: "createurs", label: "Création de contenu", detail: "créateurs, influence", icon: Clapperboard },
-      { id: "freelance", label: "Freelances et agences", detail: "indépendants, studios", icon: Laptop },
-      { id: "sante", label: "Santé", detail: "praticiens, habitudes", icon: HeartPulse },
-      { id: "btp", label: "Artisans et BTP", detail: "chantiers, devis", icon: Hammer },
-      { id: "any", label: "Surprends-moi", detail: "je n'ai pas de préférence", icon: Dices },
-    ],
-  },
-  {
-    type: "single",
-    id: "market",
-    kicker: "Tes futurs clients",
-    title: "Tu préfères vendre à qui ?",
-    help: "Il n'y a pas de bonne réponse dans l'absolu. Il y a celle où tu tiendras six mois.",
-    notesVisible: true,
-    options: [
-      { id: "b2b", label: "Des professionnels", detail: "commerces, agences, PME", note: "Peu de clients qui paient bien : un pro paie volontiers pour gagner du temps. Quelques dizaines suffisent." },
-      { id: "b2c", label: "Des particuliers", detail: "gros volume, petits prix", note: "Des petits paiements en grand nombre : il en faut beaucoup, et c'est ton contenu qui les amène." },
-    ],
-  },
-  // ───────── Acte 2 · Ton idée, trouvée et validée avant le compte
   { type: "loading", id: "loading" },
-  { type: "idea", id: "idea" },
+  { type: "projection", id: "projection" },
+  { type: "diagnosis", id: "diagnosis" },
   {
     type: "message",
     id: "welcome",
@@ -401,6 +255,15 @@ export const STEPS: Step[] = [
     kicker: "Bienvenue",
     title: "Bienvenue dans SaaSFounder.",
     sub: "Notre but : que tu crées ton SaaS et que tu encaisses dès maintenant. Ton idée, le prompt exact pour la construire avec l'IA et le plan pour trouver tes premiers clients, au même endroit.",
+    cta: "Suivant",
+  },
+  {
+    type: "message",
+    id: "ideaIntro",
+    illustration: "bulb",
+    kicker: "L'idée",
+    title: "On trouve l'idée faite pour toi.",
+    sub: "On part de problèmes que des gens paient déjà pour régler, et on garde celui qui colle à ton temps et à ton objectif.",
     cta: "Suivant",
   },
   {
@@ -421,20 +284,10 @@ export const STEPS: Step[] = [
     sub: "Un SaaS qui tourne, ce sont des revenus qui ne dépendent plus de tes heures. Il est temps de t'y mettre.",
     cta: "Continuer",
   },
-  // ───────── Acte 3 · Ton compte
+  // ───────── Le compte : il débloque les résultats.
   { type: "account", id: "account" },
-  // ───────── Acte 4 · Ton business : objectif, paiements, potentiel, génération, formules
-  {
-    type: "slider",
-    id: "revenueGoal",
-    kicker: "Ton objectif",
-    title: "Combien tu veux gagner par mois avec ton SaaS ?",
-    help: "Glisse le curseur. Plus tu vas à droite, plus l'objectif est ambitieux, et plus le chemin change.",
-    min: 1000,
-    max: 50000,
-    stepBy: 500,
-    initial: 3000,
-  },
+  // ───────── Après le compte : l'idée (cherchée pendant le calcul), puis le business, le potentiel, la génération, les formules.
+  { type: "idea", id: "idea" },
   {
     type: "single",
     id: "payments",

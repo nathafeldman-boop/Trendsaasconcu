@@ -10,7 +10,7 @@ const STEP_OVERRIDES: Record<string, string> = {
   domain: "Son univers",
   loading: "Recherche de l'idée",
   idea: "Révélation de son idée",
-  projection: "Projection de revenus",
+  projection: "Son potentiel (avant le compte)",
   barrier: "Écran « barrière »",
   account: "Création du compte",
   todayGoal: "Priorité du moment",
@@ -27,6 +27,10 @@ const STEP_OVERRIDES: Record<string, string> = {
   phone: "L'iPhone",
   guarantee: "Promesse de remboursement",
   plans: "Choix de la formule",
+  proof: "Écran « Tu n'es pas seul »",
+  almost: "« On y est presque »",
+  ideaIntro: "Présentation : l'idée",
+  diagnosis: "Ce qui le bloque",
 };
 
 export function stepLabel(id: string) {

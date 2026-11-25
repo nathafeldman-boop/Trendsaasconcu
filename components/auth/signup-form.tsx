@@ -121,13 +121,11 @@ export function SignupForm({ onSuccess }: { onSuccess?: () => void }) {
           /commencer, which skips its signup step once they're signed in. */}
       <GoogleSignIn next={onSuccess ? "/commencer" : plan ? "/tarifs" : next || "/commencer"} onSignedIn={complete} />
       <form onSubmit={handleSubmit} className="flex flex-col gap-5">
-        <Input label="Ton prénom" name="firstName" placeholder="Camille" autoComplete="given-name" required />
         <Input label="Ton email" name="email" type="email" placeholder="camille@exemple.fr" autoComplete="email" required />
         <Input label="Un mot de passe" name="password" type="password" placeholder="8 caractères minimum" autoComplete="new-password" minLength={8} required />
 
         <p className="font-body text-[13px] leading-relaxed text-ink-faint">
-          Ton prénom personnalise ton espace, ton email sert uniquement à te
-          renvoyer ton idée et ton plan.
+          Ton email sert uniquement à te renvoyer ton idée et ton plan.
         </p>
 
         {error && (

@@ -7,7 +7,7 @@ import { StepShell } from "@/components/onboarding/step-shell";
 import { Button } from "@/components/ui/button";
 import { CountUp } from "@/components/ui/count-up";
 import { PaymentsPhone } from "@/components/ui/payments-phone";
-import { potential, type Answers } from "@/components/onboarding/funnel";
+import { DEFAULT_DIAGNOSIS, DIAGNOSIS, potential, type Answers } from "@/components/onboarding/funnel";
 import type { ShellProps } from "@/components/onboarding/funnel-screens";
 import { cn } from "@/lib/utils";
 
@@ -181,5 +181,79 @@ export function PhoneScreen({ shell, answers, onNext }: { shell: ShellProps; ans
         ]}
       />
     </StepShell>
+  );
+}
+
+/**
+ * Before the account, right after the calculation: their potential from
+ * their goal alone (always above it), at the reference price until their
+ * idea is found. Labelled as a scenario.
+ */
+export function ProjectionScreen({ shell, answers, onNext }: { shell: ShellProps; answers: Answers; onNext: () => void }) {
+  const { goal, amount, price, customers } = potential(answers);
+  return (
+    <StepShell
+      {...shell}
+      eyebrow="Ton potentiel"
+      title={
+        <>
+          Tu peux viser <span className="font-serif italic tracking-normal text-accent">{eur(amount)} par mois.</span>
+        </>
+      }
+      footer={
+        <Button onClick={onNext} className="w-full">
+          Continuer
+        </Button>
+      }
+    >
+      <motion.div
+        initial={{ opacity: 0, y: 14, scale: 0.98 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+        className="glass-panel rounded-[24px] p-6 text-center"
+      >
+        <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-ink-faint">Ton potentiel</p>
+        <p className="mt-2 font-display text-[52px] font-semibold leading-none tracking-[-0.04em] text-accent">
+          <CountUp value={amount} format={(n) => eur(n)} />
+        </p>
+        <p className="mt-2 font-body text-[14px] text-ink-muted">par mois</p>
+        <div className="mt-6 grid grid-cols-3 gap-3 border-t border-ink/10 pt-5">
+          {[
+            { value: String(customers), label: "clients" },
+            { value: eur(price), label: "par mois" },
+            { value: eur(goal), label: "ton objectif" },
+          ].map((stat) => (
+            <div key={stat.label}>
+              <p className="font-display text-[20px] font-semibold text-ink">{stat.value}</p>
+              <p className="font-body text-[11.5px] text-ink-faint">{stat.label}</p>
+            </div>
+          ))}
+        </div>
+      </motion.div>
+      <p className="mt-4 text-center font-body text-[11.5px] text-ink-faint">Scénario, pas une promesse.</p>
+    </StepShell>
+  );
+}
+
+/** "Ce qui te bloque", from their answer to the brake question. */
+export function DiagnosisScreen({ shell, answers, onNext }: { shell: ShellProps; answers: Answers; onNext: () => void }) {
+  const diagnosis = DIAGNOSIS[String(answers.brake)] ?? DEFAULT_DIAGNOSIS;
+  return (
+    <StepShell
+      {...shell}
+      center
+      eyebrow="Ce qui te bloque"
+      title={
+        <>
+          {diagnosis.strong} <span className="font-serif italic tracking-normal text-accent">{diagnosis.soft}</span>
+        </>
+      }
+      subtitle="Pas d'inquiétude : SaaSFounder te guide à chaque étape, et l'IA fait le gros du travail."
+      footer={
+        <Button onClick={onNext} className="w-full">
+          Continuer
+        </Button>
+      }
+    />
   );
 }

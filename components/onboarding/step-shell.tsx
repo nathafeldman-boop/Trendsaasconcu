@@ -36,9 +36,6 @@ export function StepShell({
     <div className="flex min-h-screen flex-col">
       <header className="flex items-center justify-between px-5 py-6 sm:px-8">
         <Logo />
-        <span className="font-mono text-[11px] uppercase tracking-[0.2em] text-ink-faint">
-          {Math.min(step + 1, total)} / {total}
-        </span>
       </header>
 
       <div className="mx-auto w-full max-w-xl flex-1 px-5 pb-16 sm:px-8">

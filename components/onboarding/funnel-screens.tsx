@@ -505,7 +505,7 @@ export function LoadingScreen({ shell, answers, onAnswer, onNext }: Omit<ScreenP
   const doneSteps = Math.floor((progress / 100) * LOADING_STEPS.length);
 
   return (
-    <StepShell {...shell} center eyebrow="Recherche en cours" title="On cherche ton idée." subtitle="Encore deux questions pendant que ça tourne.">
+    <StepShell {...shell} center eyebrow="Calcul en cours" title="On assemble ta projection." subtitle="Encore deux questions pendant que ça tourne.">
       <div className="flex flex-col items-center">
         <div className="relative size-40">
           <svg viewBox="0 0 120 120" className="size-full -rotate-90" aria-hidden>
@@ -595,12 +595,16 @@ export function AccountScreen({ shell, answers, onDone }: { shell: ShellProps; a
   return (
     <StepShell
       {...shell}
-      eyebrow="Ton dossier"
-      title={idea ? "Crée ton compte pour garder ton idée." : "Crée ton compte pour garder tout ça."}
+      eyebrow="Tes résultats sont prêts"
+      title={
+        <>
+          Entre ton email <span className="font-serif italic tracking-normal text-accent">pour débloquer tes résultats.</span>
+        </>
+      }
       subtitle={
         idea
-          ? `${idea.title}, tes réponses et ta projection t'attendent dans ton espace : tu retrouves tout quand tu reviens.`
-          : "Tes réponses et ta projection restent liées à ton compte : tu retrouves tout quand tu reviens."
+          ? "Ton idée, ta projection et ton plan t'attendent juste après."
+          : "Ton idée, ta projection et ton plan t'attendent juste après, et restent dans ton espace."
       }
     >
       <SignupForm onSuccess={onDone} />

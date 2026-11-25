@@ -21,7 +21,7 @@ import {
 } from "@/components/onboarding/funnel-screens";
 import { IdeaRevealScreen } from "@/components/onboarding/idea-reveal";
 import { BuildScreen } from "@/components/onboarding/build-screen";
-import { PhoneScreen, PotentialScreen } from "@/components/onboarding/potential-screen";
+import { PhoneScreen, PotentialScreen, ProjectionScreen, DiagnosisScreen } from "@/components/onboarding/potential-screen";
 import { ideaToText, readFoundIdea } from "@/lib/onboarding/found-idea";
 
 // v2: the funnel was rebuilt (different questions and order), so answers and
@@ -204,6 +204,10 @@ export function OnboardingWizard() {
             }}
           />
         );
+      case "projection":
+        return <ProjectionScreen shell={shell} answers={answers} onNext={next} />;
+      case "diagnosis":
+        return <DiagnosisScreen shell={shell} answers={answers} onNext={next} />;
       case "potential":
         return <PotentialScreen shell={shell} answers={answers} onNext={next} />;
       case "phone":
