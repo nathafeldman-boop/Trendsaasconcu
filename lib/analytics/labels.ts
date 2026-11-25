@@ -8,7 +8,7 @@ const STEP_OVERRIDES: Record<string, string> = {
   analysis: "Analyse de son site",
   revenueGoal: "Objectif de revenus",
   domain: "Son univers",
-  loading: "Recherche de l'idée",
+  loading: "Calcul de la projection",
   idea: "Révélation de son idée",
   projection: "Son potentiel (avant le compte)",
   barrier: "Écran « barrière »",
@@ -31,6 +31,18 @@ const STEP_OVERRIDES: Record<string, string> = {
   almost: "« On y est presque »",
   ideaIntro: "Présentation : l'idée",
   diagnosis: "Ce qui le bloque",
+  // Steps of earlier versions of the questionnaire, so older visits read well.
+  age: "Son âge",
+  currentIncome: "Ses revenus actuels",
+  platforms: "Ses plateformes",
+  site: "A-t-il déjà un SaaS ?",
+  siteUrl: "Adresse de son site",
+  frustrations: "Ses frustrations",
+  blocker: "Ce qui l'a arrêté",
+  refusals: "Ce qu'il refuse de faire",
+  lifeGoal: "Ce qu'il cherche au fond",
+  phrase: "Sa phrase dans un an",
+  market: "À qui il veut vendre",
 };
 
 export function stepLabel(id: string) {
@@ -41,6 +53,14 @@ export function stepLabel(id: string) {
 }
 
 /** The order steps appear in the questionnaire, for the drop-off chart. */
+/** In today's questionnaire, and shown to everyone (not only after some answers). */
+export function isCurrentStep(id: string) {
+  return STEPS.some((s) => s.id === id);
+}
+export function isConditionalStep(id: string) {
+  return Boolean(STEPS.find((s) => s.id === id)?.condition);
+}
+
 export function stepOrder(id: string) {
   const index = STEPS.findIndex((s) => s.id === id);
   return index === -1 ? Number.MAX_SAFE_INTEGER : index;

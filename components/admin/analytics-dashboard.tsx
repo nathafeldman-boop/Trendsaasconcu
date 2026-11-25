@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Activity, ArrowDownRight, Eye, MousePointerClick, Percent, UserPlus, Wallet, type LucideIcon } from "lucide-react";
-import { ACTION_NAMES, DEVICE_LABELS, eventLabel, SOURCE_LABELS, stepLabel, stepOrder } from "@/lib/analytics/labels";
+import { ACTION_NAMES, DEVICE_LABELS, eventLabel, isConditionalStep, isCurrentStep, SOURCE_LABELS, stepLabel, stepOrder } from "@/lib/analytics/labels";
 import { cn } from "@/lib/utils";
 
 // The analytics half of /admin, rendered on the server: KPIs, the funnel,
@@ -269,20 +269,29 @@ function MiniBars({
   );
 }
 
-function Onboarding({ steps }: { steps: Analytics["onboarding"] }) {
-  const ordered = [...steps].sort((a, b) => stepOrder(a.step) - stepOrder(b.step));
+function Onboarding({ steps: all }: { steps: Analytics["onboarding"] }) {
+  // Today's questionnaire, in its order. Steps from earlier versions are
+  // listed apart, below.
+  const ordered = all.filter((s) => isCurrentStep(s.step)).sort((a, b) => stepOrder(a.step) - stepOrder(b.step));
+  const retired = all.filter((s) => !isCurrentStep(s.step)).sort((a, b) => (a.index ?? 0) - (b.index ?? 0));
   if (!ordered.length) return <p className="font-body text-[13px] text-ink-faint">Pas encore de passage dans le questionnaire sur la période.</p>;
   const first = ordered[0].visitors;
-  // Biggest loss between two consecutive steps, in people.
+  // Biggest loss between two consecutive steps, in people. A step shown only
+  // after some answers (e.g. "Un SaaS c'est quoi ?") is skipped: the people
+  // who never saw it aren't lost.
   let worst = -1;
   let worstLoss = 0;
+  let previous: (typeof ordered)[number] | null = null;
   ordered.forEach((s, i) => {
-    if (i === 0) return;
-    const loss = ordered[i - 1].visitors - s.visitors;
-    if (loss > worstLoss) {
-      worstLoss = loss;
-      worst = i;
+    if (isConditionalStep(s.step)) return;
+    if (previous) {
+      const loss = previous.visitors - s.visitors;
+      if (loss > worstLoss) {
+        worstLoss = loss;
+        worst = i;
+      }
     }
+    previous = s;
   });
 
   return (
@@ -313,6 +322,21 @@ function Onboarding({ steps }: { steps: Analytics["onboarding"] }) {
           Plus grosse perte : « {stepLabel(ordered[worst].step)} » (−{worstLoss} personnes par rapport à l&apos;étape
           d&apos;avant).
         </p>
+      )}
+      {retired.length > 0 && (
+        <details className="mt-4">
+          <summary className="cursor-pointer font-body text-[12.5px] text-ink-faint">
+            Étapes des anciennes versions du questionnaire ({retired.length})
+          </summary>
+          <div className="mt-2 flex flex-col gap-1">
+            {retired.map((s) => (
+              <div key={s.step} className="flex justify-between font-body text-[12.5px] text-ink-faint">
+                <span>{stepLabel(s.step)}</span>
+                <span>{nf.format(s.visitors)}</span>
+              </div>
+            ))}
+          </div>
+        </details>
       )}
     </div>
   );
