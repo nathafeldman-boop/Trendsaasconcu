@@ -7,6 +7,7 @@ import { POSTS_5 } from "@/lib/blog/posts/batch-5";
 import { POSTS_6 } from "@/lib/blog/posts/batch-6";
 import { POSTS_7 } from "@/lib/blog/posts/batch-7";
 import { POSTS_8 } from "@/lib/blog/posts/batch-8";
+import { POSTS_9 } from "@/lib/blog/posts/batch-9";
 
 export const CATEGORIES: Record<BlogCategory, { label: string; description: string }> = {
   idees: { label: "Trouver son idée", description: "Trouver, choisir et valider une idée de SaaS qui se vend." },
@@ -16,7 +17,7 @@ export const CATEGORIES: Record<BlogCategory, { label: string; description: stri
   argent: { label: "Revenus", description: "Prix, abonnements, MRR : comprendre l'argent d'un SaaS." },
 };
 
-const ALL: BlogPost[] = [...POSTS_1, ...POSTS_2, ...POSTS_3, ...POSTS_4, ...POSTS_5, ...POSTS_6, ...POSTS_7, ...POSTS_8];
+const ALL: BlogPost[] = [...POSTS_1, ...POSTS_2, ...POSTS_3, ...POSTS_4, ...POSTS_5, ...POSTS_6, ...POSTS_7, ...POSTS_8, ...POSTS_9];
 
 /** Today in Paris as YYYY-MM-DD: posts go live on their date, French time. */
 function today() {
