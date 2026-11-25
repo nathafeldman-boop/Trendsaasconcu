@@ -25,25 +25,49 @@ async function getPlatformRevenue() {
   if (!stripe) return { connected: false as const };
 
   try {
-    const [subscriptions, charges] = await Promise.all([
+    // The Stripe account is shared with other apps (Stageio...): only what
+    // is billed for a SaaSFounder product counts here.
+    const [products, subscriptions, invoices, charges] = await Promise.all([
+      stripe.products.list({ limit: 100 }),
       stripe.subscriptions.list({ status: "active", limit: 100 }),
-      stripe.charges.list({ limit: 5 }),
+      stripe.invoices.list({ status: "paid", limit: 100 }),
+      stripe.charges.list({ limit: 100 }),
     ]);
-    const { mrr, currency } = computeMrr(subscriptions.data);
+    const ours = new Set(products.data.filter((p) => /saas\s*founder/i.test(p.name)).map((p) => p.id));
+    const productId = (p: string | { id: string } | null | undefined) => (typeof p === "string" ? p : p?.id);
+
+    const active = subscriptions.data.filter((s) => s.items.data.some((i) => ours.has(productId(i.price?.product) ?? "")));
+    const { mrr, currency } = computeMrr(active);
+
+    // Subscription payments come as invoices; one-time payments (lifetime)
+    // carry a "SaaSFounder · …" description on their charge.
+    const fromInvoices = invoices.data
+      .filter((inv) => inv.lines.data.some((l) => ours.has(productId(l.pricing?.price_details?.product) ?? "")))
+      .map((inv) => ({
+        id: inv.id ?? inv.number ?? "",
+        amount: inv.amount_paid / 100,
+        currency: inv.currency,
+        email: inv.customer_email ?? null,
+        status: "succeeded",
+        created: inv.status_transitions?.paid_at ?? inv.created,
+      }));
+    const oneTime = charges.data
+      .filter((c) => /^saas\s*founder/i.test(c.description ?? ""))
+      .map((c) => ({
+        id: c.id,
+        amount: c.amount / 100,
+        currency: c.currency,
+        email: c.billing_details?.email ?? c.receipt_email ?? null,
+        status: c.status as string,
+        created: c.created,
+      }));
 
     return {
       connected: true as const,
       mrr,
       currency,
-      activeSubscriptions: subscriptions.data.length,
-      recentCharges: charges.data.map((c) => ({
-        id: c.id,
-        amount: c.amount / 100,
-        currency: c.currency,
-        email: c.billing_details?.email ?? c.receipt_email ?? null,
-        status: c.status,
-        created: c.created,
-      })),
+      activeSubscriptions: active.length,
+      recentCharges: [...fromInvoices, ...oneTime].sort((a, b) => b.created - a.created).slice(0, 10),
     };
   } catch {
     return { connected: true as const, error: "stripe_error" as const };
