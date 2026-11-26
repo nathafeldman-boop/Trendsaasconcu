@@ -13,7 +13,6 @@ const PLANS = (["monthly", "quarterly", "lifetime"] as const).map((id) => ({
   welcome: planFor(id, "launch"),
   standard: planFor(id, "standard"),
 }));
-const WEEKLY = planFor("weekly");
 
 export default function ConditionsPage() {
   return (
@@ -71,9 +70,7 @@ export default function ConditionsPage() {
         </p>
         <p>
           <strong>Offres hors page de tarifs</strong> : la formule À vie peut être proposée une seule fois à{" "}
-          {euros(EXIT_OFFER_CENTS)} au moment de quitter la page de tarifs ; la formule {WEEKLY.label} ({WEEKLY.price}{" "}
-          {WEEKLY.period}, {WEEKLY.summary.toLowerCase()}, renouvelée chaque semaine) peut être proposée après un paiement non
-          abouti. Ces offres sont à prix fixe.
+          {euros(EXIT_OFFER_CENTS)} au moment de quitter la page de tarifs. Cette offre est à prix fixe.
         </p>
         <p>
           Les prix sont indiqués en euros, toutes taxes comprises. SaaSFounder peut modifier ses tarifs ; toute modification est

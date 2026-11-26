@@ -42,7 +42,8 @@ export async function POST(request: Request) {
   const body = await request.json().catch(() => null);
   const planId = body?.planId;
   const exitOffer = body?.offer === "exit" && planId === "lifetime";
-  if (!isPlanId(planId)) {
+  // The weekly plan is no longer sold (existing subscriptions keep running).
+  if (!isPlanId(planId) || planId === "weekly") {
     return NextResponse.json({ error: "Invalid plan" }, { status: 400 });
   }
   // The box on the pricing page: terms, and immediate access instead of

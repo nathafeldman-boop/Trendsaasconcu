@@ -15,7 +15,6 @@ import {
   UNLOCKS,
   availability,
   euros,
-  planFor,
   type PlanId,
   type PriceTier,
 } from "@/lib/stripe/plans";
@@ -28,7 +27,6 @@ import { InAppBrowserHint } from "@/components/pricing/in-app-browser-hint";
 import { track } from "@/lib/analytics/track";
 
 const EXIT_SEEN_KEY = "sf_exit_offer_seen";
-const WEEKLY = planFor("weekly");
 
 function formatCountdown(ms: number) {
   const seconds = Math.max(0, Math.ceil(ms / 1000));
@@ -105,16 +103,16 @@ const ABANDON_REASONS = [
 function AbandonReason({
   disabled,
   retryLabel,
-  weeklyLabel,
+  monthlyLabel,
   onRetry,
-  onWeekly,
+  onMonthly,
   question,
 }: {
   disabled: boolean;
   retryLabel: React.ReactNode;
-  weeklyLabel: React.ReactNode;
+  monthlyLabel: React.ReactNode;
   onRetry: () => void;
-  onWeekly: () => void;
+  onMonthly: () => void;
   question: string | null;
 }) {
   const [reason, setReason] = useState<(typeof ABANDON_REASONS)[number]["id"] | null>(null);
@@ -123,9 +121,9 @@ function AbandonReason({
       {retryLabel}
     </Button>
   );
-  const weekly = (
-    <Button variant="secondary" size="sm" showArrow={false} className="mt-3" disabled={disabled} onClick={onWeekly}>
-      {weeklyLabel}
+  const monthly = (
+    <Button size="sm" showArrow={false} className="mt-3" disabled={disabled} onClick={onMonthly}>
+      {monthlyLabel}
     </Button>
   );
   const answers: Record<string, React.ReactNode> = {
@@ -151,10 +149,10 @@ function AbandonReason({
     price: (
       <>
         <p>
-          Commence avec moins : {WEEKLY.label} à {WEEKLY.price} ({WEEKLY.summary.toLowerCase()}). Tu passes à une formule plus longue
-          quand tu veux.
+          La formule 1 mois est la plus petite pour commencer : tu payes un mois, et tu résilies en un clic depuis ton espace si
+          ça ne te convient pas.
         </p>
-        {weekly}
+        {monthly}
       </>
     ),
     trust: (
@@ -184,7 +182,6 @@ function AbandonReason({
         <p>Aucun souci. Ton accès s&apos;ouvre dès le paiement validé : ton idée et ton plan t&apos;attendent dans ton espace.</p>
         <div className="flex flex-wrap gap-2">
           {retry}
-          {weekly}
         </div>
       </>
     ),
@@ -292,7 +289,7 @@ const FAQ = [
  * The pricing page: three plans at their welcome price for 10 minutes from
  * the first time it's seen, then the standard price (enforced by checkout).
  * Someone about to leave gets the lifetime plan for less, once; someone back
- * from an unfinished payment can start with the weekly plan.
+ * from an unfinished payment is asked what stopped them (AbandonReason).
  * `startsCountdown={false}` shows the countdown only if it's already running
  * (the landing page: the questionnaire that follows takes longer than that).
  */
@@ -406,9 +403,8 @@ export function PricingCards({ startsCountdown = true, goal }: { startsCountdown
     const toSignup = () => router.push(`/inscription?plan=${planId}${offer ? `&offer=${offer}` : ""}`);
 
     const isSignedIn = await signedIn();
-    track("checkout_clicked", { plan: planId, signed_in: isSignedIn, tier: offer ?? (planId === "weekly" ? "weekly" : tier), reminder });
+    track("checkout_clicked", { plan: planId, signed_in: isSignedIn, tier: offer ?? tier, reminder });
     if (offer) track("exit_offer_chosen");
-    if (planId === "weekly") track("weekly_offer_chosen");
     if (!isSignedIn) {
       toSignup();
       return;
@@ -454,9 +450,9 @@ export function PricingCards({ startsCountdown = true, goal }: { startsCountdown
           <AbandonReason
             disabled={loading !== null}
             retryLabel={busy(current.id) ? redirecting : "Réessayer le paiement"}
-            weeklyLabel={busy("weekly") ? redirecting : `Commencer à ${WEEKLY.price} ${WEEKLY.period}`}
+            monthlyLabel={busy("monthly") ? redirecting : "Prendre la formule 1 mois"}
             onRetry={() => choose(current.id)}
-            onWeekly={() => choose("weekly")}
+            onMonthly={() => choose("monthly")}
             question={question}
           />
         )}
