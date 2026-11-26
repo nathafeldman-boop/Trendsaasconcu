@@ -6,6 +6,7 @@ import { VslSection } from "@/components/landing/vsl-section";
 import { FAQ, FaqSection } from "@/components/landing/faq-section";
 import { FinalCta } from "@/components/landing/final-cta";
 import { LatestPosts } from "@/components/landing/latest-posts";
+import { LatestGuides } from "@/components/landing/latest-guides";
 import { Footer } from "@/components/landing/footer";
 import { JsonLd } from "@/components/seo/json-ld";
 import { SITE_NAME, SITE_URL } from "@/lib/site";
@@ -56,6 +57,7 @@ export default function Home() {
         <VslSection />
         <FaqSection />
         <LatestPosts />
+        <LatestGuides />
         <FinalCta />
       </main>
       <Footer />

@@ -84,3 +84,17 @@ export async function seedSeoTopics() {
   }
   return topics.length - (count ?? 0);
 }
+
+/** The latest published pages, all families (for the home page). */
+export async function latestSeoPages(limit = 24): Promise<SeoLink[]> {
+  const client = db();
+  if (!client) return [];
+  const { data } = await client
+    .from("seo_pages")
+    .select("family, slug, title")
+    .eq("status", "ready")
+    .lte("published_at", new Date().toISOString())
+    .order("published_at", { ascending: false })
+    .limit(limit);
+  return (data ?? []) as SeoLink[];
+}
