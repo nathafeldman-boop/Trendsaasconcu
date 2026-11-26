@@ -5,8 +5,9 @@
 // up on its next run (lib/seo/generate.ts).
 
 import { toolNames, toolPairs } from "@/lib/seo/topics-tools";
+import { jeunesTopics } from "@/lib/seo/topics-jeunes";
 
-export type SeoFamily = "idees" | "application" | "argent" | "glossaire" | "alternatives" | "comparatifs";
+export type SeoFamily = "idees" | "application" | "argent" | "glossaire" | "alternatives" | "comparatifs" | "jeunes";
 
 export const FAMILIES: Record<
   SeoFamily,
@@ -60,6 +61,14 @@ export const FAMILIES: Record<
       "Deux outils face à face : ce que fait chacun, leurs vraies différences et lequel choisir selon ton profil et ton projet.",
     pageTitle: (t) => `${t} : lequel choisir ?`,
   },
+  jeunes: {
+    path: "/argent-en-ligne",
+    label: "Gagner de l'argent jeune",
+    hubTitle: "Gagner de l'argent en ligne quand on est jeune : les guides honnêtes",
+    hubDescription:
+      "Lycéen, étudiant ou jeune diplômé : comment gagner tes premiers euros en ligne, lancer ton business sans argent de départ et éviter les arnaques.",
+    pageTitle: (t) => t.charAt(0).toUpperCase() + t.slice(1),
+  },
 };
 
 /** URL-safe slug from a French label. */
@@ -111,6 +120,7 @@ export function allTopics(): SeoTopic[] {
   add("application", APPLICATIONS, (t) => slugify(t));
   add("argent", ARGENT, (t) => slugify(t.replace(/^(l'|la |le |les |des |du |un |une |son |sa |ses )/i, "")));
   add("glossaire", GLOSSAIRE, (t) => slugify(t));
+  add("jeunes", jeunesTopics().join("|"), (t) => slugify(t));
   add("idees", METIERS_2, (t) => slugify(t));
   add("alternatives", toolNames().join("|"), (t) => slugify(t));
   add("comparatifs", toolPairs().join("|"), (t) => slugify(t));

@@ -5,6 +5,7 @@ import { Nav } from "@/components/landing/nav";
 import { Footer } from "@/components/landing/footer";
 import { ArticleBody, slugifyHeading } from "@/components/blog/article-body";
 import { BlogCta } from "@/components/blog/blog-cta";
+import { SeoStickyCta, SeoTopCta } from "@/components/seo/seo-cta";
 import { JsonLd } from "@/components/seo/json-ld";
 import { getSeoPage, listSeoPages, relatedSeoPages } from "@/lib/seo/store";
 import { FAMILIES, type SeoFamily } from "@/lib/seo/topics";
@@ -14,7 +15,7 @@ import { SITE_NAME, SITE_URL } from "@/lib/site";
 // shared by the four families. Content is rendered as React text through
 // the blog's light Markdown, never as HTML.
 
-const FAMILY_ORDER: SeoFamily[] = ["idees", "application", "argent", "glossaire", "alternatives", "comparatifs"];
+const FAMILY_ORDER: SeoFamily[] = ["idees", "application", "argent", "glossaire", "alternatives", "comparatifs", "jeunes"];
 
 export async function seoPageMetadata(family: SeoFamily, slug: string): Promise<Metadata> {
   const page = await getSeoPage(family, slug);
@@ -92,6 +93,9 @@ export async function SeoArticle({ family, slug }: { family: SeoFamily; slug: st
           <div className="mt-5">
             <ArticleBody body={content.intro} />
           </div>
+          <div className="mt-6">
+            <SeoTopCta />
+          </div>
 
           <nav className="mt-6 rounded-[14px] border border-ink/10 p-5" aria-label="Sommaire">
             <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-ink-faint">Sommaire</p>
@@ -151,6 +155,7 @@ export async function SeoArticle({ family, slug }: { family: SeoFamily; slug: st
         <OtherFamilies current={family} />
       </main>
       <Footer />
+      <SeoStickyCta />
     </>
   );
 }

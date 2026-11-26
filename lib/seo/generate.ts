@@ -89,6 +89,17 @@ Contenu attendu :
 - Un verdict clair et nuancé, puis 2 ou 3 autres options à regarder.
 - Ne cite que des fonctionnalités dont tu es certain ; si un point évolue souvent, dis-le.
 Titre suggéré dans l'esprit de : « ${FAMILIES.comparatifs.pageTitle(t)} Le comparatif honnête ».`,
+  jeunes: (t) => `Sujet : « ${t} ».
+Lecteur : un jeune de 15 à 25 ans (collège, lycée, études, premier job) qui veut gagner de l'argent en ligne vite, sans capital ni diplôme. Il scrolle TikTok, il se méfie des vendeurs de rêve, il veut du concret qu'il peut faire ce soir avec son téléphone ou son ordinateur.
+Contenu attendu :
+- Réponds tout de suite à la question dans l'introduction, franchement (y compris si la réponse est « c'est difficile » ou « c'est une arnaque »).
+- 4 à 7 pistes réalistes adaptées à sa situation, chacune avec : ce qu'il faut faire concrètement, le temps avant les premiers euros, ce que ça peut rapporter présenté comme un ordre de grandeur prudent, et la limite.
+- Un plan d'action pour les 7 prochains jours, étape par étape.
+- Les arnaques et pièges à éviter (formations miracles, « argent facile », paiements demandés d'avance).
+- Si l'âge ou le statut compte (mineur, étudiant) : ce qu'il faut savoir sur l'autorisation parentale, la micro-entreprise, la déclaration des revenus et l'ouverture d'un compte, en restant général et en renvoyant vers service-public.fr ou l'URSSAF pour les règles exactes. N'invente aucun seuil ni aucun chiffre légal.
+- Dans la dernière section, montre en deux ou trois phrases qu'un petit logiciel par abonnement (SaaS) est la piste qui construit un revenu chaque mois, et que SaaSFounder lui trouve une idée adaptée, le prompt qui construit son site avec l'IA et son plan pour trouver ses premiers clients, avec un questionnaire gratuit de deux minutes pour commencer.
+Ton : direct, motivant mais honnête, tutoiement, comme un grand frère qui a déjà essayé. Pas de promesse de richesse.
+Titre : la question reformulée de façon accrocheuse, avec un bénéfice concret (ex. « Gagner de l'argent à 16 ans : 7 idées qui marchent vraiment »).`,
 };
 
 export async function writeSeoPage(family: SeoFamily, topic: string) {

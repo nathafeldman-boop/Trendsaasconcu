@@ -4,6 +4,7 @@ import { whatsappLink } from "@/lib/legal";
 
 const LINKS = [
   { label: "Blog", href: "/blog" },
+  { label: "Gagner de l'argent jeune", href: "/argent-en-ligne" },
   { label: "Idées de SaaS", href: "/idees-saas" },
   { label: "Créer une application", href: "/creer-application" },
   { label: "Gagner de l'argent", href: "/gagner-argent" },

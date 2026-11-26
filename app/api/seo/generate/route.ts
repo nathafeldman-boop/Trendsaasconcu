@@ -4,14 +4,14 @@ import { writeSeoPage } from "@/lib/seo/generate";
 import { seedSeoTopics } from "@/lib/seo/store";
 import type { SeoFamily } from "@/lib/seo/topics";
 
-// Called every 5 minutes by pg_cron (migration 0025). Writes a few pending
+// Called every minute by pg_cron (migrations 0025, 0027). Writes a few pending
 // SEO pages and schedules each one's publication (about 40 a day). Safe to
 // call by anyone: it only works through the finite list of subjects, a few
 // at a time, and skips pages another run is already writing.
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 
-const PER_RUN = 5;
+const PER_RUN = 8;
 const MAX_ATTEMPTS = 3;
 
 export async function GET() {
