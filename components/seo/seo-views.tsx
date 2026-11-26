@@ -14,7 +14,7 @@ import { SITE_NAME, SITE_URL } from "@/lib/site";
 // shared by the four families. Content is rendered as React text through
 // the blog's light Markdown, never as HTML.
 
-const FAMILY_ORDER: SeoFamily[] = ["idees", "application", "argent", "glossaire"];
+const FAMILY_ORDER: SeoFamily[] = ["idees", "application", "argent", "glossaire", "alternatives", "comparatifs"];
 
 export async function seoPageMetadata(family: SeoFamily, slug: string): Promise<Metadata> {
   const page = await getSeoPage(family, slug);

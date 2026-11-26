@@ -73,6 +73,22 @@ Contenu attendu :
 - Pourquoi c'est important quand on lance son SaaS, et comment s'en servir ou le mesurer.
 - Les erreurs fréquentes ou confusions avec d'autres termes proches.
 Titre suggéré dans l'esprit de : « ${FAMILIES.glossaire.pageTitle(t)} ».`,
+  alternatives: (t) => `Sujet : les alternatives à ${t}.
+Contenu attendu :
+- Ce que fait ${t}, pour qui, et pourquoi des gens cherchent autre chose (prix, limites, complexité, langue, données hébergées hors d'Europe...). Reste factuel et mesuré : ne critique pas sans raison.
+- 5 à 8 alternatives qui existent vraiment et que tu connais avec certitude (n'en invente aucune) : pour chacune, en gras, ce qu'elle fait de mieux, à qui elle convient et son modèle (gratuit, freemium, payant). Ne donne pas de prix exacts : les tarifs changent, invite à les vérifier sur le site de l'outil.
+- Les options gratuites ou open source, s'il y en a.
+- Comment choisir selon son profil (débutant, petite entreprise, créateur, budget serré).
+- L'opportunité : les utilisateurs déçus de ${t} sont aussi un marché. Explique comment une alternative spécialisée pour une niche précise peut devenir un petit SaaS rentable.
+Titre suggéré dans l'esprit de : « ${FAMILIES.alternatives.pageTitle(t)} (gratuites et payantes) ».`,
+  comparatifs: (t) => `Sujet : le comparatif ${t}.
+Contenu attendu :
+- En deux phrases, ce que fait chacun des deux outils et à qui il s'adresse.
+- Les vraies différences, point par point (prise en main, fonctionnalités clés, limites, intégrations, langue, modèle de prix). Présente-les en listes, pas en tableau. Ne donne pas de prix exacts : décris le modèle (gratuit, freemium, abonnement) et invite à vérifier les tarifs actuels.
+- Lequel choisir selon le profil : débutant, freelance, petite équipe, projet de SaaS.
+- Un verdict clair et nuancé, puis 2 ou 3 autres options à regarder.
+- Ne cite que des fonctionnalités dont tu es certain ; si un point évolue souvent, dis-le.
+Titre suggéré dans l'esprit de : « ${FAMILIES.comparatifs.pageTitle(t)} Le comparatif honnête ».`,
 };
 
 export async function writeSeoPage(family: SeoFamily, topic: string) {
