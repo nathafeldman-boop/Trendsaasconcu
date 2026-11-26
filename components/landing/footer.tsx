@@ -4,6 +4,10 @@ import { whatsappLink } from "@/lib/legal";
 
 const LINKS = [
   { label: "Blog", href: "/blog" },
+  { label: "Idées de SaaS", href: "/idees-saas" },
+  { label: "Créer une application", href: "/creer-application" },
+  { label: "Gagner de l'argent", href: "/gagner-argent" },
+  { label: "Glossaire", href: "/glossaire-saas" },
   { label: "CGV", href: "/conditions" },
   { label: "Conditions de remboursement", href: "/remboursement" },
   { label: "Confidentialité", href: "/confidentialite" },

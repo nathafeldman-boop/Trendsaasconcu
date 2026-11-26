@@ -1,0 +1,101 @@
+import { z } from "zod";
+import { betaZodOutputFormat } from "@anthropic-ai/sdk/helpers/beta/zod";
+import { generateParsed } from "@/lib/claude/generate";
+import { FAMILIES, type SeoFamily } from "@/lib/seo/topics";
+
+// Writes one SEO page with Claude. The page must be useful on its own:
+// specific to its subject, concrete, honest (no invented figures), and
+// pointing to the next step with SaaSFounder only at the end.
+
+// Plain shape for structured output (no length constraints, which the
+// output format does not enforce); quality is checked after generation.
+export const SeoContentSchema = z.object({
+  title: z.string(),
+  description: z.string(),
+  intro: z.string(),
+  sections: z.array(z.object({ heading: z.string(), body: z.string() })),
+  faq: z.array(z.object({ q: z.string(), a: z.string() })),
+});
+
+/** Why a page is not good enough to publish, or null when it is. */
+export function qualityProblem(c: SeoContent) {
+  const words = [c.intro, ...c.sections.map((s) => s.body), ...c.faq.map((f) => f.a)].join(" ").split(/\s+/).length;
+  if (c.title.length < 15 || c.title.length > 90) return "title length";
+  if (c.description.length < 80) return "description too short";
+  if (c.sections.length < 4) return "too few sections";
+  if (c.faq.length < 2) return "too few questions";
+  if (words < 700) return `too short (${words} words)`;
+  if (/saasfounder/i.test(c.sections.slice(0, -1).map((s) => s.body).join(" "))) return "brand mentioned too early";
+  return null;
+}
+
+export type SeoContent = z.infer<typeof SeoContentSchema>;
+
+const COMMON = `Tu écris pour SaaSFounder (saasfounder.fr), qui aide des débutants (souvent jeunes, sans compétence technique) à créer un petit logiciel en ligne (SaaS) avec l'IA et à le vendre par abonnement.
+
+Règles d'écriture :
+- Longueur : une page complète d'environ 1 200 à 1 600 mots au total, en 5 ou 6 sections et 3 à 5 questions de FAQ.
+- Français naturel, tutoiement, phrases courtes, concret. Pas de remplissage, pas de banalités qui pourraient s'appliquer à n'importe quel sujet : chaque paragraphe doit être spécifique au sujet de la page.
+- N'invente AUCUN chiffre (taille de marché, statistiques, revenus garantis), aucune marque d'outil inexistante, aucun témoignage. Pour les prix, donne des fourchettes prudentes présentées comme des ordres de grandeur.
+- Pas de promesse de gains. Reste honnête sur l'effort nécessaire.
+- Format du champ "body" : Markdown léger uniquement. Paragraphes séparés par une ligne vide, listes avec "- " ou "1. ", gras avec **…**. Pas de titres dans "body" (le titre est dans "heading"), pas de tableaux, pas de liens.
+- "title" : titre de page pour Google, accrocheur et précis, sans le nom SaaSFounder.
+- "description" : méta-description de 130 à 160 caractères qui dit ce que le lecteur va obtenir.
+- La dernière section peut évoquer, en une ou deux phrases maximum, qu'un outil comme SaaSFounder aide à passer de l'idée au lancement. Jamais ailleurs.`;
+
+const BRIEF: Record<SeoFamily, (topic: string) => string> = {
+  idees: (t) => `Sujet : des idées de SaaS (logiciels en ligne par abonnement) à créer pour les ${t}.
+Contenu attendu :
+- Les vrais problèmes du quotidien des ${t} (tâches répétitives, pertes de temps, pertes d'argent, outils mal adaptés), décrits précisément.
+- 4 à 6 idées de SaaS distinctes pour eux : pour chacune, le problème réglé, les 3 fonctionnalités d'une première version, et une fourchette de prix mensuel plausible. Présente chaque idée en gras dans une liste ou un paragraphe.
+- Comment valider l'idée et trouver les 10 premiers clients parmi les ${t} (où ils se trouvent, quoi leur dire).
+- Les erreurs à éviter avec cette cible.
+Titre suggéré dans l'esprit de : « ${FAMILIES.idees.pageTitle(t)} : X idées qui règlent de vrais problèmes ».`,
+  application: (t) => `Sujet : créer une application (web) de ${t} sans savoir coder, avec l'IA.
+Contenu attendu :
+- À qui sert une application de ${t} et quel problème elle règle.
+- Les fonctionnalités indispensables d'une première version (MVP), puis celles à garder pour plus tard.
+- Les étapes concrètes pour la construire avec des outils de codage IA (décrire précisément ce qu'on demande à l'IA, la base de données, la connexion des utilisateurs, le paiement Stripe si pertinent, la mise en ligne).
+- Comment la rentabiliser : modèle (abonnement, commission, paiement unique) et fourchette de prix plausible.
+- Comment trouver les premiers utilisateurs.
+Titre suggéré dans l'esprit de : « ${FAMILIES.application.pageTitle(t)} : le guide étape par étape ».`,
+  argent: (t) => `Sujet : gagner de l'argent avec ${t}.
+Contenu attendu :
+- Les façons réalistes de gagner de l'argent avec ${t} (services, produits numériques, contenu, petit logiciel...), en précisant pour chacune l'effort, le délai avant les premiers euros et les limites.
+- Par où commencer concrètement cette semaine.
+- Comment passer d'un revenu ponctuel à un revenu récurrent (par exemple un abonnement ou un petit logiciel lié à ${t}).
+- Les pièges et arnaques à éviter, et les obligations de base (déclarer ses revenus, statut de micro-entrepreneur en France).
+Titre suggéré dans l'esprit de : « ${FAMILIES.argent.pageTitle(t)} : X méthodes réalistes ».`,
+  glossaire: (t) => `Sujet : le terme « ${t} » (vocabulaire du SaaS, de l'IA, du développement ou du business en ligne).
+Contenu attendu :
+- Une définition simple en 2 ou 3 phrases, compréhensible par un lycéen, dans l'introduction.
+- Comment ça marche, avec un exemple concret tiré d'un petit SaaS.
+- Pourquoi c'est important quand on lance son SaaS, et comment s'en servir ou le mesurer.
+- Les erreurs fréquentes ou confusions avec d'autres termes proches.
+Titre suggéré dans l'esprit de : « ${FAMILIES.glossaire.pageTitle(t)} ».`,
+};
+
+export async function writeSeoPage(family: SeoFamily, topic: string) {
+  const response = await generateParsed({
+    max_tokens: 6000,
+    output_config: { effort: "low", format: betaZodOutputFormat(SeoContentSchema) },
+    system: COMMON,
+    messages: [{ role: "user", content: `${BRIEF[family](topic)}\n\nÉcris la page complète.` }],
+  });
+  if (!response) throw new Error("Claude not configured");
+  const parsed = SeoContentSchema.safeParse(response.parsed_output);
+  if (response.stop_reason === "refusal" || !parsed.success) {
+    throw new Error(`unusable response (${response.stop_reason})`);
+  }
+  const content = { ...parsed.data, description: clip(parsed.data.description, 160) };
+  const problem = qualityProblem(content);
+  if (problem) throw new Error(`quality: ${problem}`);
+  return { content, model: response.model };
+}
+
+function clip(text: string, max: number) {
+  const t = text.trim();
+  if (t.length <= max) return t;
+  const cut = t.slice(0, max - 1);
+  return `${cut.slice(0, cut.lastIndexOf(" "))}…`;
+}
