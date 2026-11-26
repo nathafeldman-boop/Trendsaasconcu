@@ -31,6 +31,8 @@ export function qualityProblem(c: SeoContent) {
 
 export type SeoContent = z.infer<typeof SeoContentSchema>;
 
+const YEAR = new Date().getFullYear();
+
 const COMMON = `Tu écris pour SaaSFounder (saasfounder.fr), qui aide des débutants (souvent jeunes, sans compétence technique) à créer un petit logiciel en ligne (SaaS) avec l'IA et à le vendre par abonnement.
 
 Règles d'écriture :
@@ -38,6 +40,7 @@ Règles d'écriture :
 - Français naturel, tutoiement, phrases courtes, concret. Pas de remplissage, pas de banalités qui pourraient s'appliquer à n'importe quel sujet : chaque paragraphe doit être spécifique au sujet de la page.
 - N'invente AUCUN chiffre (taille de marché, statistiques, revenus garantis), aucune marque d'outil inexistante, aucun témoignage. Pour les prix, donne des fourchettes prudentes présentées comme des ordres de grandeur.
 - Pas de promesse de gains. Reste honnête sur l'effort nécessaire.
+- Nous sommes en ${YEAR}. Si tu cites une année (dans le titre ou le texte), c'est ${YEAR} ou ${YEAR + 1}, jamais une année passée.
 - Format du champ "body" : Markdown léger uniquement. Paragraphes séparés par une ligne vide, listes avec "- " ou "1. ", gras avec **…**. Pas de titres dans "body" (le titre est dans "heading"), pas de tableaux, pas de liens.
 - "title" : titre de page pour Google, accrocheur et précis, sans le nom SaaSFounder.
 - "description" : méta-description de 120 à 150 caractères (pas plus) qui dit ce que le lecteur va obtenir.
