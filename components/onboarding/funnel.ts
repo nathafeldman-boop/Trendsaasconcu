@@ -67,6 +67,7 @@ export type Step =
         | "potential"
         | "phone"
         | "build"
+        | "commit"
         | "plans";
     });
 
@@ -347,6 +348,7 @@ export const STEPS: Step[] = [
   { type: "potential", id: "potential" },
   { type: "phone", id: "phone" },
   { type: "build", id: "build" },
+  { type: "commit", id: "commit" },
   { type: "plans", id: "plans" },
 ];
 

@@ -18,6 +18,7 @@ const STEP_OVERRIDES: Record<string, string> = {
   journey: "Le parcours proposé",
   method: "La méthode",
   commitment: "Engagement",
+  commit: "Empreinte d'engagement",
   build: "Génération de son business",
   payments: "Moyen de paiement",
   deadline: "Date de sa première vente",

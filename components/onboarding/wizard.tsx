@@ -21,6 +21,7 @@ import {
 } from "@/components/onboarding/funnel-screens";
 import { IdeaRevealScreen } from "@/components/onboarding/idea-reveal";
 import { BuildScreen } from "@/components/onboarding/build-screen";
+import { CommitScreen } from "@/components/onboarding/commit-screen";
 import { PhoneScreen, PotentialScreen, ProjectionScreen, DiagnosisScreen } from "@/components/onboarding/potential-screen";
 import { ideaToText, readFoundIdea } from "@/lib/onboarding/found-idea";
 
@@ -214,6 +215,8 @@ export function OnboardingWizard() {
         return <PhoneScreen shell={shell} answers={answers} onNext={next} />;
       case "build":
         return <BuildScreen shell={shell} answers={answers} onNext={next} />;
+      case "commit":
+        return <CommitScreen shell={shell} answers={answers} onNext={next} />;
       case "plans":
         return <PlansScreen shell={shell} answers={answers} />;
     }
