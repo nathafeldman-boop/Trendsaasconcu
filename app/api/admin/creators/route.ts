@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { isAdminRequest } from "@/lib/creators/admin-guard";
-import { recordPayout, setInstagramHandle, setManualViews, setPayoutDetails, setVideoStatus } from "@/lib/creators/store";
+import { recordPayout, setInstagramHandle, setManualViews, setPayoutDetails, setVideoStatus, setVideoVerified } from "@/lib/creators/store";
 import { cleanInstagram, cleanPayout } from "@/lib/creators/program";
 
 export async function POST(request: Request) {
@@ -37,6 +37,10 @@ export async function POST(request: Request) {
   if (body?.action === "video-status" && typeof body.videoId === "string" && ["active", "rejected"].includes(body.status)) {
     const reason = typeof body.reason === "string" ? body.reason.slice(0, 200) : null;
     return NextResponse.json({ ok: await setVideoStatus(body.videoId, body.status, reason) });
+  }
+
+  if (body?.action === "video-verified" && typeof body.videoId === "string") {
+    return NextResponse.json({ ok: await setVideoVerified(body.videoId, body.verified === true) });
   }
 
   return NextResponse.json({ error: "Unknown action" }, { status: 400 });

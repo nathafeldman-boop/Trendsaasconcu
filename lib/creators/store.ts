@@ -25,6 +25,8 @@ export type CreatorVideo = {
   posted_at: string | null;
   views: number;
   views_checked_at: string | null;
+  /** Set when an admin approved the video despite its warnings. */
+  verified_at: string | null;
   last_error: string | null;
   status: "active" | "rejected";
   rejected_reason: string | null;
@@ -342,3 +344,12 @@ export async function setVideoStatus(videoId: string, status: "active" | "reject
   return !error;
 }
 
+
+/** An admin approved (or un-approved) a video despite its warnings. */
+export async function setVideoVerified(videoId: string, verified: boolean) {
+  const { error } = await db()
+    .from("creator_videos")
+    .update({ verified_at: verified ? new Date().toISOString() : null })
+    .eq("id", videoId);
+  return !error;
+}

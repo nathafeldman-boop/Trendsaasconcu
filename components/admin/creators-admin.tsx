@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { AlertTriangle, ChevronDown, MessageCircle, RefreshCw } from "lucide-react";
+import { AlertTriangle, BadgeCheck, ChevronDown, MessageCircle, RefreshCw } from "lucide-react";
 import { CopyLink } from "@/components/creators/copy-link";
 import type { CreatorAccount } from "@/lib/creators/store";
 import { formatEuros, formatViews, PAYOUT_METHODS, payoutLabel, videoWarnings, whatsappUrl } from "@/lib/creators/program";
@@ -43,7 +43,7 @@ function CreatorRow({ creator }: { creator: CreatorAccount }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
-  const flagged = creator.videos.filter((v) => v.status === "active" && videoWarnings(v, creator.tiktok_handle).length > 0).length;
+  const flagged = creator.videos.filter((v) => v.status === "active" && !v.verified_at && videoWarnings(v, creator.tiktok_handle).length > 0).length;
 
   async function pay() {
     if (!creator.payout_method && !window.confirm(`${creator.name} n'a pas encore dit où le payer. Enregistrer quand même un paiement ?`)) return;
@@ -84,6 +84,11 @@ function CreatorRow({ creator }: { creator: CreatorAccount }) {
     const views = Number(typed.replace(/[\s.,]/g, ""));
     if (!Number.isFinite(views) || views < 0) return window.alert("Nombre invalide");
     if (!(await post({ action: "manual-views", videoId, views }))) window.alert("Enregistrement impossible");
+    router.refresh();
+  }
+
+  async function verifyVideo(videoId: string, verified: boolean) {
+    if (!(await post({ action: "video-verified", videoId, verified }))) window.alert("Enregistrement impossible");
     router.refresh();
   }
 
@@ -163,7 +168,7 @@ function CreatorRow({ creator }: { creator: CreatorAccount }) {
                 const post = creator.posts.find((p) => p.tiktok?.id === v.id || p.instagram?.id === v.id);
                 const paired = Boolean(post?.tiktok && post?.instagram);
                 const counted = post?.counted === v.platform;
-                const warnings = v.status === "active" ? videoWarnings(v, creator.tiktok_handle) : [];
+                const warnings = v.status === "active" && !v.verified_at ? videoWarnings(v, creator.tiktok_handle) : [];
                 return (
                 <div key={v.id} className="flex items-center justify-between gap-3 border-t border-ink/5 py-2 text-[13px]">
                   <a href={v.url} target="_blank" rel="noreferrer" className="min-w-0 truncate text-ink hover:text-accent">
@@ -177,6 +182,11 @@ function CreatorRow({ creator }: { creator: CreatorAccount }) {
                         <AlertTriangle className="size-3.5 shrink-0" /> {w}
                       </span>
                     ))}
+                    {v.verified_at && (
+                      <span className="mt-1 flex items-center gap-1.5 text-[12px] font-semibold text-emerald-400">
+                        <BadgeCheck className="size-3.5 shrink-0" /> Vérifiée le {new Date(v.verified_at).toLocaleDateString("fr-FR")}
+                      </span>
+                    )}
                   </a>
                   <span className="shrink-0 tabular-nums">
                     {v.platform === "instagram" ? "IG" : "TT"} · {formatViews(Number(v.views))} vues ·{" "}
@@ -189,6 +199,18 @@ function CreatorRow({ creator }: { creator: CreatorAccount }) {
                       className="shrink-0 rounded-full bg-accent px-2.5 py-1 text-[12px] font-semibold text-canvas"
                     >
                       Saisir les vues
+                    </button>
+                  )}
+                  {v.status === "active" && (warnings.length > 0 || v.verified_at) && (
+                    <button
+                      type="button"
+                      onClick={() => verifyVideo(v.id, !v.verified_at)}
+                      className={cn(
+                        "shrink-0 rounded-full px-2.5 py-1 text-[12px] font-semibold",
+                        v.verified_at ? "border border-ink/15 text-ink-muted hover:text-ink" : "bg-emerald-500 text-canvas"
+                      )}
+                    >
+                      {v.verified_at ? "Annuler la vérif" : "Vérifier"}
                     </button>
                   )}
                   <button
@@ -218,7 +240,7 @@ export function CreatorsTable({ creators }: { creators: CreatorAccount[] }) {
   if (creators.length === 0) {
     return <p className="font-body text-[14px] text-ink-muted">Aucun créateur inscrit pour l&apos;instant. Partage le lien d&apos;inscription.</p>;
   }
-  const flagged = creators.flatMap((c) => c.videos.filter((v) => v.status === "active" && videoWarnings(v, c.tiktok_handle).length > 0));
+  const flagged = creators.flatMap((c) => c.videos.filter((v) => v.status === "active" && !v.verified_at && videoWarnings(v, c.tiktok_handle).length > 0));
   return (
     <div className="overflow-x-auto">
       {flagged.length > 0 && (
