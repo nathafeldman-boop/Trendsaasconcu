@@ -34,13 +34,13 @@ export type SeoContent = z.infer<typeof SeoContentSchema>;
 const COMMON = `Tu écris pour SaaSFounder (saasfounder.fr), qui aide des débutants (souvent jeunes, sans compétence technique) à créer un petit logiciel en ligne (SaaS) avec l'IA et à le vendre par abonnement.
 
 Règles d'écriture :
-- Longueur : une page complète d'environ 1 200 à 1 600 mots au total, en 5 ou 6 sections et 3 à 5 questions de FAQ.
+- Longueur : une page complète d'environ 1 000 à 1 400 mots au total, en 5 ou 6 sections et 3 à 5 questions de FAQ.
 - Français naturel, tutoiement, phrases courtes, concret. Pas de remplissage, pas de banalités qui pourraient s'appliquer à n'importe quel sujet : chaque paragraphe doit être spécifique au sujet de la page.
 - N'invente AUCUN chiffre (taille de marché, statistiques, revenus garantis), aucune marque d'outil inexistante, aucun témoignage. Pour les prix, donne des fourchettes prudentes présentées comme des ordres de grandeur.
 - Pas de promesse de gains. Reste honnête sur l'effort nécessaire.
 - Format du champ "body" : Markdown léger uniquement. Paragraphes séparés par une ligne vide, listes avec "- " ou "1. ", gras avec **…**. Pas de titres dans "body" (le titre est dans "heading"), pas de tableaux, pas de liens.
 - "title" : titre de page pour Google, accrocheur et précis, sans le nom SaaSFounder.
-- "description" : méta-description de 130 à 160 caractères qui dit ce que le lecteur va obtenir.
+- "description" : méta-description de 120 à 150 caractères (pas plus) qui dit ce que le lecteur va obtenir.
 - La dernière section peut évoquer, en une ou deux phrases maximum, qu'un outil comme SaaSFounder aide à passer de l'idée au lancement. Jamais ailleurs.`;
 
 const BRIEF: Record<SeoFamily, (topic: string) => string> = {
@@ -77,7 +77,7 @@ Titre suggéré dans l'esprit de : « ${FAMILIES.glossaire.pageTitle(t)} ».`,
 
 export async function writeSeoPage(family: SeoFamily, topic: string) {
   const response = await generateParsed({
-    max_tokens: 6000,
+    max_tokens: 12000,
     output_config: { effort: "low", format: betaZodOutputFormat(SeoContentSchema) },
     system: COMMON,
     messages: [{ role: "user", content: `${BRIEF[family](topic)}\n\nÉcris la page complète.` }],
