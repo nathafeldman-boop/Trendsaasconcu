@@ -125,6 +125,10 @@ export function eventLabel(name: string, props: Props, path?: string | null) {
       return "Revient d'un paiement pas terminé : voit l'offre 1 semaine";
     case "weekly_offer_chosen":
       return "Choisit l'offre 1 semaine à 4,99 €";
+    case "abandon_reasons_shown":
+      return "Revient d'un paiement pas terminé : on lui demande ce qui l'a bloqué";
+    case "checkout_abandon_reason":
+      return `Dit ce qui l'a bloqué : ${ABANDON_LABELS[text(p.reason)] ?? text(p.reason)}`;
     case "checkout_reminder_sent":
       return "Reçoit l'email de rappel (paiement pas terminé)";
     case "offer_started":
@@ -232,6 +236,8 @@ export const ACTION_NAMES: Record<string, string> = {
   exit_offer_chosen: "Prend l'offre de sortie",
   weekly_offer_shown: "Voit l'offre 1 semaine",
   weekly_offer_chosen: "Prend l'offre 1 semaine",
+  abandon_reasons_shown: "Revient sans avoir payé",
+  checkout_abandon_reason: "Dit ce qui l'a bloqué",
   checkout_reminder_sent: "Reçoit le rappel de paiement",
   payment_completed: "Paie",
   subscription_canceled: "Résilie",
@@ -284,4 +290,12 @@ export const DEVICE_LABELS: Record<string, string> = {
   tablet: "Tablette",
   desktop: "Ordinateur",
   inconnu: "Inconnu",
+};
+
+const ABANDON_LABELS: Record<string, string> = {
+  "no-card": "pas de carte bancaire",
+  bank: "sa banque a bloqué ou demandé de valider",
+  price: "trop cher",
+  trust: "pas sûr que ça marche",
+  looking: "voulait juste voir le prix",
 };

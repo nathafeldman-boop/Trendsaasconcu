@@ -92,6 +92,132 @@ function OfferBanner({ remaining }: { remaining: number }) {
   );
 }
 
+// Back from Stripe without paying: one tap on what stopped them, and the
+// answer to that very thing (counted as checkout_abandon_reason).
+const ABANDON_REASONS = [
+  { id: "no-card", label: "Je n'ai pas de carte bancaire" },
+  { id: "bank", label: "Ma banque m'a bloqué ou demandé de valider" },
+  { id: "price", label: "C'est trop cher pour moi" },
+  { id: "trust", label: "Je ne suis pas sûr que ça marche" },
+  { id: "looking", label: "Je voulais juste voir le prix" },
+] as const;
+
+function AbandonReason({
+  disabled,
+  retryLabel,
+  weeklyLabel,
+  onRetry,
+  onWeekly,
+  question,
+}: {
+  disabled: boolean;
+  retryLabel: React.ReactNode;
+  weeklyLabel: React.ReactNode;
+  onRetry: () => void;
+  onWeekly: () => void;
+  question: string | null;
+}) {
+  const [reason, setReason] = useState<(typeof ABANDON_REASONS)[number]["id"] | null>(null);
+  const retry = (
+    <Button size="sm" showArrow={false} className="mt-3" disabled={disabled} onClick={onRetry}>
+      {retryLabel}
+    </Button>
+  );
+  const weekly = (
+    <Button variant="secondary" size="sm" showArrow={false} className="mt-3" disabled={disabled} onClick={onWeekly}>
+      {weeklyLabel}
+    </Button>
+  );
+  const answers: Record<string, React.ReactNode> = {
+    "no-card": (
+      <>
+        <p>
+          Pas besoin de carte : tu peux payer avec <span className="font-semibold text-ink">PayPal</span>, Apple Pay, Google Pay ou
+          Revolut, sur la même page de paiement. Si tu es mineur, demande à un parent de payer avec toi : il valide sur son téléphone.
+        </p>
+        <div className="flex flex-wrap gap-2">{retry}</div>
+      </>
+    ),
+    bank: (
+      <>
+        <p>
+          C&apos;est la sécurité de ta banque, ta carte n&apos;est pas refusée. Réessaie et, dès que tu cliques sur payer,
+          <span className="font-semibold text-ink"> ouvre l&apos;appli de ta banque pour valider</span> (ou tape le code reçu par SMS).
+          Ne ferme pas la page pendant ce temps. Sinon, passe par PayPal.
+        </p>
+        {retry}
+      </>
+    ),
+    price: (
+      <>
+        <p>
+          Commence avec moins : {WEEKLY.label} à {WEEKLY.price} ({WEEKLY.summary.toLowerCase()}). Tu passes à une formule plus longue
+          quand tu veux.
+        </p>
+        {weekly}
+      </>
+    ),
+    trust: (
+      <>
+        <p>
+          Normal de se poser la question. Si tu appliques la méthode 48 h sans faire de vente, tu es remboursé en entier (
+          <Link href="/remboursement" className="underline underline-offset-2 hover:text-ink">
+            conditions
+          </Link>
+          ).
+          {question && (
+            <>
+              {" "}
+              Une question avant ?{" "}
+              <a href={question} target="_blank" rel="noreferrer" className="underline underline-offset-2 hover:text-ink">
+                Écris-nous sur WhatsApp
+              </a>
+              , on répond vite.
+            </>
+          )}
+        </p>
+        {retry}
+      </>
+    ),
+    looking: (
+      <>
+        <p>Aucun souci. Ton accès s&apos;ouvre dès le paiement validé : ton idée et ton plan t&apos;attendent dans ton espace.</p>
+        <div className="flex flex-wrap gap-2">
+          {retry}
+          {weekly}
+        </div>
+      </>
+    ),
+  };
+  return (
+    <div className="rounded-xl border border-ink/12 bg-ink/[0.03] p-4">
+      <p className="font-body text-[14px] font-medium text-ink">Ton paiement n&apos;est pas allé au bout. Aucun montant n&apos;a été prélevé.</p>
+      {reason === null ? (
+        <>
+          <p className="mt-1 font-body text-[13px] text-ink-muted">Qu&apos;est-ce qui t&apos;a bloqué ? On a sûrement une solution.</p>
+          <div className="mt-3 flex flex-col gap-2">
+            {ABANDON_REASONS.map((r) => (
+              <button
+                key={r.id}
+                type="button"
+                onClick={() => {
+                  setReason(r.id);
+                  track("checkout_abandon_reason", { reason: r.id });
+                }}
+                className="rounded-[10px] border border-ink/12 px-3.5 py-2.5 text-left font-body text-[14px] text-ink transition-colors hover:border-accent/50"
+              >
+                {r.label}
+              </button>
+            ))}
+          </div>
+        </>
+      ) : (
+        <div className="mt-2 font-body text-[13.5px] leading-relaxed text-ink-muted">{answers[reason]}</div>
+      )}
+    </div>
+  );
+}
+
 function Guarantee() {
   return (
     <div className="flex gap-4 rounded-xl border border-success/40 bg-success/[0.06] p-4">
@@ -262,7 +388,7 @@ export function PricingCards({ startsCountdown = true, goal }: { startsCountdown
   }, [startsCountdown]);
 
   useEffect(() => {
-    if (cancelled) track("weekly_offer_shown");
+    if (cancelled) track("abandon_reasons_shown");
   }, [cancelled]);
 
   async function choose(planId: PlanId, offer?: "exit") {
@@ -325,17 +451,14 @@ export function PricingCards({ startsCountdown = true, goal }: { startsCountdown
         {remaining !== null && <OfferBanner remaining={remaining} />}
 
         {cancelled && (
-          <div className="rounded-xl border border-ink/12 bg-ink/[0.03] p-4">
-            <p className="font-body text-[14px] font-medium text-ink">
-              Ton paiement n&apos;est pas allé au bout. Aucun montant n&apos;a été prélevé.
-            </p>
-            <p className="mt-1 font-body text-[13px] leading-relaxed text-ink-muted">
-              Ou commence tout de suite avec moins : {WEEKLY.label} à {WEEKLY.price} ({WEEKLY.summary.toLowerCase()}).
-            </p>
-            <Button variant="secondary" size="sm" showArrow={false} className="mt-3" disabled={loading !== null} onClick={() => choose("weekly")}>
-              {busy("weekly") ? redirecting : `Commencer à ${WEEKLY.price} ${WEEKLY.period}`}
-            </Button>
-          </div>
+          <AbandonReason
+            disabled={loading !== null}
+            retryLabel={busy(current.id) ? redirecting : "Réessayer le paiement"}
+            weeklyLabel={busy("weekly") ? redirecting : `Commencer à ${WEEKLY.price} ${WEEKLY.period}`}
+            onRetry={() => choose(current.id)}
+            onWeekly={() => choose("weekly")}
+            question={question}
+          />
         )}
 
         <div>
