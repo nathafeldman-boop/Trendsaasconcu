@@ -51,7 +51,7 @@ export default function CreatorsPage() {
         <CreatorSignupForm />
       </div>
       <p className="mt-6 text-center font-body text-[12px] leading-relaxed text-ink-faint">
-        Seules les vues des vidéos publiées par ton compte sont comptées. Les vues achetées ou artificielles ne sont pas payées.
+        Tu peux poster depuis n&apos;importe lequel de tes comptes. Les vues achetées ou artificielles ne sont pas payées.
       </p>
     </main>
   );

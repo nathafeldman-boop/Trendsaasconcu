@@ -136,3 +136,27 @@ export function normalizePhone(raw: string) {
 export function whatsappUrl(phone: string) {
   return `https://wa.me/${phone.replace(/^\+/, "")}`;
 }
+
+/** A view rate above this is flagged for a human look. */
+const SUSPICIOUS_VIEWS_PER_HOUR = 10_000;
+
+/**
+ * Why an admin should look at a video before paying it: posted by another
+ * account than the creator's, or views coming in suspiciously fast (bought
+ * views). Never blocks anything on its own.
+ */
+export function videoWarnings(
+  video: { platform: string; author: string | null; views: number | string; posted_at: string | null; created_at: string },
+  creatorHandle: string, now = Date.now()) {
+  const warnings: string[] = [];
+  if (video.platform !== "instagram" && video.author && video.author !== normalizeHandle(creatorHandle)) {
+    warnings.push(`Publiée par @${video.author}, pas par son compte @${normalizeHandle(creatorHandle)}`);
+  }
+  const since = Date.parse(video.posted_at ?? video.created_at);
+  const hours = Math.max((now - since) / 3_600_000, 0.25);
+  const views = Number(video.views);
+  if (views >= 5_000 && views / hours >= SUSPICIOUS_VIEWS_PER_HOUR) {
+    warnings.push(`${Math.round(views / hours).toLocaleString("fr-FR")} vues/heure depuis la publication : possibles vues achetées`);
+  }
+  return warnings;
+}

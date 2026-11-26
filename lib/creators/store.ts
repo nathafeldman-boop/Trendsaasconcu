@@ -170,7 +170,11 @@ async function addInstagramVideo(creator: CreatorAccount, rawUrl: string, pairId
   return { ok: true, video: data as CreatorVideo };
 }
 
-/** Adds a TikTok video, published by the creator's own account. */
+/**
+ * Adds a TikTok video, from any account: creators may post on a second
+ * account. The admin sees a warning when it isn't theirs or when its views
+ * look suspicious (videoWarnings).
+ */
 async function addTikTokVideo(creator: CreatorAccount, rawUrl: string, pairId: string | null): Promise<AddResult> {
   const url = parseTikTokUrl(rawUrl);
   if (!url) return { ok: false, error: "Colle le lien d'une vidéo TikTok (tiktok.com/@…/video/…)." };
@@ -183,12 +187,8 @@ async function addTikTokVideo(creator: CreatorAccount, rawUrl: string, pairId: s
     fetchError = error instanceof Error ? error.message : "TikTok illisible";
   }
 
-  const handle = normalizeHandle(creator.tiktok_handle);
   const fromUrl = url.match(/tiktok\.com\/@([\w.]+)\//)?.[1]?.toLowerCase();
   const author = stats?.author || fromUrl || null;
-  if (author && author !== handle) {
-    return { ok: false, error: `Cette vidéo TikTok est publiée par @${author}, pas par ton compte @${handle}.` };
-  }
   const videoId = stats?.videoId ?? url.match(/\/(?:video|photo)\/(\d+)/)?.[1];
   if (!videoId) return { ok: false, error: fetchError ?? "Vidéo TikTok introuvable." };
 
@@ -263,7 +263,7 @@ export async function refreshStaleVideos({ limit = 40, concurrency = 5 } = {}) {
   const before = new Date(Date.now() - REFRESH_EVERY_MS).toISOString();
   const { data } = await supabase
     .from("creator_videos")
-    .select("id, url, views, author, creator_id, creators(tiktok_handle)")
+    .select("id, url, views, author, creator_id")
     .eq("status", "active")
     .eq("platform", "tiktok")
     .or(`views_checked_at.is.null,views_checked_at.lt.${before}`)
@@ -278,8 +278,6 @@ export async function refreshStaleVideos({ limit = 40, concurrency = 5 } = {}) {
       const now = new Date().toISOString();
       try {
         const stats = await fetchVideoStats(video.url);
-        const owner = (video.creators as unknown as { tiktok_handle: string } | null)?.tiktok_handle;
-        const wrongAuthor = owner && stats.author && stats.author !== normalizeHandle(owner);
         await supabase
           .from("creator_videos")
           .update({
@@ -289,7 +287,6 @@ export async function refreshStaleVideos({ limit = 40, concurrency = 5 } = {}) {
             posted_at: stats.postedAt,
             views_checked_at: now,
             last_error: null,
-            ...(wrongAuthor ? { status: "rejected", rejected_reason: `Publiée par @${stats.author}` } : {}),
           })
           .eq("id", video.id);
         updated++;
@@ -344,3 +341,4 @@ export async function setVideoStatus(videoId: string, status: "active" | "reject
     .eq("id", videoId);
   return !error;
 }
+
