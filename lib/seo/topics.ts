@@ -6,6 +6,7 @@
 
 import { toolNames, toolPairs } from "@/lib/seo/topics-tools";
 import { jeunesTopics } from "@/lib/seo/topics-jeunes";
+import { ALTERNATIVES_2, APPLICATIONS_2, GLOSSAIRE_2, JEUNES_2, METIERS_3 } from "@/lib/seo/topics-wave2";
 
 export type SeoFamily = "idees" | "application" | "argent" | "glossaire" | "alternatives" | "comparatifs" | "jeunes";
 
@@ -107,12 +108,13 @@ export type SeoTopic = { family: SeoFamily; slug: string; topic: string };
 /** Every page there should be, in the order they are generated. */
 export function allTopics(): SeoTopic[] {
   const out: SeoTopic[] = [];
+  // One page per family and slug, across every list (waves included).
+  const seen = new Set<string>();
   const add = (family: SeoFamily, raw: string, slugOf: (t: string) => string) => {
-    const seen = new Set<string>();
     for (const topic of list(raw)) {
       const slug = slugOf(topic);
-      if (!slug || seen.has(slug)) continue;
-      seen.add(slug);
+      if (!slug || seen.has(`${family}/${slug}`)) continue;
+      seen.add(`${family}/${slug}`);
       out.push({ family, slug, topic });
     }
   };
@@ -124,5 +126,11 @@ export function allTopics(): SeoTopic[] {
   add("idees", METIERS_2, (t) => slugify(t));
   add("alternatives", toolNames().join("|"), (t) => slugify(t));
   add("comparatifs", toolPairs().join("|"), (t) => slugify(t));
+  // Second wave (lib/seo/topics-wave2.ts).
+  add("jeunes", JEUNES_2.join("|"), (t) => slugify(t));
+  add("application", APPLICATIONS_2, (t) => slugify(t));
+  add("glossaire", GLOSSAIRE_2, (t) => slugify(t));
+  add("alternatives", ALTERNATIVES_2.join("|"), (t) => slugify(t));
+  add("idees", METIERS_3, (t) => slugify(t));
   return out;
 }
