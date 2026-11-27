@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { ArrowLeft, Check, Landmark, Loader2, RotateCcw } from "lucide-react";
 import { Beetle } from "@/components/simulation/beetle";
@@ -602,7 +602,29 @@ function LiveScreen({ idea, price, onReplay }: { idea: Idea; price: number; onRe
 
 /* ───────────────────────── flow ───────────────────────── */
 
+/**
+ * The "cha-ching" on every button press (public/sounds/cha-ching.mp3).
+ * Each press plays its own copy, so quick taps overlap instead of cutting
+ * each other off. Played from the tap itself, which phones require.
+ */
+function useChaChing() {
+  const sound = useRef<HTMLAudioElement | null>(null);
+  useEffect(() => {
+    const audio = new Audio("/sounds/cha-ching.mp3");
+    audio.preload = "auto";
+    audio.load();
+    sound.current = audio;
+  }, []);
+  return () => {
+    const base = sound.current;
+    if (!base) return;
+    const copy = base.cloneNode(true) as HTMLAudioElement;
+    copy.play().catch(() => {});
+  };
+}
+
 export function Simulation() {
+  const chaChing = useChaChing();
   const [ideaIndex, setIdeaIndex] = useState(0);
   const [step, setStep] = useState<StepId>("intro");
   const [goal, setGoal] = useState(5000);
@@ -703,7 +725,14 @@ export function Simulation() {
   }
 
   return (
-    <div id="simulation-scroll" className="fixed inset-0 z-[250] overflow-y-auto bg-[#f2f2ef] font-body text-black">
+    <div
+      id="simulation-scroll"
+      className="fixed inset-0 z-[250] overflow-y-auto bg-[#f2f2ef] font-body text-black"
+      onClickCapture={(event) => {
+        const button = (event.target as HTMLElement).closest("button");
+        if (button && !button.disabled) chaChing();
+      }}
+    >
       <AnimatePresence mode="wait">
         <motion.div
           key={step}
