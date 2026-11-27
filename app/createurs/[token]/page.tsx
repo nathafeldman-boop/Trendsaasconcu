@@ -8,7 +8,7 @@ import { PayoutForm } from "@/components/creators/payout-form";
 import { InstagramForm } from "@/components/creators/instagram-form";
 import { RememberCreator } from "@/components/creators/creator-login";
 import { getCreatorAccount } from "@/lib/creators/store";
-import { bonusCents, bonusLabel, formatEuros, formatViews, payoutLabel, rateLabel, STREAK_BONUS_CENTS } from "@/lib/creators/program";
+import { CREATORS_DISCORD_URL, bonusCents, bonusLabel, formatEuros, formatViews, payoutLabel, rateLabel, STREAK_BONUS_CENTS } from "@/lib/creators/program";
 
 export const metadata: Metadata = {
   title: "Mon espace créateur — SaaSFounder",
@@ -81,6 +81,24 @@ export default async function CreatorAccountPage({
         ))}
       </div>
 
+      <a
+        href={CREATORS_DISCORD_URL}
+        target="_blank"
+        rel="noreferrer"
+        className="mt-6 flex items-center gap-4 rounded-[16px] border border-[#5865F2]/50 bg-[#5865F2]/15 p-4 transition-colors hover:bg-[#5865F2]/25"
+      >
+        <svg viewBox="0 0 24 24" className="size-9 shrink-0 fill-[#8891f7]" aria-hidden>
+          <path d="M20.3 4.4A19.8 19.8 0 0 0 15.4 3l-.6 1.3a18.4 18.4 0 0 0-5.5 0L8.6 3a19.7 19.7 0 0 0-4.9 1.5C.6 9 0 13.6.3 18.1a19.9 19.9 0 0 0 6 3l1.3-2.1a12.9 12.9 0 0 1-2-1l.5-.4a14.2 14.2 0 0 0 12 0l.5.4c-.6.4-1.3.7-2 1l1.3 2.1a19.8 19.8 0 0 0 6-3c.5-5.2-.8-9.7-3.6-13.7ZM8.5 15.4c-1.2 0-2.1-1.1-2.1-2.4s.9-2.4 2.1-2.4 2.2 1.1 2.1 2.4c0 1.3-.9 2.4-2.1 2.4Zm7 0c-1.2 0-2.1-1.1-2.1-2.4s.9-2.4 2.1-2.4 2.2 1.1 2.1 2.4c0 1.3-.9 2.4-2.1 2.4Z" />
+        </svg>
+        <span className="flex-1">
+          <span className="block font-body text-[15px] font-semibold text-ink">Rejoins le Discord des créateurs</span>
+          <span className="block font-body text-[13px] leading-snug text-ink-muted">
+            Les vidéos qui marchent, des idées chaque jour et les réponses à tes questions.
+          </span>
+        </span>
+        <span className="shrink-0 rounded-full bg-[#5865F2] px-3.5 py-2 font-body text-[13px] font-semibold text-white">Rejoindre</span>
+      </a>
+
       <section id="ajouter" className="glass-panel mt-6 rounded-[20px] border border-accent/30 p-5">
         <h2 className="font-body text-[17px] font-semibold text-ink">Ajouter une vidéo</h2>
         <p className="mb-4 mt-1 font-body text-[13px] leading-relaxed text-ink-muted">
@@ -95,7 +113,7 @@ export default async function CreatorAccountPage({
             .map((p) => ({ key: p.key, platform: p.tiktok ? "tiktok" : "instagram", date: p.postedAt, views: p.views }))}
         />
         <p className="mt-3 font-body text-[12px] leading-relaxed text-ink-faint">
-          TikTok : vues lues automatiquement toutes les 10 minutes (vidéo publiée par @{creator.tiktok_handle}). Instagram : envoie-nous
+          TikTok : vues lues automatiquement toutes les 10 minutes, depuis n&apos;importe lequel de tes comptes. Instagram : envoie-nous
           une capture des vues du reel sur WhatsApp, on les met à jour.
         </p>
       </section>

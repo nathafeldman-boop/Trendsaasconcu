@@ -1,6 +1,9 @@
 // The creator program's terms, shared by the signup page, the creator's own
 // page and the admin. Change the rate here: everything is computed from it.
 
+/** The creators' Discord: ideas of videos, examples, questions. */
+export const CREATORS_DISCORD_URL = "https://discord.gg/zqjKDH3yU";
+
 /** What a creator earns, in euro cents, per 1 000 views. */
 export const RATE_CENTS_PER_1000_VIEWS = 100;
 
