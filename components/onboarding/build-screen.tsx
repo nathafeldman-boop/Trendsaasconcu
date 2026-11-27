@@ -34,11 +34,12 @@ function slug(text: string) {
  */
 export function BuildScreen({ shell, answers, onNext }: { shell: ShellProps; answers: Answers; onNext: () => void }) {
   const idea = readFoundIdea(answers);
-  const name = idea?.title ?? "Ton SaaS";
-  const price = idea?.price_per_month ?? 29;
+  // The idea stays hidden until they've paid: a generic name in the preview.
+  const name = "Ton SaaS";
+  const price = Number(answers.price) || idea?.price_per_month || 29;
   const payments: Record<string, string> = { stripe: "Stripe", paypal: "PayPal", revolut: "Revolut", banque: "Ton compte bancaire" };
   const parts = [
-    { label: "Ton idée", detail: name },
+    { label: "Ton idée", detail: "Trouvée, révélée dans ton espace" },
     { label: "Ton site", detail: "Accueil · inscription · paiement" },
     { label: "Tes offres et tarifs", detail: "3 formules, tes prix" },
     { label: "Tes vidéos", detail: "Des scripts adaptés à ton SaaS" },
@@ -140,7 +141,7 @@ export function BuildScreen({ shell, answers, onNext }: { shell: ShellProps; ans
               </div>
             </motion.div>
             <motion.div animate={{ opacity: done >= 2 ? 1 : 0.2 }}>
-              <p className="font-display text-[17px] font-semibold leading-snug text-ink">{idea?.pitch ?? "Ton produit, présenté en une phrase."}</p>
+              <p className="font-display text-[17px] font-semibold leading-snug text-ink">Ton produit, présenté en une phrase.</p>
               {idea?.target && <p className="mt-1 font-body text-[12px] text-ink-muted">Pour {idea.target.charAt(0).toLowerCase() + idea.target.slice(1)}</p>}
               <span className="mt-3 inline-block rounded-full bg-accent px-3 py-1 font-body text-[11.5px] font-semibold text-canvas">Essayer gratuitement</span>
             </motion.div>

@@ -19,7 +19,7 @@ import {
   TextScreen,
   UrlScreen,
 } from "@/components/onboarding/funnel-screens";
-import { IdeaRevealScreen } from "@/components/onboarding/idea-reveal";
+import { IdeaReadyScreen } from "@/components/onboarding/idea-reveal";
 import { BuildScreen } from "@/components/onboarding/build-screen";
 import { CommitScreen } from "@/components/onboarding/commit-screen";
 import { PhoneScreen, PotentialScreen, ProjectionScreen, DiagnosisScreen } from "@/components/onboarding/potential-screen";
@@ -191,7 +191,7 @@ export function OnboardingWizard() {
       case "loading":
         return <LoadingScreen shell={shell} answers={answers} onAnswer={answer} onNext={goNext} />;
       case "idea":
-        return <IdeaRevealScreen shell={shell} answers={answers} onAnswer={answer} onNext={goNext} />;
+        return <IdeaReadyScreen shell={shell} answers={answers} onAnswer={answer} onNext={goNext} />;
       case "account":
         return (
           <AccountScreen

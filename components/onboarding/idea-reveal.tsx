@@ -392,3 +392,119 @@ function LockedPreview({ idea }: { idea: FoundIdea }) {
     </motion.div>
   );
 }
+
+/**
+ * The idea step of the onboarding: the idea is searched (or taken from the
+ * loading screen's search) and kept with their answers, but not shown. They
+ * learn it's ready and discover it in their space once they've paid.
+ */
+export function IdeaReadyScreen({
+  shell,
+  answers,
+  onAnswer,
+  onNext,
+}: {
+  shell: ShellProps;
+  answers: Answers;
+  onAnswer: (patch: Answers) => Answers;
+  onNext: (answers?: Answers) => void;
+}) {
+  const inputKey = JSON.stringify(ideaInput(answers));
+  const stored = answers[FOUND_FOR_KEY] === inputKey ? readFoundIdea(answers) : null;
+  const [phase, setPhase] = useState<Phase>(stored ? "found" : "searching");
+  const [attempt, setAttempt] = useState(stored ? 0 : 1);
+  const latest = useRef({ answers, onAnswer, inputKey });
+  useEffect(() => {
+    latest.current = { answers, onAnswer, inputKey };
+  });
+
+  useEffect(() => {
+    if (attempt === 0) return;
+    let cancelled = false;
+    const started = Date.now();
+    const { answers: current } = latest.current;
+    requestIdea(current).then(async (result) => {
+      const wait = MIN_SEARCH_MS - (Date.now() - started);
+      if (wait > 0) await new Promise((resolve) => setTimeout(resolve, wait));
+      if (cancelled) return;
+      if (!result) {
+        setPhase("error");
+        return;
+      }
+      latest.current.onAnswer({ [FOUND_IDEA_KEY]: JSON.stringify(result.idea), [FOUND_FOR_KEY]: latest.current.inputKey });
+      setPhase("found");
+      track("idea_revealed", { source: result.source, domain: current.domain, market: current.market, hidden: true });
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [attempt]);
+
+  if (phase !== "found") {
+    return (
+      <StepShell
+        {...shell}
+        center
+        eyebrow="Recherche en cours"
+        title={phase === "error" ? "La connexion a coupé." : "On cherche ton idée."}
+        subtitle={phase === "error" ? "Vérifie ta connexion et relance la recherche." : "Une idée de SaaS taillée pour ton objectif."}
+        footer={
+          phase === "error" ? (
+            <Button
+              showArrow={false}
+              onClick={() => {
+                setPhase("searching");
+                setAttempt((n) => n + 1);
+              }}
+              className="w-full"
+            >
+              Relancer la recherche
+            </Button>
+          ) : null
+        }
+      >
+        {phase === "error" ? null : <Searching />}
+      </StepShell>
+    );
+  }
+
+  return (
+    <StepShell
+      {...shell}
+      center
+      eyebrow="C'est fait"
+      title="Ton idée de SaaS est prête."
+      subtitle="On l'a trouvée pour toi, à partir de tes réponses. Elle t'attend dans ton espace avec le prompt qui la construit."
+      footer={
+        <Button showArrow={false} onClick={() => onNext()} className="w-full">
+          Continuer
+        </Button>
+      }
+    >
+      <motion.div
+        initial={{ opacity: 0, y: 12, scale: 0.97 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        transition={{ duration: 0.5, ease: EASE }}
+        className="glass-panel relative mx-auto w-full max-w-sm overflow-hidden rounded-[20px] p-5 text-left"
+      >
+        <div aria-hidden className="select-none blur-[6px]">
+          <p className="font-display text-[22px] font-semibold text-ink">Idée verrouillée</p>
+          <p className="mt-2 font-body text-[14px] text-ink-muted">Un outil simple pour une cible précise, qui paie chaque mois.</p>
+          <div className="mt-4 grid grid-cols-3 gap-2">
+            <span className="h-12 rounded-[10px] bg-ink/10" />
+            <span className="h-12 rounded-[10px] bg-ink/10" />
+            <span className="h-12 rounded-[10px] bg-ink/10" />
+          </div>
+        </div>
+        <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-canvas/40">
+          <span className="flex size-12 items-center justify-center rounded-full bg-accent text-canvas shadow-[0_0_30px_-4px_var(--color-accent)]">
+            <Check className="size-6" strokeWidth={3} />
+          </span>
+          <span className="flex items-center gap-1.5 font-body text-[13px] font-semibold text-ink">
+            <Lock className="size-3.5" /> Révélée dans ton espace
+          </span>
+        </div>
+      </motion.div>
+    </StepShell>
+  );
+}

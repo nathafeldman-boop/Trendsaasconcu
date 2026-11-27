@@ -621,7 +621,6 @@ export function AccountScreen({ shell, answers, onDone }: { shell: ShellProps; a
 }
 
 export function PlansScreen({ shell, answers }: { shell: ShellProps; answers: Answers }) {
-  const idea = readFoundIdea(answers);
   const goal = Number(answers.revenueGoal) || null;
   return (
     <StepShell
@@ -629,7 +628,7 @@ export function PlansScreen({ shell, answers }: { shell: ShellProps; answers: An
       eyebrow="Dernière étape"
       title={
         <>
-          Débloque <span className="font-serif italic tracking-normal text-accent">{idea ? idea.title : "ton SaaS"}.</span>
+          Débloque <span className="font-serif italic tracking-normal text-accent">ton idée et ton SaaS.</span>
         </>
       }
     >

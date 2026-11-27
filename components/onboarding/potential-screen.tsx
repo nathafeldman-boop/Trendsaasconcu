@@ -31,9 +31,9 @@ function eur(value: number) {
  * goal (lib: potential()), labelled as a scenario.
  */
 export function PotentialScreen({ shell, answers, onNext }: { shell: ShellProps; answers: Answers; onNext: () => void }) {
-  const { goal, amount, price, customers, ideaTitle } = potential(answers);
+  const { goal, amount, price, customers } = potential(answers);
   const checks = [
-    `Ton idée : ${ideaTitle ?? "ton SaaS"}`,
+    "Ton idée : trouvée",
     `Ton objectif : ${eur(goal)} par mois`,
     `Tes paiements : ${PAYMENT_LABEL[String(answers.payments)] ?? "à choisir"}`,
     `Ta première vente : ${FIRST_SALE_LABEL[String(answers.deadline)] ?? "au plus vite"}`,

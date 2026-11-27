@@ -6,7 +6,6 @@ import { Check, Fingerprint } from "lucide-react";
 import { StepShell } from "@/components/onboarding/step-shell";
 import type { ShellProps } from "@/components/onboarding/funnel-screens";
 import type { Answers } from "@/components/onboarding/funnel";
-import { readFoundIdea } from "@/lib/onboarding/found-idea";
 
 // Right before the plans: they read what they commit to, then hold their
 // finger on the print until the ring fills. Letting go early resets it.
@@ -22,12 +21,11 @@ const DEADLINES: Record<string, string> = {
 };
 
 export function CommitScreen({ shell, answers, onNext }: { shell: ShellProps; answers: Answers; onNext: () => void }) {
-  const idea = readFoundIdea(answers);
   const goal = Number(answers.revenueGoal) || null;
   const deadline = DEADLINES[String(answers.deadline ?? "")];
 
   const promises = [
-    `Je lance ${idea ? idea.title : "mon SaaS"}, même si je n'ai jamais codé.`,
+    "Je lance mon SaaS, même si je n'ai jamais codé.",
     deadline ? `Je vise ma première vente ${deadline}.` : "Je vise ma première vente le plus vite possible.",
     goal ? `Je travaille chaque jour pour atteindre ${goal.toLocaleString("fr-FR")} € par mois.` : "Je travaille un peu chaque jour sur mon business.",
   ];
