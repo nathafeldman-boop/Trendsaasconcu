@@ -121,8 +121,8 @@ export async function POST(request: Request) {
       // Card, Apple Pay, Google Pay, Klarna and Revolut Pay (see
       // lib/stripe/payment-methods.ts); Checkout shows only those the plan allows.
       ...(methodsConfig ? { payment_method_configuration: methodsConfig } : { payment_method_types: ["card"] }),
-      // Promo codes are created in the Stripe dashboard; this just shows the field.
-      allow_promotion_codes: true,
+      // No promo code field: the Stripe account is shared with Stageio,
+      // whose 100 % codes would otherwise work here too.
       custom_text: {
         submit: { message: submitMessage(plan, tier) },
         after_submit: {
@@ -152,7 +152,7 @@ export async function POST(request: Request) {
       ...(reminder
         ? {
             expires_at: Math.floor(Date.now() / 1000) + 60 * 60,
-            after_expiration: { recovery: { enabled: true, allow_promotion_codes: true } },
+            after_expiration: { recovery: { enabled: true, allow_promotion_codes: false } },
           }
         : {}),
     };

@@ -9,6 +9,14 @@ const BLOCKED_HOSTNAME_PATTERNS = [
   /^169\.254\./,
   /^172\.(1[6-9]|2\d|3[0-1])\./,
   /^\[?::1\]?$/,
+  /^0\./,
+  /^100\.(6[4-9]|[7-9]\d|1[01]\d|12[0-7])\./,
+  /^\[?f[cd][0-9a-f]{2}:/i,
+  /^\[?fe80:/i,
+  /^\[?::ffff:/i,
+  /^\d+$/,
+  /^0x/i,
+  /\.(internal|local|localhost)$/i,
 ];
 
 function isSafeUrl(raw: string): URL | null {
@@ -37,12 +45,25 @@ export async function GET(request: Request) {
   try {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 6000);
-    const res = await fetch(safeUrl.toString(), {
-      signal: controller.signal,
-      headers: { "User-Agent": "SaaSFounderBot/1.0" },
-      redirect: "follow",
-    });
+    // Redirects are followed by hand, each hop checked like the first, so a
+    // public page can't bounce the request to an internal address.
+    let url: URL | null = safeUrl;
+    let res: Response | null = null;
+    for (let hop = 0; hop < 4 && url; hop++) {
+      res = await fetch(url.toString(), {
+        signal: controller.signal,
+        headers: { "User-Agent": "SaaSFounderBot/1.0" },
+        redirect: "manual",
+      });
+      const location = res.status >= 300 && res.status < 400 ? res.headers.get("location") : null;
+      if (!location) break;
+      url = isSafeUrl(new URL(location, url).toString());
+      res = null;
+    }
     clearTimeout(timeout);
+    if (!res) {
+      return NextResponse.json({ reachable: false });
+    }
 
     if (!res.ok) {
       return NextResponse.json({ reachable: false });
