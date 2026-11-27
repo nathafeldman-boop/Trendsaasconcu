@@ -104,25 +104,25 @@ export const REVENUE_TIERS = [
 /** Questions that pop up over the loading ring; each "oui" adds a revenue source to the projection. */
 export const LEVERS = [
   {
-    id: "contenu",
-    question: "Prêt à publier une vidéo courte par jour ?",
-    detail: "TikTok, Reels ou Shorts : ton écran filmé suffit, pas besoin de montrer ton visage.",
-    label: "Contenu court",
+    id: "influenceurs",
+    question: "Es-tu prêt à engager des influenceurs ?",
+    detail: "Des créateurs payés pour parler de ton produit à leur audience.",
+    label: "Influenceurs",
     share: [0.2, 0.45] as const,
   },
   {
-    id: "prospection",
-    question: "Prêt à contacter 10 prospects par jour ?",
-    detail: "Des messages courts et personnalisés, sans jamais forcer la vente.",
-    label: "Prospection directe",
+    id: "clippers",
+    question: "Es-tu prêt à engager des clippers ?",
+    detail: "Des monteurs payés au clip, qui découpent ton contenu et le diffusent en masse.",
+    label: "Clippers",
     share: [0.15, 0.35] as const,
   },
 ];
 
 export const LOADING_STEPS = [
-  "Lecture de tes réponses",
-  "Repérage de ta niche",
-  "Calcul de tes leviers d'acquisition",
+  "Analyse de tes réponses",
+  "Identification de ta niche",
+  "Croisement avec les leviers d'acquisition",
   "Assemblage de ta projection",
 ];
 
@@ -188,6 +188,12 @@ export const STEPS: Step[] = [
         detail: "j'ai déjà quelques essais derrière moi",
         note: "Tu as posé les bases. Ce qui manque n'est plus la motivation, c'est la méthode.",
       },
+      {
+        id: "plus3ans",
+        label: "Plus de 3 ans",
+        detail: "je connais le terrain",
+        note: "Tu connais le métier : ce qui fera la différence, c'est d'aller plus vite avec les bons outils.",
+      },
     ],
   },
   { type: "saas101", id: "saas101", condition: (a) => a.experience === "jamais" },
@@ -247,7 +253,6 @@ export const STEPS: Step[] = [
     initial: 3000,
   },
   { type: "loading", id: "loading" },
-  { type: "projection", id: "projection" },
   { type: "diagnosis", id: "diagnosis" },
   {
     type: "message",
@@ -304,6 +309,19 @@ export const STEPS: Step[] = [
   },
   {
     type: "single",
+    id: "price",
+    kicker: "Ton prix",
+    title: "Quel prix tu veux facturer à tes clients ?",
+    help: "Par mois et par client. Tu pourras le changer quand tu veux.",
+    options: [
+      { id: "9", label: "9 €", detail: "par mois · beaucoup de petits clients" },
+      { id: "29", label: "29 €", detail: "par mois · le prix le plus courant" },
+      { id: "79", label: "79 €", detail: "par mois · pour des pros" },
+      { id: "199", label: "199 €", detail: "par mois · peu de clients, qui paient cher" },
+    ],
+  },
+  {
+    type: "single",
     id: "deadline",
     kicker: "Ta première vente",
     title: "Quand veux-tu faire ta première vente ?",
@@ -312,29 +330,29 @@ export const STEPS: Step[] = [
       { id: "aujourdhui", label: "Aujourd'hui" },
       { id: "semaine", label: "Cette semaine" },
       { id: "mois", label: "Dans le mois" },
-      { id: "3mois", label: "D'ici 3 mois" },
     ],
   },
   {
     type: "single",
     id: "autoClients",
-    kicker: "Tes clients",
-    title: "Tu veux qu'on t'amène des clients automatiquement ?",
+    kicker: "Ton temps",
+    title: "Tu veux un business qui tourne seul sans toi ?",
     options: [
       {
         id: "oui",
         label: "Oui",
-        detail: "je veux des clients sans courir après",
-        note: "Noté : ton plan marketing et tes scripts vidéo seront taillés pour faire venir des clients chaque semaine, sans démarchage.",
+        detail: "il encaisse pendant que je fais autre chose",
+        note: "Noté : un abonnement encaisse chaque mois sans toi, et ton plan marketing est taillé pour faire venir des clients sans démarchage.",
       },
-      { id: "non", label: "Non", detail: "je préfère m'en charger", note: "D'accord : tu gardes la main, et ton plan te dit quoi faire chaque jour pour trouver tes clients." },
+      { id: "non", label: "Non", detail: "je veux m'en occuper tous les jours", note: "D'accord : ton plan te dit quoi faire chaque jour pour faire grandir ton business." },
     ],
   },
   {
     type: "single",
     id: "doneForYou",
     kicker: "Ton business",
-    title: "Tu veux qu'on crée ton business à ta place ?",
+    title: "Tu veux qu'on le fasse à ta place ?",
+    help: "(automatisé)",
     options: [
       {
         id: "oui",
@@ -346,7 +364,6 @@ export const STEPS: Step[] = [
     ],
   },
   { type: "potential", id: "potential" },
-  { type: "phone", id: "phone" },
   { type: "build", id: "build" },
   { type: "commit", id: "commit" },
   { type: "plans", id: "plans" },
@@ -370,6 +387,6 @@ export function potential(answers: Answers) {
   const extra = Math.min(9000, Math.max(4000, 8000 - ((goal - 5000) * 2000) / 45000));
   const amount = Math.max(goal + 1000, Math.ceil(Math.min(goal + extra, goal * 2.6) / 1000) * 1000);
   const idea = readFoundIdea(answers);
-  const price = idea?.price_per_month ?? REFERENCE_PRICE;
+  const price = Number(answers.price) || idea?.price_per_month || REFERENCE_PRICE;
   return { goal, amount, price, customers: Math.ceil(amount / price), ideaTitle: idea?.title ?? null };
 }

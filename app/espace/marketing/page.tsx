@@ -45,7 +45,8 @@ export default async function MarketingPage() {
       hasExistingSaas={hasExistingSaas}
       existingUrl={hasExistingSaas ? answers.siteUrl || answers.existingUrl || null : null}
       noFace={Array.isArray(answers.refusals) && answers.refusals.includes("video")}
-      prospects={answers.lever_prospection === "oui"}
+      // The old loading question; members who answered "non" keep it off.
+      prospects={answers.lever_prospection !== "non"}
       initialMarketing={{
         chosen_channel: marketingRes.data?.chosen_channel ?? null,
         tiktok_url: marketingRes.data?.tiktok_url ?? "",

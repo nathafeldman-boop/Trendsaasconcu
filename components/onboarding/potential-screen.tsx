@@ -37,7 +37,8 @@ export function PotentialScreen({ shell, answers, onNext }: { shell: ShellProps;
     `Ton objectif : ${eur(goal)} par mois`,
     `Tes paiements : ${PAYMENT_LABEL[String(answers.payments)] ?? "à choisir"}`,
     `Ta première vente : ${FIRST_SALE_LABEL[String(answers.deadline)] ?? "au plus vite"}`,
-    `Clients amenés automatiquement : ${answers.autoClients === "oui" ? "oui" : "non"}`,
+    `Ton prix : ${price} € par mois`,
+    `Un business qui tourne seul : ${answers.autoClients === "oui" ? "oui" : "non"}`,
     `Business créé pour toi : ${answers.doneForYou === "oui" ? "oui" : "non"}`,
   ];
   const [done, setDone] = useState(0);
