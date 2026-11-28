@@ -42,7 +42,7 @@ Règles d'écriture :
 - Pas de promesse de gains. Reste honnête sur l'effort nécessaire.
 - Nous sommes en ${YEAR}. Si tu cites une année (dans le titre ou le texte), c'est ${YEAR} ou ${YEAR + 1}, jamais une année passée.
 - Format du champ "body" : Markdown léger uniquement. Paragraphes séparés par une ligne vide, listes avec "- " ou "1. ", gras avec **…**. Pas de titres dans "body" (le titre est dans "heading"), pas de tableaux, pas de liens.
-- "title" : titre de page pour Google, accrocheur et précis, sans le nom SaaSFounder.
+- "title" : titre de page pour Google, accrocheur et précis, sans le nom SaaSFounder, 80 caractères maximum.
 - "description" : méta-description de 120 à 150 caractères (pas plus) qui dit ce que le lecteur va obtenir.
 - La dernière section peut évoquer, en une ou deux phrases maximum, qu'un outil comme SaaSFounder aide à passer de l'idée au lancement. Jamais ailleurs.`;
 
@@ -102,7 +102,7 @@ Contenu attendu :
 - Si l'âge ou le statut compte (mineur, étudiant) : ce qu'il faut savoir sur l'autorisation parentale, la micro-entreprise, la déclaration des revenus et l'ouverture d'un compte, en restant général et en renvoyant vers service-public.fr ou l'URSSAF pour les règles exactes. N'invente aucun seuil ni aucun chiffre légal.
 - Dans la dernière section, montre en deux ou trois phrases qu'un petit logiciel par abonnement (SaaS) est la piste qui construit un revenu chaque mois, et que SaaSFounder lui trouve une idée adaptée, le prompt qui construit son site avec l'IA et son plan pour trouver ses premiers clients, avec un questionnaire gratuit de deux minutes pour commencer.
 Ton : direct, motivant mais honnête, tutoiement, comme un grand frère qui a déjà essayé. Pas de promesse de richesse.
-Titre : la question reformulée de façon accrocheuse, avec un bénéfice concret (ex. « Gagner de l'argent à 16 ans : 7 idées qui marchent vraiment »).`,
+Titre : la question reformulée de façon accrocheuse, avec un bénéfice concret, en 50 à 80 caractères maximum (ex. « Gagner de l'argent à 16 ans : 7 idées qui marchent vraiment »).`,
 };
 
 export async function writeSeoPage(family: SeoFamily, topic: string) {
