@@ -63,38 +63,59 @@ function daysInMonth(month: string) {
   return new Date(Date.UTC(y, m, 0)).getUTCDate();
 }
 
+/** Days a creator may miss each month (sick, busy) without losing the streak or the month's bonus. */
+export const STREAK_JOKERS_PER_MONTH = 2;
+
 /**
  * The posting streak, from the days (Paris time) the creator's videos were
- * published: months fully covered (one bonus each), the current run of
- * consecutive days, and how this month is going.
+ * published. Each month, up to STREAK_JOKERS_PER_MONTH missed days are
+ * forgiven automatically: the run goes on, and the month still counts as
+ * complete (one bonus each).
  */
 export function streak(postedDays: string[], today = parisDay(new Date())) {
   const days = new Set(postedDays);
   const byMonth = new Map<string, number>();
   for (const d of days) byMonth.set(d.slice(0, 7), (byMonth.get(d.slice(0, 7)) ?? 0) + 1);
-  const completedMonths = [...byMonth].filter(([month, count]) => count >= daysInMonth(month)).map(([month]) => month);
+  const thisMonthKey = today.slice(0, 7);
+  const completedMonths = [...byMonth]
+    .filter(([month, count]) => month < thisMonthKey && count >= daysInMonth(month) - STREAK_JOKERS_PER_MONTH)
+    .map(([month]) => month);
 
-  // Consecutive days up to today (or up to yesterday, if nothing is posted yet today).
+  // Consecutive days up to today (or yesterday, if nothing is posted yet
+  // today), a missed day using one of that month's jokers.
+  const first = [...days].sort()[0];
+  const jokersUsed = new Map<string, number>();
   let current = 0;
   const cursor = new Date(`${today}T12:00:00Z`);
   if (!days.has(today)) cursor.setUTCDate(cursor.getUTCDate() - 1);
-  while (days.has(cursor.toISOString().slice(0, 10))) {
-    current++;
+  while (first) {
+    const day = cursor.toISOString().slice(0, 10);
+    if (day < first) break;
+    if (days.has(day)) current++;
+    else {
+      const month = day.slice(0, 7);
+      const used = jokersUsed.get(month) ?? 0;
+      if (used >= STREAK_JOKERS_PER_MONTH) break;
+      jokersUsed.set(month, used + 1);
+    }
     cursor.setUTCDate(cursor.getUTCDate() - 1);
   }
 
-  const month = today.slice(0, 7);
+  // Missed days this month, counted from their first video only.
   const dayOfMonth = Number(today.slice(8, 10));
+  const startDay = !first || first.slice(0, 7) > thisMonthKey ? dayOfMonth : first.slice(0, 7) === thisMonthKey ? Number(first.slice(8, 10)) : 1;
   let missedThisMonth = 0;
-  for (let d = 1; d < dayOfMonth; d++) if (!days.has(`${month}-${String(d).padStart(2, "0")}`)) missedThisMonth++;
+  for (let d = startDay; d < dayOfMonth; d++) if (!days.has(`${thisMonthKey}-${String(d).padStart(2, "0")}`)) missedThisMonth++;
   return {
     completedMonths,
     bonusCents: completedMonths.length * STREAK_BONUS_CENTS,
     current,
-    thisMonth: byMonth.get(month) ?? 0,
-    daysInThisMonth: daysInMonth(month),
-    // Still possible this month: no past day of the month without a video.
-    stillPossible: missedThisMonth === 0,
+    thisMonth: byMonth.get(thisMonthKey) ?? 0,
+    daysInThisMonth: daysInMonth(thisMonthKey),
+    postedToday: days.has(today),
+    jokersLeft: Math.max(0, STREAK_JOKERS_PER_MONTH - missedThisMonth),
+    // Still possible this month: no more past days missed than the jokers cover.
+    stillPossible: missedThisMonth <= STREAK_JOKERS_PER_MONTH,
   };
 }
 
@@ -121,6 +142,12 @@ export function cleanInstagram(raw: unknown): string | null | false {
   const handle = typeof raw === "string" ? normalizeHandle(raw.slice(0, 40)) : "";
   if (!handle) return null;
   return /^[\w.]{1,30}$/.test(handle) ? handle : false;
+}
+
+/** A plausible email address, lowercased; null otherwise. */
+export function cleanEmail(raw: unknown) {
+  const email = typeof raw === "string" ? raw.trim().toLowerCase().slice(0, 200) : "";
+  return /^[^\s@]+@[^\s@]+\.[a-z]{2,}$/.test(email) ? email : null;
 }
 
 /** "@Name.Here " → "name.here": TikTok handles are case-insensitive. */

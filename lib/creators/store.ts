@@ -12,6 +12,9 @@ export type Creator = {
   phone: string;
   payout_method: string;
   payout_details: string;
+  /** For the daily reminders to post; null for creators who signed up before it was asked. */
+  email: string | null;
+  reminders_off_at: string | null;
 };
 
 export type CreatorVideo = {
@@ -135,7 +138,7 @@ export async function findCreatorToken(handle: string, phone: string) {
   return creator && creator.phone === phone ? (creator.token as string) : null;
 }
 
-export async function createCreator(input: Omit<Creator, "id" | "token" | "created_at">) {
+export async function createCreator(input: Omit<Creator, "id" | "token" | "created_at" | "reminders_off_at">) {
   const { data, error } = await db().from("creators").insert(input).select("token").single();
   if (error) return { error: error.code === "23505" ? ("taken" as const) : ("failed" as const) };
   return { token: data.token as string };
@@ -352,4 +355,26 @@ export async function setVideoVerified(videoId: string, verified: boolean) {
     .update({ verified_at: verified ? new Date().toISOString() : null })
     .eq("id", videoId);
   return !error;
+}
+
+/** A creator adds or changes their email (which turns the reminders back on). */
+export async function setCreatorEmail(token: string, email: string) {
+  const { data, error } = await db()
+    .from("creators")
+    .update({ email, reminders_off_at: null })
+    .eq("token", token)
+    .select("id")
+    .maybeSingle();
+  return !error && !!data;
+}
+
+/** The "stop the reminders" link in every reminder. */
+export async function stopCreatorReminders(token: string) {
+  const { data, error } = await db()
+    .from("creators")
+    .update({ reminders_off_at: new Date().toISOString() })
+    .eq("token", token)
+    .select("id")
+    .maybeSingle();
+  return !error && !!data;
 }

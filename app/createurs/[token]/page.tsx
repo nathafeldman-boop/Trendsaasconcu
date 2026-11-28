@@ -6,9 +6,10 @@ import { AddMissingLink, AddVideoForm } from "@/components/creators/add-video-fo
 import { CopyLink } from "@/components/creators/copy-link";
 import { PayoutForm } from "@/components/creators/payout-form";
 import { InstagramForm } from "@/components/creators/instagram-form";
+import { EmailForm } from "@/components/creators/email-form";
 import { RememberCreator } from "@/components/creators/creator-login";
 import { getCreatorAccount } from "@/lib/creators/store";
-import { CREATORS_DISCORD_URL, bonusCents, bonusLabel, formatEuros, formatViews, payoutLabel, rateLabel, STREAK_BONUS_CENTS } from "@/lib/creators/program";
+import { CREATORS_DISCORD_URL, bonusCents, bonusLabel, formatEuros, formatViews, payoutLabel, rateLabel, STREAK_BONUS_CENTS, STREAK_JOKERS_PER_MONTH } from "@/lib/creators/program";
 
 export const metadata: Metadata = {
   title: "Mon espace créateur — SaaSFounder",
@@ -69,7 +70,7 @@ export default async function CreatorAccountPage({
         {rateLabel()} · vues mises à jour toutes les 10 minutes · paiement : {payoutLabel(creator.payout_method)}
       </p>
       <p className="mt-1 font-body text-[13px] text-accent">
-        Bonus par vidéo : {bonusLabel()}. Série : {formatEuros(STREAK_BONUS_CENTS)} si tu publies au moins une vidéo chaque jour du mois.
+        Bonus par vidéo : {bonusLabel()}. Série : {formatEuros(STREAK_BONUS_CENTS)} si tu publies au moins une vidéo chaque jour du mois ({STREAK_JOKERS_PER_MONTH} jokers par mois si tu rates un jour).
       </p>
 
       <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
@@ -80,6 +81,17 @@ export default async function CreatorAccountPage({
           </div>
         ))}
       </div>
+
+      {!creator.email && (
+        <section className="mt-6 rounded-[16px] border border-amber-400/40 bg-amber-400/[0.07] p-4">
+          <p className="font-body text-[15px] font-semibold text-ink">📩 Ajoute ton email pour ne jamais casser ta série</p>
+          <p className="mb-3 mt-1 font-body text-[13px] leading-relaxed text-ink-muted">
+            On te rappelle de poster (3 fois par jour maximum, seulement les jours où tu n&apos;as pas encore posté). Tu peux arrêter
+            les rappels en un clic.
+          </p>
+          <EmailForm token={creator.token} initial={null} />
+        </section>
+      )}
 
       <a
         href={CREATORS_DISCORD_URL}
@@ -135,7 +147,14 @@ export default async function CreatorAccountPage({
           {creator.streak.thisMonth} / {creator.streak.daysInThisMonth} jours avec une vidéo ce mois-ci.{" "}
           {creator.streak.stillPossible
             ? `Publie chaque jour jusqu'à la fin du mois pour gagner ${formatEuros(STREAK_BONUS_CENTS)}.`
-            : `Un jour a été manqué ce mois-ci : le bonus de ${formatEuros(STREAK_BONUS_CENTS)} repart le mois prochain.`}
+            : `Plus de ${STREAK_JOKERS_PER_MONTH} jours manqués ce mois-ci : le bonus de ${formatEuros(STREAK_BONUS_CENTS)} repart le mois prochain.`}
+        </p>
+        <p className="mt-2 rounded-[12px] bg-ink/[0.04] px-3 py-2 font-body text-[13px] leading-relaxed text-ink-muted">
+          🃏 <strong className="text-ink">
+            {creator.streak.jokersLeft} joker{creator.streak.jokersLeft > 1 ? "s" : ""} restant{creator.streak.jokersLeft > 1 ? "s" : ""} ce mois-ci
+          </strong>{" "}
+          : malade ou pas le temps, un jour sans vidéo utilise un joker et ta série continue ({STREAK_JOKERS_PER_MONTH} par mois). Astuce :
+          prépare 2 ou 3 brouillons d&apos;avance pour les jours difficiles.
         </p>
         {creator.streak.completedMonths.length > 0 && (
           <p className="mt-1 font-body text-[13px] text-success">
@@ -234,6 +253,18 @@ export default async function CreatorAccountPage({
           <InstagramForm token={creator.token} initial={creator.instagram_handle} />
         </div>
       </details>
+
+      {creator.email && (
+        <details className="mt-8 rounded-[16px] border border-ink/10 p-4">
+          <summary className="cursor-pointer font-body text-[14px] text-ink-muted">
+            Tes rappels par email : {creator.reminders_off_at ? "arrêtés" : "activés"} ({creator.email}) · modifier
+          </summary>
+          <div className="mt-4">
+            <EmailForm token={creator.token} initial={creator.email} />
+            <p className="mt-2 font-body text-[12px] text-ink-faint">Enregistrer ton email réactive les rappels.</p>
+          </div>
+        </details>
+      )}
 
       {creator.payout_method && (
         <details className="mt-8 rounded-[16px] border border-ink/10 p-4">

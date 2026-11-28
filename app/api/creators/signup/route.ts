@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { createCreator } from "@/lib/creators/store";
-import { cleanInstagram, cleanPayout, normalizeHandle, normalizePhone } from "@/lib/creators/program";
+import { cleanEmail, cleanInstagram, cleanPayout, normalizeHandle, normalizePhone } from "@/lib/creators/program";
 
 const text = (value: unknown, max: number) => (typeof value === "string" ? value.trim().slice(0, max) : "");
 
@@ -15,6 +15,8 @@ export async function POST(request: Request) {
   if (!name) return NextResponse.json({ error: "Indique ton nom." }, { status: 400 });
   if (!/^[\w.]{2,24}$/.test(handle)) return NextResponse.json({ error: "Ton @ TikTok n'a pas l'air valide." }, { status: 400 });
   if (!phone) return NextResponse.json({ error: "Ton numéro n'a pas l'air valide (ex. 06 12 34 56 78)." }, { status: 400 });
+  const email = cleanEmail(body?.email);
+  if (!email) return NextResponse.json({ error: "Ton email n'a pas l'air valide." }, { status: 400 });
   const instagram = cleanInstagram(body?.instagram);
   if (instagram === false) return NextResponse.json({ error: "Ton @ Instagram n'a pas l'air valide." }, { status: 400 });
   if (!payout) {
@@ -24,7 +26,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Coche les deux cases pour continuer." }, { status: 400 });
   }
 
-  const result = await createCreator({ name, tiktok_handle: handle, instagram_handle: instagram, phone, payout_method: payout.method, payout_details: payout.details });
+  const result = await createCreator({ name, tiktok_handle: handle, instagram_handle: instagram, phone, email, payout_method: payout.method, payout_details: payout.details });
   if ("error" in result) {
     return NextResponse.json(
       {

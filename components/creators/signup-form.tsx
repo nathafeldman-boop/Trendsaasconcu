@@ -28,6 +28,7 @@ export function CreatorSignupForm() {
         tiktok: form.get("tiktok"),
         instagram: form.get("instagram"),
         phone: form.get("phone"),
+        email: form.get("email"),
         payoutMethod: method ?? "",
         payoutDetails: method ? form.get("payoutDetails") : "",
         consent,
@@ -50,6 +51,7 @@ export function CreatorSignupForm() {
       <Input label="Ton prénom et nom" name="name" autoComplete="name" required maxLength={80} />
       <Input label="Ton @ TikTok" name="tiktok" placeholder="@toncompte" autoCapitalize="none" autoCorrect="off" required maxLength={40} />
       <Input label="Ton @ Instagram (facultatif)" name="instagram" placeholder="@toncompte" autoCapitalize="none" autoCorrect="off" maxLength={40} />
+      <Input label="Ton email (pour tes rappels de série)" name="email" type="email" autoComplete="email" placeholder="toi@exemple.fr" required maxLength={200} />
       <Input label="Ton numéro (WhatsApp)" name="phone" type="tel" autoComplete="tel" placeholder="06 12 34 56 78" required maxLength={30} />
 
       <fieldset className="flex flex-col gap-2">
