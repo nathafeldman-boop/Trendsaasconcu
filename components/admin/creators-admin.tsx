@@ -7,6 +7,7 @@ import { CopyLink } from "@/components/creators/copy-link";
 import type { CreatorAccount } from "@/lib/creators/store";
 import { formatEuros, formatViews, PAYOUT_METHODS, payoutLabel, videoWarnings, whatsappUrl } from "@/lib/creators/program";
 import { cn } from "@/lib/utils";
+import { SITE_URL } from "@/lib/site";
 
 async function post(body: object) {
   const res = await fetch("/api/admin/creators", {
@@ -124,6 +125,24 @@ function CreatorRow({ creator }: { creator: CreatorAccount }) {
             <MessageCircle className="size-3.5" />
             {creator.phone}
           </a>
+          {creator.email ? (
+            <span className="block break-all text-[12px] text-ink-faint">
+              {creator.email}
+              {creator.reminders_off_at ? " · rappels arrêtés" : " · rappels actifs"}
+            </span>
+          ) : (
+            <a
+              href={whatsappUrl(
+                creator.phone,
+                `Hello ${creator.name.split(" ")[0]} ! Nouveauté 🔥 Ajoute ton email sur ta page créateur : ${SITE_URL}/createurs/${creator.token}\nOn te rappellera de poster pour ne jamais casser ta série. Et tu as maintenant 2 jokers par mois si tu rates un jour (malade, pas le temps…), ta série continue.`
+              )}
+              target="_blank"
+              rel="noreferrer"
+              className="mt-1 inline-block rounded-full bg-emerald-500 px-2.5 py-1 text-[11.5px] font-semibold text-canvas"
+            >
+              Demander son email
+            </a>
+          )}
         </td>
         <td className="py-3 pr-3">
           <span className={cn(!creator.payout_method && "text-amber-300")}>{payoutLabel(creator.payout_method)}</span>

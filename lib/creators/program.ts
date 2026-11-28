@@ -163,8 +163,8 @@ export function normalizePhone(raw: string) {
   return /^\+\d{8,15}$/.test(phone) ? phone : null;
 }
 
-export function whatsappUrl(phone: string) {
-  return `https://wa.me/${phone.replace(/^\+/, "")}`;
+export function whatsappUrl(phone: string, text?: string) {
+  return `https://wa.me/${phone.replace(/^\+/, "")}${text ? `?text=${encodeURIComponent(text)}` : ""}`;
 }
 
 /** A view rate above this is flagged for a human look. */
